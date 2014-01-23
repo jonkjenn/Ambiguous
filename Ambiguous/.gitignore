@@ -10,6 +10,8 @@ tmp/
 local.properties
 .settings/
 .loadpath
+# Java class files
+*.class
 
 # External tool builders
 .externalToolBuilders/
@@ -35,8 +37,6 @@ local.properties
 # files for the dex VM
 *.dex
 
-# Java class files
-*.class
 
 # generated files
 bin/

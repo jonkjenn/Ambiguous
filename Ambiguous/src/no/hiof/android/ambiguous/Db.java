@@ -184,6 +184,7 @@ public class Db extends SQLiteOpenHelper {
 
 	@Override
 	public void onCreate(SQLiteDatabase db) {
+		createTables();
 	}
 	
 	public void createTables()

@@ -24,7 +24,7 @@ public class MainActivity extends Activity {
     
     /* Called when the user clicks the Editor button */
     public void goToEditor(View view){
-    	Intent intent = new Intent(this, Editor.class);
-    	startActivity(intent);
+    	/*Intent intent = new Intent(this, Editor.class);
+    	startActivity(intent);*/
     }
 }

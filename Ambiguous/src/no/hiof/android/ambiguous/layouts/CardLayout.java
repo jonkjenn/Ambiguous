@@ -3,10 +3,12 @@ package no.hiof.android.ambiguous.layouts;
 import java.util.List;
 
 import no.hiof.android.ambiguous.Card;
+import no.hiof.android.ambiguous.CardOnClickListener;
 import no.hiof.android.ambiguous.Effect;
 import no.hiof.android.ambiguous.R;
 import android.content.Context;
 import android.util.AttributeSet;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -51,6 +53,9 @@ public class CardLayout extends LinearLayout {
 		{
 			l.addView(getEffectView(e.get(i)));
 		}
+		
+		final Button button = (Button) findViewById(R.id.card_edit);
+		button.setOnClickListener(new CardOnClickListener(getContext(), card.getId()));
 	}
 	
 	private TextView getEffectView(Effect e)

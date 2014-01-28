@@ -10,6 +10,10 @@ public class Card {
 	private String image;
 	private List<Effect> effects;
 	
+	public Card()
+	{
+	}
+	
 	public Card(String name)
 	{
 		this.name = name;

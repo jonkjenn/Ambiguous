@@ -1,5 +1,8 @@
-package no.hiof.android.ambiguous;
+package no.hiof.android.ambiguous.activities;
 
+import no.hiof.android.ambiguous.R;
+import no.hiof.android.ambiguous.R.layout;
+import no.hiof.android.ambiguous.R.menu;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -24,7 +27,7 @@ public class MainActivity extends Activity {
     
     /* Called when the user clicks the Editor button */
     public void goToEditor(View view){
-    	Intent intent = new Intent(this, Editor.class);
+    	Intent intent = new Intent(this, EditorActivity.class);
     	startActivity(intent);
     }
 }

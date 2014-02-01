@@ -25,6 +25,14 @@
             </TextView>
 
             <EditText
+                android:id="@+id/editcard_cost"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ems="10"
+                android:text="cost" />
+
+            <EditText
                 android:id="@+id/editcard_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

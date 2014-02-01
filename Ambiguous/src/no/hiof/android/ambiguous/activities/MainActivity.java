@@ -1,8 +1,6 @@
 package no.hiof.android.ambiguous.activities;
 
 import no.hiof.android.ambiguous.R;
-import no.hiof.android.ambiguous.R.layout;
-import no.hiof.android.ambiguous.R.menu;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;

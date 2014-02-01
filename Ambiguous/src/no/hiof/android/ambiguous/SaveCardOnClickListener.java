@@ -1,7 +1,6 @@
 package no.hiof.android.ambiguous;
 
 import no.hiof.android.ambiguous.activities.EditCardActivity;
-import android.content.Context;
 import android.view.View;
 import android.view.View.OnClickListener;
 

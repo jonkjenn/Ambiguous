@@ -32,11 +32,13 @@ public class CardLayout extends LinearLayout {
 	public void setCard(Card card) {
 		this.card = card;
 		TextView id = (TextView)findViewById(R.id.card_id);
+		TextView cost = (TextView)findViewById(R.id.card_cost);
 		TextView name = (TextView)findViewById(R.id.card_name);
 		TextView description = (TextView)findViewById(R.id.card_description);
 		ImageView image = (ImageView)findViewById(R.id.card_image);
 
 		id.setText(Integer.toString(this.card.getId()));
+		cost.setText(Integer.toString(this.card.getCost()));
 		name.setText(this.card.getName());
 		description.setText(this.card.getDescription());
 		
@@ -48,6 +50,7 @@ public class CardLayout extends LinearLayout {
 		
 		List<Effect> e = card.getEffects();
 		LinearLayout l = (LinearLayout)findViewById(R.id.card_effects);
+		l.removeAllViews();//For fixing double effects when resume activity
 		
 		for(int i=0;i<e.size();i++)
 		{
@@ -63,7 +66,7 @@ public class CardLayout extends LinearLayout {
 		String text = "Type: " + e.getType() + " Target: " + e.getTarget(); 
 
 		text += " " + Integer.toString(e.getMinValue());
-		if(e.getMaxValue()>0)
+        if(e.getMaxValue()!=0)
 		{
 			text += "-" + Integer.toString(e.getMaxValue());
 		}

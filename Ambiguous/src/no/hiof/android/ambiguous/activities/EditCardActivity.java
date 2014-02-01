@@ -12,12 +12,14 @@ import android.app.Activity;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.Menu;
+import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-public class EditCardActivity extends Activity {
+public class EditCardActivity extends Activity implements OnClickListener{
 
 	private SQLiteDatabase db;
 	
@@ -54,6 +56,8 @@ public class EditCardActivity extends Activity {
         loadCard(this.card);
         final Button save = (Button)findViewById(R.id.editcard_save);
         save.setOnClickListener(new SaveCardOnClickListener(this));
+        final Button addEffect = (Button)findViewById(R.id.editcard_addeffect);
+        addEffect.setOnClickListener(this);
 	}
 
 	@Override
@@ -93,12 +97,26 @@ public class EditCardActivity extends Activity {
 		image.setText(card.getImage());
 		cost.setText(Integer.toString(card.getCost()));
 		
+		loadEffects();
+		
+	}
+	
+	private void loadEffects()
+	{
+		this.effects.removeAllViews();
 		List<Effect> effects = card.getEffects();
 		
 		for(int i=0;i<effects.size();i++)
 		{
 			this.effects.addView(getEffectLayout(effects.get(i)));			
 		}
+	}
+	
+	private void addEffect()
+	{
+		Effect effect = new Effect();
+		this.card.getEffects().add(effect);
+		loadEffects();
 	}
 	
 	private LinearLayout getEffectLayout(Effect effect)
@@ -116,5 +134,15 @@ public class EditCardActivity extends Activity {
 		crit.setText(Integer.toString(effect.getCrit()));
 		
 		return ll;
+	}
+
+	@Override
+	public void onClick(View v) {
+		switch(v.getId())
+		{
+			case R.id.editcard_addeffect:
+				addEffect();		
+		}
+		
 	}
 }

@@ -19,7 +19,6 @@ public class Db extends SQLiteOpenHelper {
 	private static final String DROP_EFFECT_TABLE = "DROP TABLE IF EXISTS Effect";
 	
 	private static Db db;
-	private static Context context;
 
 	public static Db getDb(Context ctx)
 	{
@@ -28,7 +27,6 @@ public class Db extends SQLiteOpenHelper {
 			db = new Db(ctx,name,null,1);
 			db.dropTables();
 			db.createTables();
-			context = ctx;
 		}
 		
 		return db;

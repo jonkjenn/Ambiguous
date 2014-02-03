@@ -59,23 +59,20 @@ public class Db extends SQLiteOpenHelper {
 		db.execSQL(CREATE_CARD_TABLE);
 		db.execSQL(CREATE_EFFECT_TABLE);
 
-		Effect effect = new Effect()
-		.setType(Effect.EffectType.HEALTH)
-		.setTarget(Effect.Target.OPPONENT)
-		.setMinValue(-2)
-		.setMaxValue(-5)
-		.setCrit(2);
-
-		List<Effect> effects = Arrays.asList(effect);
-
-		Card c = new Card("Sword of Ambiguity")
-		.setDescription("Amusing description of the ambiguous characteristics of this sword.")
-		.setCost(2)
-		.setImage("sword_of_ambiguity")
-		.setEffects(effects);
 		
 		CardDataSource cs = new CardDataSource(db);
+
+		Card c = CardBuilder.DamageOponent("Sword of Ambiguity", "Amusing description of the ambiguous characteristics of this sword.", "sword_of_ambiguity", 2, 3, 7, 2);
+		Card c2 = CardBuilder.SelfArmor("Small armor boost", "Gives small amount of armor", "sword_of_ambiguity", 2, 5);
+		Card c3 = CardBuilder.SelfHeal("Revivication", "Heals", "sword_of_ambiguity", 2, 2,7,2);
+		Card c4 = CardBuilder.AddResources("Resourceification", "Gives some resources", "sword_of_ambiguity", 2, 8);
+		
+		c4.getEffects().add(new Effect().setType(Effect.EffectType.ARMOR).setTarget(Effect.Target.SELF).setMinValue(5));
+		
 		cs.addCard(c);
+		cs.addCard(c2);
+		cs.addCard(c3);
+		cs.addCard(c4);
 	}
 
 	@Override

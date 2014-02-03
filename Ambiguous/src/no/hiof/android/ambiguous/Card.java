@@ -1,5 +1,6 @@
 package no.hiof.android.ambiguous;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Card {
@@ -12,10 +13,12 @@ public class Card {
 	
 	public Card()
 	{
+		effects = new ArrayList<Effect>();
 	}
 	
 	public Card(String name)
 	{
+		this();
 		this.name = name;
 	}
 	

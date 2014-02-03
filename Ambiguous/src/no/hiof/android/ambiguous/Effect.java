@@ -1,7 +1,7 @@
 package no.hiof.android.ambiguous;
 
 public class Effect {
-	public static enum EffectType {HEALTH, ARMOR, DAMAGE};
+	public static enum EffectType {HEALTH, ARMOR, DAMAGE, RESOURCE};
 	public static enum Target {SELF,OPPONENT};
 	
 	private int id;

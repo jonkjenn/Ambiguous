@@ -1,5 +1,8 @@
 package no.hiof.android.ambiguous;
 
+import no.hiof.android.ambiguous.model.Card;
+import no.hiof.android.ambiguous.model.Effect;
+
 public class CardBuilder {
 	
 	public static Card SelfArmor(String name,String description, String image, int cost, int amount)

@@ -2,12 +2,12 @@ package no.hiof.android.ambiguous.activities;
 
 import java.util.List;
 
-import no.hiof.android.ambiguous.Card;
-import no.hiof.android.ambiguous.CardDataSource;
 import no.hiof.android.ambiguous.Db;
-import no.hiof.android.ambiguous.Effect;
 import no.hiof.android.ambiguous.R;
 import no.hiof.android.ambiguous.SaveCardOnClickListener;
+import no.hiof.android.ambiguous.datasource.CardDataSource;
+import no.hiof.android.ambiguous.model.Card;
+import no.hiof.android.ambiguous.model.Effect;
 import android.app.Activity;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;

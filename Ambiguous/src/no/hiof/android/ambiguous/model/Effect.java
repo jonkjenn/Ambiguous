@@ -1,4 +1,4 @@
-package no.hiof.android.ambiguous;
+package no.hiof.android.ambiguous.model;
 
 public class Effect {
 	public static enum EffectType {HEALTH, ARMOR, DAMAGE, RESOURCE};

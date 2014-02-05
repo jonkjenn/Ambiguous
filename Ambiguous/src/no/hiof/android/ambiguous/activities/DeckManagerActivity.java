@@ -1,13 +1,9 @@
 package no.hiof.android.ambiguous.activities;
 
-import java.util.List;
-
-import no.hiof.android.ambiguous.Card;
-import no.hiof.android.ambiguous.CardDataSource;
 import no.hiof.android.ambiguous.Db;
 import no.hiof.android.ambiguous.DeckmanagerAdapter;
 import no.hiof.android.ambiguous.R;
-import no.hiof.android.ambiguous.layouts.CardLayout;
+import no.hiof.android.ambiguous.datasource.CardDataSource;
 import android.app.Activity;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -29,8 +25,9 @@ public class DeckManagerActivity extends Activity {
         this.cs = new CardDataSource(db);
         
         GridView deckmanager = (GridView)findViewById(R.id.deckmanager_grid);
-        DeckmanagerAdapter adapter = new DeckmanagerAdapter(db);
+        DeckmanagerAdapter adapter = new DeckmanagerAdapter(db,R.layout.card);
         deckmanager.setAdapter(adapter);
+        
     }
     
     @Override

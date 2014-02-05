@@ -1,4 +1,4 @@
-package no.hiof.android.ambiguous;
+package no.hiof.android.ambiguous.model;
 
 import java.util.ArrayList;
 import java.util.List;

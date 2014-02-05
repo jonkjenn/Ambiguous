@@ -1,8 +1,10 @@
-package no.hiof.android.ambiguous;
+package no.hiof.android.ambiguous.datasource;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import no.hiof.android.ambiguous.model.Card;
+import no.hiof.android.ambiguous.model.Effect;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;

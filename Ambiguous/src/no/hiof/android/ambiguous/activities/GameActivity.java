@@ -1,12 +1,15 @@
 package no.hiof.android.ambiguous.activities;
 
+import java.util.List;
+
 import no.hiof.android.ambiguous.Db;
-import no.hiof.android.ambiguous.DeckmanagerAdapter;
+import no.hiof.android.ambiguous.DeckBuilder;
 import no.hiof.android.ambiguous.R;
-import no.hiof.android.ambiguous.R.id;
-import no.hiof.android.ambiguous.R.layout;
-import no.hiof.android.ambiguous.R.menu;
+import no.hiof.android.ambiguous.adapter.DeckmanagerAdapter;
+import no.hiof.android.ambiguous.adapter.GameDeckAdapter;
 import no.hiof.android.ambiguous.datasource.CardDataSource;
+import no.hiof.android.ambiguous.model.Card;
+import no.hiof.android.ambiguous.model.Player;
 import android.app.Activity;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -24,10 +27,16 @@ public class GameActivity extends Activity {
 
         this.db = Db.getDb(getApplicationContext()).getWritableDatabase();
         this.cs = new CardDataSource(db);
+
+        List<Card> cards = cs.getCards();
+
+        Player player = new Player("Jon");
+        player.SetDeck(DeckBuilder.StandardDeck(cards));
         
-        GridView deckmanager = (GridView)findViewById(R.id.game_grid);
-        DeckmanagerAdapter adapter = new DeckmanagerAdapter(db,R.layout.card_game);
-        deckmanager.setAdapter(adapter);
+        GridView deckView = (GridView)findViewById(R.id.game_grid);
+        GameDeckAdapter adapter = new GameDeckAdapter(player.GetCards());
+        deckView.setAdapter(adapter);
+
 	}
 
 	@Override

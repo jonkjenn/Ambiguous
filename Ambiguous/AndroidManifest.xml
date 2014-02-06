@@ -26,10 +26,6 @@
             android:name="no.hiof.android.ambiguous.activities.EditCardActivity"
             android:label="@string/title_activity_edit_card" >
         </activity>
-        <activity
-            android:name="no.hiof.android.ambiguous.activities.GameActivity"
-            android:label="@string/title_activity_game" >
-        </activity>
     </application>
 
 </manifest>

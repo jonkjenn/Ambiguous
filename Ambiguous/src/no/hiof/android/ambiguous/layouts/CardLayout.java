@@ -17,10 +17,10 @@ import android.widget.TextView;
 public class CardLayout {
 
 	public static View getCardLayout(Card card, ViewGroup parent) {
-		if(card == null){return null;}
                 
 		LayoutInflater inflater = (LayoutInflater)parent.getContext().getSystemService(parent.getContext().LAYOUT_INFLATER_SERVICE);
 		View view = inflater.inflate(R.layout.card_game,parent,false);
+		if(card == null){return view;}
 
 		TextView id = (TextView)view.findViewById(R.id.card_id);
 		TextView cost = (TextView)view.findViewById(R.id.card_cost);

@@ -5,6 +5,7 @@ import java.util.Random;
 
 import no.hiof.android.ambiguous.Db;
 import no.hiof.android.ambiguous.DeckBuilder;
+import no.hiof.android.ambiguous.DeckView;
 import no.hiof.android.ambiguous.R;
 import no.hiof.android.ambiguous.RandomAmountGenerator;
 import no.hiof.android.ambiguous.adapter.GameDeckAdapter;
@@ -59,7 +60,6 @@ public class GameActivity extends Activity implements OnDragListener{
         deckView = (GridView)findViewById(R.id.game_grid);
         GameDeckAdapter adapter = new GameDeckAdapter(player.GetCards());
         deckView.setAdapter(adapter);
-        
         
         setupDragDrop(layoutView);
 

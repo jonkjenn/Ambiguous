@@ -17,7 +17,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:visibility="gone"
-                android:text="id" />
+                />
 
             <TextView
                 android:textSize="12sp"
@@ -26,14 +26,14 @@
                 android:layout_height="wrap_content"
                 android:gravity="center_horizontal"
                 style="@android:style/TextAppearance.Small"
-                android:text="name" />
+                />
 
             <TextView
                 android:id="@+id/card_cost"
                 android:layout_width="10dp"
                 android:layout_height="20dp"
                 style="@android:style/TextAppearance.Small"
-                android:text="cost" />
+                />
 
         </LinearLayout>
 
@@ -46,8 +46,7 @@
                 android:id="@+id/card_image"
                 android:layout_width="80dp"
                 android:layout_height="55dp"
-                android:src="@drawable/sword_of_ambiguity"
-                android:text="image" />
+                />
     	</LinearLayout>
 
     <LinearLayout
@@ -66,6 +65,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:visibility="gone"
-        android:text="Edit card" />
+        />
 
 </LinearLayout>

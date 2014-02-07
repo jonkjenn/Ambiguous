@@ -12,7 +12,7 @@ import android.widget.TextView;
 public class GameDeckAdapter extends BaseAdapter {
         
 		Card[] cards;
-
+		
         public GameDeckAdapter(Card[] cards)
         {
         	this.cards = cards;
@@ -38,9 +38,8 @@ public class GameDeckAdapter extends BaseAdapter {
                 Card card = getItem(position);
                 
                 if(card == null){
-                TextView t = new TextView(parent.getContext());
-                t.setVisibility(TextView.GONE);
-                return t;}
+                	return CardLayout.getCardLayout(null, parent);
+                };
 
                 View view = CardLayout.getCardLayout(card, parent);
 
@@ -48,7 +47,4 @@ public class GameDeckAdapter extends BaseAdapter {
                 
                 return view;
         }
-
-
-
 }

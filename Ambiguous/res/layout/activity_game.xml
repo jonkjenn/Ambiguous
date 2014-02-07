@@ -17,12 +17,16 @@
 			android:layout_height="wrap_content"
 			android:layout_width="match_parent"
 		    />
+		<!-- <include layout="@layout/layout_deckview"/>-->
 		<GridView 
+		    android:stretchMode="columnWidth"
 			android:id="@+id/game_grid"
 			android:layout_height="wrap_content"
 			android:layout_width="match_parent"
 			android:numColumns="4"
 			android:verticalSpacing="5dp"
+			android:gravity="center"
 			>
 		</GridView>
+		
 	</LinearLayout>

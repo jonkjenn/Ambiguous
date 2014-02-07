@@ -20,6 +20,7 @@ public class DeckBuilder {
 				deck.add(cards.get(i));
 				deck.add(cards.get(i));
 				deck.add(cards.get(i));
+				deck.add(cards.get(i));
 			}
 
 			Card temp;

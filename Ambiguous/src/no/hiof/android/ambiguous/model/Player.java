@@ -22,10 +22,9 @@ public class Player {
 
 	public void PullCards()
 	{
-		if(deck.size()<=0){return;}
-		for(int i=0;i<8;i++)
+		for(int i=0;i<cards.length;i++)
 		{
-			if(cards[i] == null)
+			if(deck.size() >0 && cards[i] == null)
 			{
 				cards[i] = deck.remove(0);
 			}

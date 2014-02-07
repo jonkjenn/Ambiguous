@@ -28,4 +28,10 @@ public class MainActivity extends Activity {
     	Intent intent = new Intent(this, DeckManagerActivity.class);
     	startActivity(intent);
     }
+    
+    /* Called when the user clicks the Game button */
+    public void goToGame(View view){
+    	Intent intent = new Intent(this,no.hiof.android.ambiguous.activities.GameActivity.class);
+    	startActivity(intent);
+    }
 }

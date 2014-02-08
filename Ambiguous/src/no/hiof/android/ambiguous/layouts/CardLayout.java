@@ -7,6 +7,7 @@ import no.hiof.android.ambiguous.model.Card;
 import no.hiof.android.ambiguous.model.Effect;
 import android.content.Context;
 import android.graphics.Color;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -60,6 +61,7 @@ public class CardLayout {
                 String crit = Integer.toString(e.getCrit());
                 
                 TextView t = new TextView(context);
+                t.setTextSize(TypedValue.COMPLEX_UNIT_SP,12);
                 t.setTextColor(Color.WHITE);
                 
                 LinearLayout.LayoutParams layout = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,LinearLayout.LayoutParams.WRAP_CONTENT);

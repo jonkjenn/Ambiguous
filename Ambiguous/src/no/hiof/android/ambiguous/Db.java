@@ -62,17 +62,21 @@ public class Db extends SQLiteOpenHelper {
 		
 		CardDataSource cs = new CardDataSource(db);
 
-		Card c = CardBuilder.DamageOponent("Sword of Ambiguity", "Amusing description of the ambiguous characteristics of this sword.", "sword_of_ambiguity", 2, 3, 7, 2);
-		Card c2 = CardBuilder.SelfArmor("Small armor boost", "Gives small amount of armor", "sword_of_ambiguity", 2, 5);
-		Card c3 = CardBuilder.SelfHeal("Revivication", "Heals", "sword_of_ambiguity", 2, 2,7,2);
-		Card c4 = CardBuilder.AddResources("Resourceification", "Gives some resources", "sword_of_ambiguity", 2, 8);
-		
-		c4.getEffects().add(new Effect().setType(Effect.EffectType.ARMOR).setTarget(Effect.Target.SELF).setMinValue(5));
+		Card c = CardBuilder.DamageOponent("Sword1", "Amusing description of the ambiguous characteristics of this sword.", "sword_of_ambiguity", 3, 10, 30, 10);
+		Card c2 = CardBuilder.SelfArmor("Armor1", "Gives small amount of armor", "sword_of_ambiguity", 2, 5);
+		Card c3 = CardBuilder.SelfHeal("Heal1", "Heals", "sword_of_ambiguity", 2, 5,10,2);
+		Card c4 = CardBuilder.AddResources("Resource1", "Gives some resources", "sword_of_ambiguity", 2, 4);
 		
 		cs.addCard(c);
 		cs.addCard(c2);
 		cs.addCard(c3);
 		cs.addCard(c4);
+		cs.addCard(CardBuilder.DamageOponent("Sword2", "", "sword_of_ambiguity", 25, 30, 50, 10));
+		cs.addCard(CardBuilder.DamageOponent("Sword3", "", "sword_of_ambiguity", 5, 5, 10, 5));
+		cs.addCard(CardBuilder.SelfHeal("Heal2", "", "sword_of_ambiguity", 10, 30, 50, 15));
+		cs.addCard(CardBuilder.SelfHeal("Heal3", "", "sword_of_ambiguity", 7, 5, 50, 15));
+		cs.addCard(CardBuilder.SelfArmor("Armor2", "Gives small amount of armor", "sword_of_ambiguity", 5, 10));
+		cs.addCard(CardBuilder.DamageOponent("Sword4", "Amusing description of the ambiguous characteristics of this sword.", "sword_of_ambiguity", 5, 10, 20, 10));
 	}
 
 	@Override

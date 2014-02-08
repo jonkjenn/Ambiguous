@@ -1,6 +1,7 @@
 package no.hiof.android.ambiguous.model;
 
 import java.util.List;
+import java.util.Random;
 
 public class Player {
 	private int id;
@@ -13,6 +14,7 @@ public class Player {
 	private int armor = 0;
 	private int resources = 10;
 	private boolean alive = true;
+	private Random deckRandom;
 
 	public Player(String name)
 	{
@@ -22,11 +24,12 @@ public class Player {
 
 	public void PullCards()
 	{
+		if(deckRandom == null){deckRandom = new Random();}
 		for(int i=0;i<cards.length;i++)
 		{
-			if(deck.size() >0 && cards[i] == null)
+			if(cards[i] == null)
 			{
-				cards[i] = deck.remove(0);
+				cards[i] = deck.get(deckRandom.nextInt(deck.size()-1));
 			}
 		}
 	}
@@ -56,6 +59,17 @@ public class Player {
 
 	public void Damage(int amount)
 	{
+		if(this.armor>=amount)
+		{
+			this.armor -= amount;
+			amount = 0;
+		}
+		else
+		{
+			amount -= this.armor;
+			this.armor = 0;
+		}
+
 		this.health -= amount;
 		if(this.health<0){this.alive = false;}
 	}
@@ -91,5 +105,20 @@ public class Player {
 	{
 		return this.name + " Health: " + this.health + " Armor: " + this.armor + " Res: " + this.resources;
 	}
-
+	
+	public int getHealth()
+	{
+		return this.health;
+	}
+	
+	public int getArmor()
+	{
+		return this.armor;
+	}
+	
+	public int getResources()
+	{
+		return this.resources;
+	}
+	
 }

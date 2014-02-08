@@ -10,6 +10,7 @@
     	<LinearLayout
     	    android:layout_width="match_parent"
     	    android:layout_height="wrap_content"
+    	    android:gravity="left"
     	    android:orientation="horizontal">
 
             <TextView
@@ -22,16 +23,18 @@
             <TextView
                 android:textSize="12sp"
                 android:id="@+id/card_name"
-                android:layout_width="60dp"
+                android:layout_width="45dp"
                 android:layout_height="wrap_content"
                 android:gravity="center_horizontal"
-                style="@android:style/TextAppearance.Small"
+                android:padding="0dp"
                 />
 
             <TextView
+                android:padding="0dp"
                 android:id="@+id/card_cost"
-                android:layout_width="10dp"
+                android:layout_width="15dp"
                 android:layout_height="20dp"
+                android:gravity="right"
                 style="@android:style/TextAppearance.Small"
                 />
 

@@ -3,9 +3,9 @@ package no.hiof.android.ambiguous.activities;
 import java.util.List;
 import java.util.Random;
 
+import no.hiof.android.ambiguous.AI;
 import no.hiof.android.ambiguous.Db;
 import no.hiof.android.ambiguous.DeckBuilder;
-import no.hiof.android.ambiguous.DeckView;
 import no.hiof.android.ambiguous.R;
 import no.hiof.android.ambiguous.RandomAmountGenerator;
 import no.hiof.android.ambiguous.adapter.GameDeckAdapter;
@@ -35,9 +35,12 @@ public class GameActivity extends Activity implements OnDragListener{
 	
 	private Random computerRandom;
 
-	private enum states{PLAYER_TURN,PLAYER_DONE, COMPUTER_TURN};
+	private enum states{PLAYER_TURN,PLAYER_DONE, COMPUTER_TURN, GAME_OVER};
 
 	private states state;
+
+    TextView playerstats;
+    TextView computerstats;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -63,6 +66,9 @@ public class GameActivity extends Activity implements OnDragListener{
         
         setupDragDrop(layoutView);
 
+        playerstats = (TextView)findViewById(R.id.stats_player);
+        computerstats = (TextView)findViewById(R.id.stats_computer);
+
         state = (new Random().nextInt(1)==0?states.PLAYER_TURN:states.COMPUTER_TURN);
 
         changeState();
@@ -70,6 +76,8 @@ public class GameActivity extends Activity implements OnDragListener{
 
 	private void changeState()
 	{
+		checkDead();
+
 		switch(state)
 		{
 			case COMPUTER_TURN:
@@ -81,15 +89,31 @@ public class GameActivity extends Activity implements OnDragListener{
 			case PLAYER_DONE:
 				playerDone();
 				break;
+			case GAME_OVER:
+				break;
 			default:
 				break;
+		}
+	}
+	
+	private void checkDead()
+	{
+		if(!player.getAlive())
+		{
+			playerstats.setText("Player dead");
+			state = states.GAME_OVER;
+		}
+		if(!computer.getAlive())
+		{
+			computerstats.setText("Computer dead");
+			state = states.GAME_OVER;
 		}
 	}
 
 	private void playerTurn()
 	{
 		this.setupDragDrop(this.layoutView);
-		player.ModResource(2);
+		player.ModResource(1);
 	}
 
 	private void playerDone()
@@ -103,8 +127,6 @@ public class GameActivity extends Activity implements OnDragListener{
 	
 	private void updateStatsView()
 	{
-		TextView playerstats = (TextView)findViewById(R.id.stats_player);
-		TextView computerstats = (TextView)findViewById(R.id.stats_computer);
 		
 		playerstats.setText(player.getStats());
 		computerstats.setText(computer.getStats());
@@ -112,8 +134,10 @@ public class GameActivity extends Activity implements OnDragListener{
 
 	private void computerTurn()
 	{
-		computer.ModResource(2);
-		int pos = computerRandom.nextInt(computer.GetCards().length-1);
+		computer.ModResource(1);
+		AI ai = new AI(computer,player);
+		int pos = ai.Start();
+		if(pos<0){pos = computerRandom.nextInt(computer.GetCards().length-1);}
 		playCard(computer.GetCards()[pos],pos);
 		state = states.PLAYER_TURN;		
 		changeState();
@@ -125,6 +149,27 @@ public class GameActivity extends Activity implements OnDragListener{
 		Card card = (Card)deckView.getItemAtPosition(position);
 		playCard(card, position);
         changeState();
+	}
+	
+	private void discardCard(int position)
+	{
+
+		if(state != states.PLAYER_TURN){return;}
+		switch(state)
+		{
+                case COMPUTER_TURN:
+                        computer.CardUsed(position);
+                        state = states.PLAYER_TURN;
+                        break;
+                case PLAYER_TURN:
+                        player.CardUsed(position);
+                        state = states.PLAYER_DONE;
+                        break;
+                default:
+                        break;
+		}
+		changeState();
+		
 	}
 	
 	private void playCard(Card card,int position)
@@ -221,11 +266,14 @@ public class GameActivity extends Activity implements OnDragListener{
                                 int[] dragState = (int[])event.getLocalState();
                                 float starty = (float)dragState[0];
                                 Log.d("test",y + " " + starty);
-                                if(y < starty-30){
+                                if(y < starty-50){
                                 	Log.d("test","Oppover");
                                 	playCard(dragState[1]);
                                 }
-                                else if(y>starty+30){Log.d("test", "Nedover");}
+                                else if(y>starty+50){
+                                	Log.d("test", "Nedover");
+                                	discardCard(dragState[1]);
+                                	}
                         }
                         return true;
         }

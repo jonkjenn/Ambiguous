@@ -15,12 +15,6 @@ public class DeckBuilder {
 			for(int i=0;i<cards.size();i++)
 			{
 				deck.add(cards.get(i));
-				deck.add(cards.get(i));
-				deck.add(cards.get(i));
-				deck.add(cards.get(i));
-				deck.add(cards.get(i));
-				deck.add(cards.get(i));
-				deck.add(cards.get(i));
 			}
 
 			Card temp;

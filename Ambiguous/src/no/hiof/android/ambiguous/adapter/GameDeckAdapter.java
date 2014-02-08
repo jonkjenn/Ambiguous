@@ -6,7 +6,6 @@ import no.hiof.android.ambiguous.model.Card;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.TextView;
 
 
 public class GameDeckAdapter extends BaseAdapter {

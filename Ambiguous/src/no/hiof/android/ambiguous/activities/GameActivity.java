@@ -113,11 +113,11 @@ public class GameActivity extends Activity implements OnDragListener{
 	private void playerTurn()
 	{
 		this.setupDragDrop(this.layoutView);
-		player.ModResource(1);
 	}
 
 	private void playerDone()
 	{
+		player.ModResource(1);
 		this.layoutView.setOnDragListener(null);
 		updateStatsView();
         deckView.setAdapter(new GameDeckAdapter(player.GetCards()));
@@ -256,26 +256,56 @@ public class GameActivity extends Activity implements OnDragListener{
         switch(event.getAction())
         {
             case DragEvent.ACTION_DRAG_STARTED:
-                            Log.d("test", "Drag started");
-                        return true;
+                Log.d("test", "Drag started");
+                return true;
+                        
+            case DragEvent.ACTION_DRAG_LOCATION:
+            	if(event.getLocalState() != null)
+            	{
+                    int[] dState = (int[])event.getLocalState();
+                        if(dState.length >2 && dState[2]/2 + event.getY() < dState[0] - 100)
+                        {
+                                Log.d("test","Oppover");
+                                findViewById(R.id.gameview_use).setVisibility(TextView.VISIBLE);
+                        }
+                        else
+                        {
+                                findViewById(R.id.gameview_use).setVisibility(TextView.GONE);
+                        }
+                        if(dState.length >2 && dState[2]/2 + event.getY() > this.layoutView.getHeight())
+                        {
+                                Log.d("test", "funker?");
+                                findViewById(R.id.gameview_discard).setVisibility(TextView.VISIBLE);
+                        }
+                        else
+                        {
+                                findViewById(R.id.gameview_discard).setVisibility(TextView.GONE);
+                        }
+            	}
+            	break;
 
             case DragEvent.ACTION_DROP:
-                        float y = event.getY();
-                        if(event.getLocalState() != null)
+                float y = event.getY();
+                if(event.getLocalState() != null)
+                {
+                        int[] dragState = (int[])event.getLocalState();
+                        float starty = (float)dragState[0];
+                        Log.d("test",y + " " + starty);
+
+                        if(dragState.length >2 && dragState[2]/2 + event.getY() < dragState[0] - 100)
                         {
-                                int[] dragState = (int[])event.getLocalState();
-                                float starty = (float)dragState[0];
-                                Log.d("test",y + " " + starty);
-                                if(y < starty-50){
-                                	Log.d("test","Oppover");
-                                	playCard(dragState[1]);
-                                }
-                                else if(y>starty+50){
-                                	Log.d("test", "Nedover");
-                                	discardCard(dragState[1]);
-                                	}
+                                Log.d("test","Oppover");
+                                findViewById(R.id.gameview_use).setVisibility(TextView.GONE);
+                                playCard(dragState[1]);
                         }
-                        return true;
+                        else if(dragState.length >2 && dragState[2]/2 + event.getY() > this.layoutView.getHeight())
+                        {
+                                Log.d("test", "funker?");
+                                findViewById(R.id.gameview_discard).setVisibility(TextView.GONE);
+                                discardCard(dragState[1]);
+                        }
+                }
+                return true;
         }
         return false;
         }

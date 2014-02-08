@@ -21,6 +21,7 @@ import android.view.DragEvent;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnDragListener;
+import android.view.ViewGroup;
 import android.widget.GridView;
 import android.widget.TextView;
 
@@ -53,11 +54,11 @@ public class GameActivity extends Activity implements OnDragListener{
 
         List<Card> cards = cs.getCards();
 
-        computer = new Player("Computer");
+        computer = new Player("Computer", (ViewGroup)findViewById(R.id.floating_container2));
         computer.SetDeck(DeckBuilder.StandardDeck(cards));
 		computerRandom = new Random();
         
-        player = new Player("Jon");
+        player = new Player("Jon", (ViewGroup)findViewById(R.id.floating_container));
         player.SetDeck(DeckBuilder.StandardDeck(cards));
         
         deckView = (GridView)findViewById(R.id.game_grid);
@@ -139,6 +140,7 @@ public class GameActivity extends Activity implements OnDragListener{
 		int pos = ai.Start();
 		if(pos<0){pos = computerRandom.nextInt(computer.GetCards().length-1);}
 		playCard(computer.GetCards()[pos],pos);
+		updateStatsView();
 		state = states.PLAYER_TURN;		
 		changeState();
 	}

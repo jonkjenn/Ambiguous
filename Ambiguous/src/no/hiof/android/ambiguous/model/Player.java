@@ -4,17 +4,13 @@ import java.util.List;
 import java.util.Random;
 
 import no.hiof.android.ambiguous.FloatingHandler;
-import no.hiof.android.ambiguous.FloatingText;
 import no.hiof.android.ambiguous.FloatingTextAnimationListener;
 import no.hiof.android.ambiguous.R;
-import android.content.Context;
 import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
-import android.view.ViewGroup.LayoutParams;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 public class Player {
@@ -164,5 +160,4 @@ public class Player {
 		ani.setAnimationListener(new FloatingTextAnimationListener(floatingText,new FloatingHandler(floatingText),TextView.VISIBLE));
 		floatingText.startAnimation(ani);
 	}
-	
 }

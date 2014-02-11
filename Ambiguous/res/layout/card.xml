@@ -47,7 +47,7 @@
                 android:id="@+id/card_image"
                 android:layout_width="80dp"
                 android:layout_height="95dp"
-                android:src="@drawable/sword_of_ambiguity"
+                android:src="@drawable/smiley_drawing_small"
                 android:text="image" />
     	</LinearLayout>
 

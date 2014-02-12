@@ -78,6 +78,7 @@ public class Db extends SQLiteOpenHelper {
 		cs.addCard(CardBuilder.SelfArmor("Armor2", "Gives small amount of armor", "sword_of_ambiguity", 5, 10));
 		cs.addCard(CardBuilder.DamageOponent("Sword4", "Amusing description of the ambiguous characteristics of this sword.", "sword_of_ambiguity", 5, 10, 20, 10));
 		cs.addCard(CardBuilder.AddResources("Resource2", "Gives more resources", "smiley_drawing_small", 1, 20));
+		cs.addCard(CardBuilder.SelfArmor("Armor3", "Gives a fair amount of armor", "smiley_drawing", 4, 20));
 	}
 
 	@Override

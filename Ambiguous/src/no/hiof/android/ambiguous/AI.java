@@ -3,7 +3,6 @@ package no.hiof.android.ambiguous;
 import java.util.List;
 import java.util.Random;
 
-import no.hiof.android.ambiguous.adapter.GameDeckAdapter;
 import no.hiof.android.ambiguous.model.Card;
 import no.hiof.android.ambiguous.model.Effect;
 import no.hiof.android.ambiguous.model.Player;

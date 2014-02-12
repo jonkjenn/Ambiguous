@@ -70,8 +70,9 @@ public class GameActivity extends Activity implements OnDragListener{
         playerstats = (TextView)findViewById(R.id.stats_player);
         computerstats = (TextView)findViewById(R.id.stats_computer);
 
-        state = (new Random().nextInt(1)==0?states.PLAYER_TURN:states.COMPUTER_TURN);
+        state = (new Random().nextInt(2)==0?states.PLAYER_TURN:states.COMPUTER_TURN);
 
+        updateStatsView();
         changeState();
 	}
 
@@ -128,7 +129,6 @@ public class GameActivity extends Activity implements OnDragListener{
 	
 	private void updateStatsView()
 	{
-		
 		playerstats.setText(player.getStats());
 		computerstats.setText(computer.getStats());
 	}

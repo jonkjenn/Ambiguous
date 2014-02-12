@@ -119,7 +119,7 @@ public class GameActivity extends Activity implements OnDragListener{
 
 	private void playerDone()
 	{
-		player.ModResource(1);
+		player.ModResource(5);
 		this.layoutView.setOnDragListener(null);
 		updateStatsView();
         deckView.setAdapter(new GameDeckAdapter(player.GetCards()));
@@ -135,7 +135,7 @@ public class GameActivity extends Activity implements OnDragListener{
 
 	private void computerTurn()
 	{
-		computer.ModResource(1);
+		computer.ModResource(5);
 		AI ai = new AI(computer,player);
 		int pos = ai.Start();
 		if(pos<0){pos = computerRandom.nextInt(computer.GetCards().length-1);}

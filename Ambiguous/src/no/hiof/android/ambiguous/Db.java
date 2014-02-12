@@ -62,23 +62,28 @@ public class Db extends SQLiteOpenHelper {
 		
 		CardDataSource cs = new CardDataSource(db);
 
-		Card c = CardBuilder.DamageOponent("Sword1", "Amusing description of the ambiguous characteristics of this sword.", "sword_of_ambiguity", 3, 10, 30, 10);
-		Card c2 = CardBuilder.SelfArmor("Armor1", "Gives small amount of armor", "sword_of_ambiguity", 2, 5);
-		Card c3 = CardBuilder.SelfHeal("Heal1", "Heals", "sword_of_ambiguity", 2, 5,10,2);
-		Card c4 = CardBuilder.AddResources("Resource1", "Gives some resources", "sword_of_ambiguity", 2, 4);
+		cs.addCard(CardBuilder.DamageOponent("Pistol","","pistol1",4,5,10,5));
+		cs.addCard(CardBuilder.DamageOponent("Pistol2","","pistol3",7,10,20,10));
+		cs.addCard(CardBuilder.DamageOponent("Pistol3","","pistol6",10,10,27,30));
+		cs.addCard(CardBuilder.DamageOponent("Rifle","","rifle3",15,25,40,30));
+		cs.addCard(CardBuilder.DamageOponent("Rifle2","","rifle4",20,30,60,40));
+		cs.addCard(CardBuilder.DamageOponent("Shotgun","","shotgun1",6,1,25,5));
+		cs.addCard(CardBuilder.DamageOponent("Shotgun2","","shotgun2",10,1,45,5));
+		cs.addCard(CardBuilder.DamageOponent("Shotgun3","","shotgun4",15,10,60,10));
+		cs.addCard(CardBuilder.DamageOponent("Shotgun4","","shotgun6",20,25,65,30));
+		cs.addCard(CardBuilder.DamageOponent("Sword","","sword_of_ambiguity",10,10,30,10));
+		cs.addCard(CardBuilder.SelfHeal("Heal1","","smiley_drawing_small",4,10,15,5));
+		cs.addCard(CardBuilder.SelfHeal("Heal2","","smiley_drawing_small",10,15,50,15));
+		cs.addCard(CardBuilder.SelfHeal("Heal3","","smiley_drawing_small",15,35,60,30));
+		cs.addCard(CardBuilder.SelfHeal("Heal4","","smiley_drawing_small",20,50,100,0));
+		cs.addCard(CardBuilder.SelfArmor("Armor","","smiley_drawing_small",4,15));
+		cs.addCard(CardBuilder.SelfArmor("Armo2","","smiley_drawing_small",10,40));
+		cs.addCard(CardBuilder.SelfArmor("Armor3","","smiley_drawing_small",15,65));
+		cs.addCard(CardBuilder.SelfArmor("Armor4","","smiley_drawing_small",20,90));
+
 		
-		cs.addCard(c);
-		cs.addCard(c2);
-		cs.addCard(c3);
-		cs.addCard(c4);
-		cs.addCard(CardBuilder.DamageOponent("Sword2", "", "sword_of_ambiguity", 25, 30, 50, 10));
-		cs.addCard(CardBuilder.DamageOponent("Sword3", "", "sword_of_ambiguity", 5, 5, 10, 5));
-		cs.addCard(CardBuilder.SelfHeal("Heal2", "", "sword_of_ambiguity", 10, 30, 50, 15));
-		cs.addCard(CardBuilder.SelfHeal("Heal3", "", "sword_of_ambiguity", 7, 5, 50, 15));
-		cs.addCard(CardBuilder.SelfArmor("Armor2", "Gives small amount of armor", "sword_of_ambiguity", 5, 10));
-		cs.addCard(CardBuilder.DamageOponent("Sword4", "Amusing description of the ambiguous characteristics of this sword.", "sword_of_ambiguity", 5, 10, 20, 10));
-		cs.addCard(CardBuilder.AddResources("Resource2", "Gives more resources", "smiley_drawing_small", 1, 20));
-		cs.addCard(CardBuilder.SelfArmor("Armor3", "Gives a fair amount of armor", "smiley_drawing", 4, 20));
+		cs.addCard(CardBuilder.AddResources("Resource2", "Gives more resources", "smiley_drawing_small", 5, 30));
+		cs.addCard(CardBuilder.AddResources("Resource1", "Gives more resources", "smiley_drawing_small", 2, 10));
 	}
 
 	@Override

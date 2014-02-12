@@ -18,8 +18,8 @@ public class Player {
 	private String name;
 	private List<Card> deck;
 	private Card[] cards;
-	private final int maxHealth = 100;
-	private final int maxArmor = 100;
+	private final int maxHealth = 150;
+	private final int maxArmor = 250;
 	private int health = maxHealth;
 	private int armor = 0;
 	private int resources = 10;
@@ -93,13 +93,13 @@ public class Player {
 	
 	public void Heal(int amount)
 	{
-		this.health = (this.health + amount>this.maxHealth?100:this.health+amount);
+		this.health = (this.health + amount>this.maxHealth?this.maxHealth:this.health+amount);
 		displayFloatingNumber(amount,Color.rgb(45, 190, 50));
 	}
 
 	public void ModArmor(int amount)
 	{
-		this.armor = (this.armor + amount>this.maxArmor?100:this.armor+amount);
+		this.armor = (this.armor + amount>this.maxArmor?this.maxArmor:this.armor+amount);
 		
 		displayFloatingNumber(amount,Color.BLUE);
 	}

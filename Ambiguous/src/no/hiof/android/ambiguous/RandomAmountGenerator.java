@@ -10,7 +10,7 @@ public class RandomAmountGenerator {
 		Random rand = new Random();
 		int range = max - min;
 		int base = rand.nextInt(range) + min;
-		return base + (RandomAmountGenerator.crit.nextFloat() >= 0.5?crit:0);
+		return base + (RandomAmountGenerator.crit.nextFloat() >= 0.25?crit:0);
 	}
 
 }

@@ -1,8 +1,6 @@
 package no.hiof.android.ambiguous;
 
 import no.hiof.android.ambiguous.datasource.CardDataSource;
-import no.hiof.android.ambiguous.model.Card;
-import no.hiof.android.ambiguous.model.Effect;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabase.CursorFactory;

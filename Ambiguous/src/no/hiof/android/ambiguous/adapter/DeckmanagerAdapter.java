@@ -2,9 +2,9 @@ package no.hiof.android.ambiguous.adapter;
 
 import java.util.List;
 
-import no.hiof.android.ambiguous.CardOnClickListener;
 import no.hiof.android.ambiguous.R;
 import no.hiof.android.ambiguous.R.id;
+import no.hiof.android.ambiguous.cardlistener.CardOnClickListener;
 import no.hiof.android.ambiguous.datasource.CardDataSource;
 import no.hiof.android.ambiguous.layouts.CardLayout;
 import no.hiof.android.ambiguous.model.Card;

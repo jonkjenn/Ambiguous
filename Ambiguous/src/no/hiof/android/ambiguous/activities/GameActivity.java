@@ -10,19 +10,26 @@ import no.hiof.android.ambiguous.R;
 import no.hiof.android.ambiguous.RandomAmountGenerator;
 import no.hiof.android.ambiguous.adapter.GameDeckAdapter;
 import no.hiof.android.ambiguous.datasource.CardDataSource;
+import no.hiof.android.ambiguous.layouts.CardLayout;
 import no.hiof.android.ambiguous.model.Card;
 import no.hiof.android.ambiguous.model.Effect;
 import no.hiof.android.ambiguous.model.Player;
 import android.app.Activity;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.DragEvent;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnDragListener;
 import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
 import android.widget.GridView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 public class GameActivity extends Activity implements OnDragListener{
@@ -32,7 +39,7 @@ public class GameActivity extends Activity implements OnDragListener{
 	private GridView deckView;
 
 	private Player player;
-	private Player computer;
+	private Player opponent;
 	
 	private Random computerRandom;
 
@@ -48,14 +55,14 @@ public class GameActivity extends Activity implements OnDragListener{
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_game);
 		layoutView = findViewById(R.id.game_layout);
-
+		
         this.db = Db.getDb(getApplicationContext()).getWritableDatabase();
         this.cs = new CardDataSource(db);
 
         List<Card> cards = cs.getCards();
 
-        computer = new Player("Computer", (ViewGroup)findViewById(R.id.floating_container2));
-        computer.SetDeck(DeckBuilder.StandardDeck(cards));
+        opponent = new Player("Computer", (ViewGroup)findViewById(R.id.floating_container2), true);
+        opponent.SetDeck(DeckBuilder.StandardDeck(cards));
 		computerRandom = new Random();
         
         player = new Player("Jon", (ViewGroup)findViewById(R.id.floating_container));
@@ -75,8 +82,20 @@ public class GameActivity extends Activity implements OnDragListener{
         updateStatsView();
         changeState();
 	}
-
+	
 	private void changeState()
+	{
+		Handler h = new Handler();
+		h.postAtTime(new Runnable() {
+			
+			@Override
+			public void run() {
+				GameActivity.this.doChangeState();
+			}
+		},SystemClock.uptimeMillis() + 1000);
+	}
+
+	private void doChangeState()
 	{
 		checkDead();
 
@@ -105,7 +124,7 @@ public class GameActivity extends Activity implements OnDragListener{
 			playerstats.setText("Player dead");
 			state = states.GAME_OVER;
 		}
-		if(!computer.getAlive())
+		if(!opponent.getAlive())
 		{
 			computerstats.setText("Computer dead");
 			state = states.GAME_OVER;
@@ -130,16 +149,24 @@ public class GameActivity extends Activity implements OnDragListener{
 	private void updateStatsView()
 	{
 		playerstats.setText(player.getStats());
-		computerstats.setText(computer.getStats());
+		computerstats.setText(opponent.getStats());
 	}
 
 	private void computerTurn()
 	{
-		computer.ModResource(5);
-		AI ai = new AI(computer,player);
+		opponent.ModResource(5);
+		updateStatsView();
+		AI ai = new AI(opponent,player);
 		int pos = ai.Start();
-		if(pos<0){pos = computerRandom.nextInt(computer.GetCards().length-1);}
-		playCard(computer.GetCards()[pos],pos);
+		if(pos<0){
+			pos = computerRandom.nextInt(opponent.GetCards().length-1); 
+			discardCard(pos);
+			opponentDiscardCard(opponent.GetCards()[pos]);
+			}
+		else{
+			opponentPlayCard(opponent.GetCards()[pos]);
+            playCard(opponent.GetCards()[pos],pos);
+		}
 		updateStatsView();
 		state = states.PLAYER_TURN;		
 		changeState();
@@ -150,7 +177,31 @@ public class GameActivity extends Activity implements OnDragListener{
 		if(state != states.PLAYER_TURN){return;}
 		Card card = (Card)deckView.getItemAtPosition(position);
 		playCard(card, position);
-        changeState();
+        doChangeState();
+	}
+	
+	private void opponentPlayCard(Card card)
+	{
+		ViewGroup parent = (ViewGroup)findViewById(R.id.opponent_card);
+		parent.removeAllViews();
+		parent.addView(CardLayout.getCardLayout(card,parent));
+	}
+	
+	private void opponentDiscardCard(Card card)
+	{
+		ViewGroup parent = (ViewGroup)findViewById(R.id.opponent_card);
+		parent.removeAllViews();
+		parent.addView(CardLayout.getCardLayout(card,parent));
+		TextView v = new TextView(this);
+		RelativeLayout.LayoutParams par = new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, 30);
+		par.addRule(RelativeLayout.CENTER_HORIZONTAL);
+		par.addRule(RelativeLayout.CENTER_VERTICAL);
+		v.setBackgroundColor(Color.RED);
+		v.setLayoutParams(par);
+		v.setGravity(Gravity.CENTER);
+		v.setTextColor(Color.BLACK);
+		v.setText("DISCARD");
+		parent.addView(v);
 	}
 	
 	private void discardCard(int position)
@@ -160,7 +211,7 @@ public class GameActivity extends Activity implements OnDragListener{
 		switch(state)
 		{
                 case COMPUTER_TURN:
-                        computer.CardUsed(position);
+                        opponent.CardUsed(position);
                         state = states.PLAYER_TURN;
                         break;
                 case PLAYER_TURN:
@@ -170,7 +221,7 @@ public class GameActivity extends Activity implements OnDragListener{
                 default:
                         break;
 		}
-		changeState();
+		doChangeState();
 		
 	}
 	
@@ -180,10 +231,10 @@ public class GameActivity extends Activity implements OnDragListener{
 		switch(state)
 		{
                 case COMPUTER_TURN:
-                		useCard(card,computer,player, position);
+                		useCard(card,opponent,player, position);
                         break;
                 case PLAYER_TURN:
-                		useCard(card,player,computer, position);
+                		useCard(card,player,opponent, position);
                         break;
                 default:
                         break;

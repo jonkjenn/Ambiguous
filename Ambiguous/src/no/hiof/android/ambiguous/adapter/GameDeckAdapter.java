@@ -1,6 +1,6 @@
 package no.hiof.android.ambiguous.adapter;
 
-import no.hiof.android.ambiguous.CardOnTouchListener;
+import no.hiof.android.ambiguous.cardlistener.CardOnTouchListener;
 import no.hiof.android.ambiguous.layouts.CardLayout;
 import no.hiof.android.ambiguous.model.Card;
 import android.view.View;

@@ -3,13 +3,17 @@ package no.hiof.android.ambiguous.model;
 import java.util.List;
 import java.util.Random;
 
-import no.hiof.android.ambiguous.FloatingHandler;
-import no.hiof.android.ambiguous.FloatingTextAnimationListener;
 import no.hiof.android.ambiguous.R;
+import no.hiof.android.ambiguous.floatingtext.FloatingHandler;
+import no.hiof.android.ambiguous.floatingtext.FloatingTextAnimationListener;
 import android.graphics.Color;
+import android.os.Handler;
+import android.os.Handler.Callback;
+import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
+import android.view.animation.Animation.AnimationListener;
 import android.view.animation.AnimationUtils;
 import android.widget.TextView;
 
@@ -25,17 +29,21 @@ public class Player {
 	private int resources = 10;
 	private boolean alive = true;
 	private Random deckRandom;
+	private boolean isAI = false;
 	
 	private ViewGroup viewGroup;
 	
-	private int float_margin;
-	
-
 	public Player(String name, ViewGroup viewGroup)
 	{
 		this.name = name;
 		cards = new Card[8];
 		this.viewGroup = viewGroup;
+	}
+
+	public Player(String name, ViewGroup viewGroup, boolean isAI)
+	{
+		this(name,viewGroup);
+		this.isAI = isAI;
 	}
 
 	public void PullCards()
@@ -147,17 +155,13 @@ public class Player {
 
 		TextView floatingText = (TextView)LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.floatingtextview,null);
 		
-		
-		//RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT);
-		//lp.addRule(RelativeLayout.ALIGN_TOP,R.id.gameview_use);
-		
 		viewGroup.addView(floatingText);
-		//floatingText.setLayoutParams(lp);
-
+		
 		floatingText.setText(Integer.toString(amount));
 		floatingText.setTextColor(color);		
-		Animation ani = AnimationUtils.makeInAnimation(floatingText.getContext(),true);
-		ani.setAnimationListener(new FloatingTextAnimationListener(floatingText,new FloatingHandler(floatingText),TextView.VISIBLE));
+		
+		Animation ani = AnimationUtils.makeInAnimation(floatingText.getContext(),(isAI?false:true));
+		ani.setAnimationListener(new FloatingTextAnimationListener(floatingText,new FloatingHandler(floatingText,(isAI?true:false)),TextView.VISIBLE));
 		floatingText.startAnimation(ani);
 	}
 }

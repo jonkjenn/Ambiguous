@@ -1,4 +1,4 @@
-package no.hiof.android.ambiguous;
+package no.hiof.android.ambiguous.cardlistener;
 
 import no.hiof.android.ambiguous.activities.EditCardActivity;
 import android.content.Context;

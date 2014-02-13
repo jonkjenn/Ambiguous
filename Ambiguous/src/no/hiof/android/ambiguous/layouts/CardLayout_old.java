@@ -2,8 +2,8 @@ package no.hiof.android.ambiguous.layouts;
 
 import java.util.List;
 
-import no.hiof.android.ambiguous.CardOnClickListener;
 import no.hiof.android.ambiguous.R;
+import no.hiof.android.ambiguous.cardlistener.CardOnClickListener;
 import no.hiof.android.ambiguous.model.Card;
 import no.hiof.android.ambiguous.model.Effect;
 import android.content.Context;

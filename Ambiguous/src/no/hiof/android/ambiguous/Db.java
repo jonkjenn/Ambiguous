@@ -72,10 +72,10 @@ public class Db extends SQLiteOpenHelper {
 		cs.addCard(CardBuilder.DamageOponent("Shotgun3","","shotgun4",15,10,60,10));
 		cs.addCard(CardBuilder.DamageOponent("Shotgun4","","shotgun6",20,25,65,30));
 		cs.addCard(CardBuilder.DamageOponent("Sword","","sword_of_ambiguity",10,10,30,10));
-		cs.addCard(CardBuilder.SelfHeal("Heal1","","smiley_drawing_small",4,10,15,5));
-		cs.addCard(CardBuilder.SelfHeal("Heal2","","smiley_drawing_small",10,15,50,15));
-		cs.addCard(CardBuilder.SelfHeal("Heal3","","smiley_drawing_small",15,35,60,30));
-		cs.addCard(CardBuilder.SelfHeal("Heal4","","smiley_drawing_small",20,50,100,0));
+		cs.addCard(CardBuilder.SelfHeal("Heal1","","plus_drawing",4,10,15,5));
+		cs.addCard(CardBuilder.SelfHeal("Heal2","","plus_drawing",10,15,50,15));
+		cs.addCard(CardBuilder.SelfHeal("Heal3","","plus_drawing",15,35,60,30));
+		cs.addCard(CardBuilder.SelfHeal("Heal4","","plus_drawing",20,50,100,0));
 		cs.addCard(CardBuilder.SelfArmor("Armor","","smiley_drawing_small",4,15));
 		cs.addCard(CardBuilder.SelfArmor("Armo2","","smiley_drawing_small",10,40));
 		cs.addCard(CardBuilder.SelfArmor("Armor3","","smiley_drawing_small",15,65));

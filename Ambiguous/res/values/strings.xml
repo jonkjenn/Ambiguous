@@ -4,9 +4,10 @@
     <string name="app_name">Ambiguous</string>
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>
-    <string name="menu_button_editor">Editor</string>
+    <string name="menu_button_cards">Cards</string>
     <string name="title_activity_edit_card">EditCard</string>
     <string name="title_activity_game">Game</string>
-    <string name="game">Game</string>
+    <string name="menu_button_game">Game</string>
+    <string name="title_activity_deckmanager">Deck Manager</string>
 
 </resources>

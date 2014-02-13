@@ -23,8 +23,8 @@ public class MainActivity extends Activity {
         return true;
     }
     
-    /* Called when the user clicks the Editor button */
-    public void goToEditor(View view){
+    /* Called when the user clicks the Cards button */
+    public void goToDeckManager(View view){
     	Intent intent = new Intent(this, DeckManagerActivity.class);
     	startActivity(intent);
     }

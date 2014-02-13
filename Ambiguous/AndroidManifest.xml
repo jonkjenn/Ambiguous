@@ -31,8 +31,12 @@
             </intent-filter>            
         </activity>
         <activity
-            android:name="no.hiof.android.ambiguous.activities.EditCardActivity"
-            android:label="@string/title_activity_edit_card" >
+            android:name="no.hiof.android.ambiguous.activities.DeckManagerActivity"
+            android:label="@string/title_activity_deckmanager" >
+            <intent-filter>
+                <action android:name="no.hiof.android.ambiguous.activities.DeckManagerActivity" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
         </activity>
     </application>
 

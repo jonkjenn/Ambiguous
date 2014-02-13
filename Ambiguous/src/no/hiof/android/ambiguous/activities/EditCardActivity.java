@@ -4,7 +4,7 @@ import java.util.List;
 
 import no.hiof.android.ambiguous.Db;
 import no.hiof.android.ambiguous.R;
-import no.hiof.android.ambiguous.SaveCardOnClickListener;
+import no.hiof.android.ambiguous.cardlistener.SaveCardOnClickListener;
 import no.hiof.android.ambiguous.datasource.CardDataSource;
 import no.hiof.android.ambiguous.model.Card;
 import no.hiof.android.ambiguous.model.Effect;

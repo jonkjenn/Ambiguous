@@ -1,4 +1,4 @@
-package no.hiof.android.ambiguous;
+package no.hiof.android.ambiguous.floatingtext;
 
 import java.util.Timer;
 

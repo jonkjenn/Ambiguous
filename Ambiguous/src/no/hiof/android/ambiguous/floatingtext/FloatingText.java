@@ -1,5 +1,7 @@
-package no.hiof.android.ambiguous;
+package no.hiof.android.ambiguous.floatingtext;
 
+import no.hiof.android.ambiguous.R;
+import no.hiof.android.ambiguous.R.id;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.ViewGroup;

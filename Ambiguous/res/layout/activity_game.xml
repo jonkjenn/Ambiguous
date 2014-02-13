@@ -21,6 +21,14 @@
 	    android:layout_height="wrap_content"
 		android:orientation="vertical"
 	    ></LinearLayout>
+	<RelativeLayout 
+	    android:id="@+id/opponent_card"
+	    android:layout_centerHorizontal="true"
+	    android:layout_width="70dp"
+	    android:layout_height="wrap_content"
+	    android:orientation="horizontal"
+	    android:gravity="center"
+	    ></RelativeLayout>
 	<LinearLayout
 	    android:id="@+id/floating_container2"
 	    android:layout_width="wrap_content"

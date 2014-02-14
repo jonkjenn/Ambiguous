@@ -25,11 +25,11 @@ public class AI {
 	
 	public int Start()
 	{
-		if(computer.getHealth() > 80)
+		if(computer.getHealth() > 110)
 		{
 			int card = -1;
 			
-			if(computer.getResources() < 4)
+			if(computer.getResources() < 40)
 			{
                     card = hasEffect(Effect.EffectType.RESOURCE, Effect.Target.SELF);
                     if(card >= 0)
@@ -63,14 +63,6 @@ public class AI {
 		{
 			int card = -1;
 			
-			if(computer.getResources() < 4)
-			{
-                    card = hasEffect(Effect.EffectType.RESOURCE, Effect.Target.SELF);
-                    if(card >= 0)
-                    {
-                    	return card;
-                    }
-			}
 
 			card = hasEffect(Effect.EffectType.HEALTH,Effect.Target.SELF);
 			if(card >=0)
@@ -84,24 +76,18 @@ public class AI {
 				return card;
 			}
 
+            card = hasEffect(Effect.EffectType.RESOURCE, Effect.Target.SELF);
+            if(card >= 0)
+            {
+                return card;
+            }
+
 			card = hasEffect(Effect.EffectType.DAMAGE,Effect.Target.OPPONENT);
 			if(card >=0)
 			{
 				return card;
 			}
-			
-			if(computer.getResources() < 100)
-			{
-                    card = hasEffect(Effect.EffectType.RESOURCE, Effect.Target.SELF);
-                    if(card >= 0)
-                    {
-                    	return card;
-                    }
-			}
-			
 		}
-		
-
 		
 		return -1;
 	}

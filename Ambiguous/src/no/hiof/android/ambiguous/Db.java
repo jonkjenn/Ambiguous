@@ -1,6 +1,7 @@
 package no.hiof.android.ambiguous;
 
 import no.hiof.android.ambiguous.datasource.CardDataSource;
+import no.hiof.android.ambiguous.datasource.DeckDataSource;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabase.CursorFactory;
@@ -10,8 +11,10 @@ public class Db extends SQLiteOpenHelper {
 	
 	private static final String CREATE_CARD_TABLE = "CREATE TABLE Card (id INTEGER PRIMARY KEY, name TEXT, description TEXT, cost INTEGER, image TEXT)";
 	private static final String CREATE_EFFECT_TABLE = "CREATE TABLE Effect (id INTEGER PRIMARY KEY, type VARCHAR(10), target VARCHAR(10), minvalue INTEGER, maxvalue INTEGER, crit INTEGER, card_id INTEGER REFERENCES Card(id))";
+	private static final String CREATE_DECK_TABLE = "CREATE TABLE Deck (id INTEGER PRIMARY KEY), name TEXT";
+	private static final String CREATE_DECK_CARDS_TABLE = "CREATE TABLE DeckCards id INTEGER PRIMARY KEY, deck_id INTEGER REFERENCES Deck(id) NOT NULL, card_id INTEGER REFERENCES Card(id) NOT NULL, count INTEGER NOT NULL";
 	
-	private static final String name = "db";	
+	private static final String name = "db";
 	
 	private static final String DROP_CARD_TABLE = "DROP TABLE IF EXISTS Card";
 	private static final String DROP_EFFECT_TABLE = "DROP TABLE IF EXISTS Effect";
@@ -56,7 +59,8 @@ public class Db extends SQLiteOpenHelper {
 	{
 		db.execSQL(CREATE_CARD_TABLE);
 		db.execSQL(CREATE_EFFECT_TABLE);
-
+		//db.execSQL(CREATE_DECK_TABLE);
+		//db.execSQL(CREATE_DECK_CARDS_TABLE);
 		
 		CardDataSource cs = new CardDataSource(db);
 
@@ -82,6 +86,7 @@ public class Db extends SQLiteOpenHelper {
 		
 		cs.addCard(CardBuilder.AddResources("Resource2", "Gives more resources", "smiley_drawing_small", 5, 30));
 		cs.addCard(CardBuilder.AddResources("Resource1", "Gives more resources", "smiley_drawing_small", 2, 10));
+		
 	}
 
 	@Override

@@ -154,7 +154,6 @@ public class GameActivity extends Activity implements OnDragListener{
 
 	private void computerTurn()
 	{
-		opponent.ModResource(5);
 		updateStatsView();
 		AI ai = new AI(opponent,player);
 		int pos = ai.Start();
@@ -167,6 +166,7 @@ public class GameActivity extends Activity implements OnDragListener{
 			opponentPlayCard(opponent.GetCards()[pos]);
             playCard(opponent.GetCards()[pos],pos);
 		}
+		opponent.ModResource(5);
 		updateStatsView();
 		state = states.PLAYER_TURN;		
 		changeState();
@@ -295,7 +295,7 @@ public class GameActivity extends Activity implements OnDragListener{
 		view.setOnDragListener(this);
 	}
 
-@Override
+    @Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.game, menu);

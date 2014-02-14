@@ -3,6 +3,7 @@ package no.hiof.android.ambiguous.model;
 import java.util.List;
 import java.util.Random;
 
+import no.hiof.android.ambiguous.DeckBuilder;
 import no.hiof.android.ambiguous.R;
 import no.hiof.android.ambiguous.floatingtext.FloatingHandler;
 import no.hiof.android.ambiguous.floatingtext.FloatingTextAnimationListener;
@@ -48,12 +49,14 @@ public class Player {
 
 	public void PullCards()
 	{
-		if(deckRandom == null){deckRandom = new Random();}
+		if(deck.size()==0){return;}
+		//if(deckRandom == null){deckRandom = new Random();}
 		for(int i=0;i<cards.length;i++)
 		{
 			if(cards[i] == null)
 			{
-				cards[i] = deck.get(deckRandom.nextInt(deck.size()-1));
+				//cards[i] = deck.get(deckRandom.nextInt(deck.size()-1));
+				cards[i] = deck.remove(0);
 			}
 		}
 	}

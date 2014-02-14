@@ -30,7 +30,7 @@ public class Card {
 		return this;
 	}
 	public String getName() {
-		return name;
+		return this.name;
 	}
 	public Card setName(String name) {
 		this.name = name;

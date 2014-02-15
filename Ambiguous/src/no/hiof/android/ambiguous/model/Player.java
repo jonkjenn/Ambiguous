@@ -23,8 +23,8 @@ public class Player {
 	private String name;
 	private List<Card> deck;
 	private Card[] cards;
-	private final int maxHealth = 150;
-	private final int maxArmor = 250;
+	public final int maxHealth = 150;
+	public final int maxArmor = 250;
 	private int health = maxHealth;
 	private int armor = 0;
 	private int resources = 10;
@@ -99,7 +99,7 @@ public class Player {
 		}
 
 		this.health -= amount;
-		if(this.health<0){this.alive = false;}
+		if(this.health<=0){this.alive = false;}
 	}
 	
 	public void Heal(int amount)

@@ -75,4 +75,11 @@
 	    android:visibility="gone"
 	    android:layout_alignParentBottom="true"
 	    />
+	<RelativeLayout 
+	    android:id="@+id/drag_card"
+	    android:layout_width="70dp"
+	    android:layout_height="wrap_content"
+	    android:orientation="horizontal"
+	    android:gravity="center"
+	    ></RelativeLayout>
 </RelativeLayout>

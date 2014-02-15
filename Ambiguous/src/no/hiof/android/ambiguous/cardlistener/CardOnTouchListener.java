@@ -1,5 +1,6 @@
 package no.hiof.android.ambiguous.cardlistener;
 
+import no.hiof.android.ambiguous.CardDragShadowBuilder;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.DragShadowBuilder;
@@ -16,8 +17,9 @@ public class CardOnTouchListener implements OnTouchListener{
 
 	@Override
 	public boolean onTouch(View v, MotionEvent me) {
-        View.DragShadowBuilder shadow = new DragShadowBuilder(v);
-        v.startDrag(null, shadow, new int[]{(int)me.getRawY(),position, v.getHeight()}, 0);
+        CardDragShadowBuilder shadow = new CardDragShadowBuilder(v);
+        //v.startDrag(null, shadow, new int[]{(int)me.getRawY(),position, v.getHeight()}, 0);
+        v.startDrag(null, shadow, new int[]{(int)me.getRawY(),position, v.getHeight(),(int)me.getX(),(int)me.getY()}, 0);
 		return false;
 	}
 

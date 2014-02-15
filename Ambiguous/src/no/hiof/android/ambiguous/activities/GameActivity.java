@@ -28,11 +28,12 @@ import android.view.View;
 import android.view.View.OnDragListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
+import android.view.ViewGroup.MarginLayoutParams;
 import android.widget.GridView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-public class GameActivity extends Activity implements OnDragListener{
+public class GameActivity extends Activity implements OnDragListener {
 	private SQLiteDatabase db;
 	private CardDataSource cs;
 	private View layoutView;
@@ -40,160 +41,155 @@ public class GameActivity extends Activity implements OnDragListener{
 
 	private Player player;
 	private Player opponent;
-	
+
 	private Random computerRandom;
 
-	private enum states{PLAYER_TURN,PLAYER_DONE, COMPUTER_TURN, GAME_OVER};
+	private enum states {
+		PLAYER_TURN, PLAYER_DONE, COMPUTER_TURN, GAME_OVER
+	};
 
 	private states state;
 
-    TextView playerstats;
-    TextView computerstats;
+	TextView playerstats;
+	TextView computerstats;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_game);
 		layoutView = findViewById(R.id.game_layout);
-		
-        this.db = Db.getDb(getApplicationContext()).getWritableDatabase();
-        this.cs = new CardDataSource(db);
 
-        List<Card> cards = cs.getCards();
+		this.db = Db.getDb(getApplicationContext()).getWritableDatabase();
+		this.cs = new CardDataSource(db);
 
-        opponent = new Player("Computer", (ViewGroup)findViewById(R.id.floating_container2), true);
-        opponent.SetDeck(DeckBuilder.StandardDeck(cards));
+		List<Card> cards = cs.getCards();
+
+		opponent = new Player("Computer",
+				(ViewGroup) findViewById(R.id.floating_container2), true);
+		opponent.SetDeck(DeckBuilder.StandardDeck(cards));
 		computerRandom = new Random();
-        
-        player = new Player("Jon", (ViewGroup)findViewById(R.id.floating_container));
-        player.SetDeck(DeckBuilder.StandardDeck(cards));
-        
-        deckView = (GridView)findViewById(R.id.game_grid);
-        GameDeckAdapter adapter = new GameDeckAdapter(player.GetCards());
-        deckView.setAdapter(adapter);
-        
-        setupDragDrop(layoutView);
 
-        playerstats = (TextView)findViewById(R.id.stats_player);
-        computerstats = (TextView)findViewById(R.id.stats_computer);
+		player = new Player("Jon",
+				(ViewGroup) findViewById(R.id.floating_container));
+		player.SetDeck(DeckBuilder.StandardDeck(cards));
 
-        state = (new Random().nextInt(2)==0?states.PLAYER_TURN:states.COMPUTER_TURN);
+		deckView = (GridView) findViewById(R.id.game_grid);
+		GameDeckAdapter adapter = new GameDeckAdapter(player.GetCards());
+		deckView.setAdapter(adapter);
 
-        updateStatsView();
-        changeState();
+		setupDragDrop(layoutView);
+
+		playerstats = (TextView) findViewById(R.id.stats_player);
+		computerstats = (TextView) findViewById(R.id.stats_computer);
+
+		state = (new Random().nextInt(2) == 0 ? states.PLAYER_TURN
+				: states.COMPUTER_TURN);
+
+		updateStatsView();
+		changeState();
 	}
-	
-	private void changeState()
-	{
+
+	private void changeState() {
 		Handler h = new Handler();
 		h.postAtTime(new Runnable() {
-			
+
 			@Override
 			public void run() {
 				GameActivity.this.doChangeState();
 			}
-		},SystemClock.uptimeMillis() + 1000);
+		}, SystemClock.uptimeMillis() + 1000);
 	}
 
-	private void doChangeState()
-	{
+	private void doChangeState() {
 		checkDead();
 
-		switch(state)
-		{
-			case COMPUTER_TURN:
-				computerTurn();
-				break;
-			case PLAYER_TURN:
-				playerTurn();
-				break;
-			case PLAYER_DONE:
-				playerDone();
-				break;
-			case GAME_OVER:
-				break;
-			default:
-				break;
+		switch (state) {
+		case COMPUTER_TURN:
+			computerTurn();
+			break;
+		case PLAYER_TURN:
+			playerTurn();
+			break;
+		case PLAYER_DONE:
+			playerDone();
+			break;
+		case GAME_OVER:
+			break;
+		default:
+			break;
 		}
 	}
-	
-	private void checkDead()
-	{
-		if(!player.getAlive())
-		{
+
+	private void checkDead() {
+		if (!player.getAlive()) {
 			playerstats.setText("Player dead");
 			state = states.GAME_OVER;
 		}
-		if(!opponent.getAlive())
-		{
+		if (!opponent.getAlive()) {
 			computerstats.setText("Computer dead");
 			state = states.GAME_OVER;
 		}
 	}
 
-	private void playerTurn()
-	{
+	private void playerTurn() {
 		this.setupDragDrop(this.layoutView);
 	}
 
-	private void playerDone()
-	{
+	private void playerDone() {
 		player.ModResource(5);
 		this.layoutView.setOnDragListener(null);
 		updateStatsView();
-        deckView.setAdapter(new GameDeckAdapter(player.GetCards()));
+		deckView.setAdapter(new GameDeckAdapter(player.GetCards()));
 		state = states.COMPUTER_TURN;
 		changeState();
 	}
-	
-	private void updateStatsView()
-	{
+
+	private void updateStatsView() {
 		playerstats.setText(player.getStats());
 		computerstats.setText(opponent.getStats());
 	}
 
-	private void computerTurn()
-	{
+	private void computerTurn() {
 		updateStatsView();
-		AI ai = new AI(opponent,player);
+		AI ai = new AI(opponent, player);
 		int pos = ai.Start();
-		if(pos<0){
-			pos = computerRandom.nextInt(opponent.GetCards().length-1); 
+		if (pos < 0) {
+			pos = computerRandom.nextInt(opponent.GetCards().length - 1);
 			discardCard(pos);
 			opponentDiscardCard(opponent.GetCards()[pos]);
-			}
-		else{
+		} else {
 			opponentPlayCard(opponent.GetCards()[pos]);
-            playCard(opponent.GetCards()[pos],pos);
+			playCard(opponent.GetCards()[pos], pos);
 		}
 		opponent.ModResource(5);
 		updateStatsView();
-		state = states.PLAYER_TURN;		
-		changeState();
+		state = states.PLAYER_TURN;
+		doChangeState();
 	}
-	
-	private void playCard(int position)
-	{
-		if(state != states.PLAYER_TURN){return;}
-		Card card = (Card)deckView.getItemAtPosition(position);
+
+	private void playCard(int position) {
+		if (state != states.PLAYER_TURN) {
+			stopDrag(position);
+			return;
+		}
+		Card card = (Card) deckView.getItemAtPosition(position);
 		playCard(card, position);
-        doChangeState();
+		doChangeState();
 	}
-	
-	private void opponentPlayCard(Card card)
-	{
-		ViewGroup parent = (ViewGroup)findViewById(R.id.opponent_card);
+
+	private void opponentPlayCard(Card card) {
+		ViewGroup parent = (ViewGroup) findViewById(R.id.opponent_card);
 		parent.removeAllViews();
-		parent.addView(CardLayout.getCardLayout(card,parent));
+		parent.addView(CardLayout.getCardLayout(card, parent));
 	}
-	
-	private void opponentDiscardCard(Card card)
-	{
-		ViewGroup parent = (ViewGroup)findViewById(R.id.opponent_card);
+
+	private void opponentDiscardCard(Card card) {
+		ViewGroup parent = (ViewGroup) findViewById(R.id.opponent_card);
 		parent.removeAllViews();
-		parent.addView(CardLayout.getCardLayout(card,parent));
+		parent.addView(CardLayout.getCardLayout(card, parent));
 		TextView v = new TextView(this);
-		RelativeLayout.LayoutParams par = new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, 30);
+		RelativeLayout.LayoutParams par = new RelativeLayout.LayoutParams(
+				LayoutParams.MATCH_PARENT, 30);
 		par.addRule(RelativeLayout.CENTER_HORIZONTAL);
 		par.addRule(RelativeLayout.CENTER_VERTICAL);
 		v.setBackgroundColor(Color.RED);
@@ -203,83 +199,79 @@ public class GameActivity extends Activity implements OnDragListener{
 		v.setText("DISCARD");
 		parent.addView(v);
 	}
-	
-	private void discardCard(int position)
-	{
 
-		if(state != states.PLAYER_TURN){return;}
-		switch(state)
-		{
-                case COMPUTER_TURN:
-                        opponent.CardUsed(position);
-                        state = states.PLAYER_TURN;
-                        break;
-                case PLAYER_TURN:
-                        player.CardUsed(position);
-                        state = states.PLAYER_DONE;
-                        break;
-                default:
-                        break;
+	private void discardCard(int position) {
+
+		if (state != states.PLAYER_TURN) {
+			return;
+		}
+		switch (state) {
+		case COMPUTER_TURN:
+			opponent.CardUsed(position);
+			state = states.PLAYER_TURN;
+			break;
+		case PLAYER_TURN:
+			player.CardUsed(position);
+			state = states.PLAYER_DONE;
+			break;
+		default:
+			break;
 		}
 		doChangeState();
-		
+
 	}
-	
-	private void playCard(Card card,int position)
-	{
-		if(card == null){return;}
-		switch(state)
-		{
-                case COMPUTER_TURN:
-                		useCard(card,opponent,player, position);
-                        break;
-                case PLAYER_TURN:
-                		useCard(card,player,opponent, position);
-                        break;
-                default:
-                        break;
+
+	private void playCard(Card card, int position) {
+		if (card == null) {
+			return;
+		}
+		switch (state) {
+		case COMPUTER_TURN:
+			useCard(card, opponent, player, position);
+			break;
+		case PLAYER_TURN:
+			useCard(card, player, opponent, position);
+			break;
+		default:
+			break;
 		}
 	}
-	
-	private void useCard(Card card, Player caster, Player opponent, int position)
-	{
-		if(caster.UseResources(card.getCost()))
-		{
-                for(int i=0;i<card.getEffects().size();i++)
-                {
-                        Effect e = card.getEffects().get(i);
-                        switch(e.getTarget())
-                        {
-						case OPPONENT:
-							useEffect(e,opponent);
-							break;
-						case SELF:
-							useEffect(e,caster);
-							break;
-						default:
-							break;
-                        }
-                }
-                caster.CardUsed(position);
-                if(state == states.PLAYER_TURN)
-                {
-                        state = states.PLAYER_DONE;
-                }
-		}
+
+	private void useCard(Card card, Player caster, Player opponent, int position) {
+		if (caster.UseResources(card.getCost())) {
+			for (int i = 0; i < card.getEffects().size(); i++) {
+				Effect e = card.getEffects().get(i);
+				switch (e.getTarget()) {
+				case OPPONENT:
+					useEffect(e, opponent);
+					break;
+				case SELF:
+					useEffect(e, caster);
+					break;
+				default:
+					break;
+				}
+			}
+			caster.CardUsed(position);
+			if (state == states.PLAYER_TURN) {
+                removeDrag();
+				state = states.PLAYER_DONE;
+			}
+		}else{stopDrag(position);}
 	}
-	
-	private void useEffect(Effect e, Player target)
-	{
-		switch(e.getType())
-		{
+
+	private void useEffect(Effect e, Player target) {
+		switch (e.getType()) {
 		case ARMOR:
 			target.ModArmor(e.getMinValue());
 			break;
 		case DAMAGE:
-			target.Damage(RandomAmountGenerator.GenerateAmount(e.getMinValue(), e.getMaxValue(), e.getCrit()));
+			target.Damage(RandomAmountGenerator.GenerateAmount(e.getMinValue(),
+					e.getMaxValue(), e.getCrit()));
 			break;
 		case HEALTH:
-			target.Heal(RandomAmountGenerator.GenerateAmount(e.getMinValue(), e.getMaxValue(), e.getCrit()));
+			target.Heal(RandomAmountGenerator.GenerateAmount(e.getMinValue(),
+					e.getMaxValue(), e.getCrit()));
 			break;
 		case RESOURCE:
 			target.ModResource(e.getMinValue());
@@ -289,78 +281,122 @@ public class GameActivity extends Activity implements OnDragListener{
 		}
 
 	}
-	
-	private void setupDragDrop(View view)
-	{
+
+	private void setupDragDrop(View view) {
 		view.setOnDragListener(this);
 	}
 
-    @Override
+	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.game, menu);
 		return true;
 	}
 
-        @Override
-        public boolean onDrag(View v, DragEvent event) {
-        if(state != states.PLAYER_TURN){return false;}
+	private void drag(int card, int x, int y, int insideX, int insideY) {
+		deckView.getChildAt(card).setVisibility(View.GONE);
+		RelativeLayout parent = (RelativeLayout) findViewById(R.id.drag_card);
+		parent.setVisibility(RelativeLayout.VISIBLE);
+		if (parent.getChildCount() > 0) {
+			android.widget.RelativeLayout.LayoutParams par = new RelativeLayout.LayoutParams(parent.getLayoutParams());
+			par.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+			//par.setMargins(x-parent.getWidth()/2, y-parent.getHeight()/2, 0, 0);
+			par.setMargins(x-insideX, y-insideY, 0, 0);
+			parent.setLayoutParams(par);
+		}
+	}
 
-        switch(event.getAction())
-        {
-            case DragEvent.ACTION_DRAG_STARTED:
-                Log.d("test", "Drag started");
-                return true;
-                        
-            case DragEvent.ACTION_DRAG_LOCATION:
-            	if(event.getLocalState() != null)
-            	{
-                    int[] dState = (int[])event.getLocalState();
-                        if(dState.length >2 && dState[2]/2 + event.getY() < dState[0] - 100)
-                        {
-                                Log.d("test","Oppover");
-                                findViewById(R.id.gameview_use).setVisibility(TextView.VISIBLE);
-                        }
-                        else
-                        {
-                                findViewById(R.id.gameview_use).setVisibility(TextView.GONE);
-                        }
-                        if(dState.length >2 && dState[2]/2 + event.getY() > this.layoutView.getHeight())
-                        {
-                                Log.d("test", "funker?");
-                                findViewById(R.id.gameview_discard).setVisibility(TextView.VISIBLE);
-                        }
-                        else
-                        {
-                                findViewById(R.id.gameview_discard).setVisibility(TextView.GONE);
-                        }
-            	}
-            	break;
+	private void startDrag(int card,int x, int y) {
+		//deckView.getChildAt(card).setVisibility(View.GONE);
+		Card c = this.player.GetCards()[card];
 
-            case DragEvent.ACTION_DROP:
-                float y = event.getY();
-                if(event.getLocalState() != null)
-                {
-                        int[] dragState = (int[])event.getLocalState();
-                        float starty = (float)dragState[0];
-                        Log.d("test",y + " " + starty);
+		ViewGroup parent = (ViewGroup) findViewById(R.id.drag_card);
+		parent.setVisibility(ViewGroup.GONE);
+		parent.removeAllViews();
+		parent.addView(CardLayout.getCardLayout(c, parent));
+	}
 
-                        if(dragState.length >2 && dragState[2]/2 + event.getY() < dragState[0] - 100)
-                        {
-                                Log.d("test","Oppover");
-                                findViewById(R.id.gameview_use).setVisibility(TextView.GONE);
-                                playCard(dragState[1]);
-                        }
-                        else if(dragState.length >2 && dragState[2]/2 + event.getY() > this.layoutView.getHeight())
-                        {
-                                Log.d("test", "funker?");
-                                findViewById(R.id.gameview_discard).setVisibility(TextView.GONE);
-                                discardCard(dragState[1]);
-                        }
-                }
-                return true;
-        }
-        return false;
-        }
+	private void stopDrag(int card) {
+		deckView.getChildAt(card).setVisibility(View.VISIBLE);
+		removeDrag();
+	}
+	private void removeDrag()
+	{
+		ViewGroup parent = (ViewGroup) findViewById(R.id.drag_card);
+		parent.removeAllViews();
+	}
+
+	@Override
+	public boolean onDrag(View v, DragEvent event) {
+		if (state != states.PLAYER_TURN) {
+			return false;
+		}
+
+		switch (event.getAction()) {
+		case DragEvent.ACTION_DRAG_STARTED:
+			if (event.getLocalState() != null) {
+				int[] dState = (int[]) event.getLocalState();
+				startDrag(dState[1],(int)event.getX(), (int)event.getY());
+			}
+
+			// Log.d("test", "Drag started");
+			return true;
+
+		case DragEvent.ACTION_DRAG_LOCATION:
+			if (event.getLocalState() != null) {
+				int[] dState = (int[]) event.getLocalState();
+				drag(dState[1],(int) event.getX(), (int) event.getY(),dState[3],dState[4]);
+
+				if (dState.length > 2
+						&& dState[2] / 2 + event.getY() < dState[0] - 100) {
+					Log.d("test", "Oppover");
+					findViewById(R.id.gameview_use).setVisibility(
+							TextView.VISIBLE);
+				} else {
+					findViewById(R.id.gameview_use)
+							.setVisibility(TextView.GONE);
+				}
+				if (dState.length > 2
+						&& dState[2] / 2 + event.getY() > this.layoutView
+								.getHeight()) {
+					Log.d("test", "funker?");
+					findViewById(R.id.gameview_discard).setVisibility(
+							TextView.VISIBLE);
+				} else {
+					findViewById(R.id.gameview_discard).setVisibility(
+							TextView.GONE);
+				}
+			}
+			break;
+
+		case DragEvent.ACTION_DROP:
+			float y = event.getY();
+			if (event.getLocalState() != null) {
+				int[] dragState = (int[]) event.getLocalState();
+				float starty = (float) dragState[0];
+				Log.d("test", y + " " + starty);
+
+				if (dragState.length > 2
+						&& dragState[2] / 2 + event.getY() < dragState[0] - 100) {
+					Log.d("test", "Oppover");
+					findViewById(R.id.gameview_use)
+							.setVisibility(TextView.GONE);
+					playCard(dragState[1]);
+				} else if (dragState.length > 2
+						&& dragState[2] / 2 + event.getY() > this.layoutView
+								.getHeight()) {
+					Log.d("test", "funker?");
+					findViewById(R.id.gameview_discard).setVisibility(
+							TextView.GONE);
+					discardCard(dragState[1]);
+					removeDrag();
+				} else {
+					stopDrag(dragState[1]);
+				}
+			}
+			return true;
+		}
+		return false;
+	}
 
 }

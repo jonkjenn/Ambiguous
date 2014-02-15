@@ -59,7 +59,7 @@ public class AI {
                     }
 			}
 		}
-		else if(computer.getHealth() < 80)
+		else if(computer.getHealth() <= 110)
 		{
 			int card = -1;
 			

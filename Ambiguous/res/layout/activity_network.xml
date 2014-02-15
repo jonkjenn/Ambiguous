@@ -16,25 +16,19 @@
         android:orientation="vertical" >
 
         <Button
-        android:id="@+id/game_button"
+        android:id="@+id/button_server"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/menu_button_game"
-        android:onClick="goToGame" />
+        android:text="@string/menu_button_server"
+        android:onClick="startServer" />
         
         <Button
-            android:id="@+id/cards_button"
+            android:id="@+id/button_client"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:onClick="goToDeckManager"
-            android:text="@string/menu_button_cards" />
+            android:onClick="startClient"
+            android:text="@string/menu_button_client" />
 
-        <Button
-            android:id="@+id/network_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="goToNetwork"
-            android:text="@string/menu_button_network" />
     </LinearLayout>
 
 </RelativeLayout>

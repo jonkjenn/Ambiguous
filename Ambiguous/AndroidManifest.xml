@@ -7,6 +7,8 @@
     <uses-sdk
         android:minSdkVersion="8"
         android:targetSdkVersion="16" />
+    
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:allowBackup="true"
@@ -35,6 +37,14 @@
             android:label="@string/title_activity_deckmanager" >
             <intent-filter>
                 <action android:name="no.hiof.android.ambiguous.activities.DeckManagerActivity" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="no.hiof.android.ambiguous.activities.NetworkActivity"
+            android:label="@string/title_activity_network" >
+            <intent-filter>
+                <action android:name="no.hiof.android.ambiguous.activities.NetworkActivity" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>

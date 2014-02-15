@@ -15,7 +15,6 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
     }
 
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -32,6 +31,12 @@ public class MainActivity extends Activity {
     /* Called when the user clicks the Game button */
     public void goToGame(View view){
     	Intent intent = new Intent(this,no.hiof.android.ambiguous.activities.GameActivity.class);
+    	startActivity(intent);
+    }
+    
+    public void goToNetwork(View view)
+    {
+    	Intent intent = new Intent(this, NetworkActivity.class);
     	startActivity(intent);
     }
 }

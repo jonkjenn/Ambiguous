@@ -2,19 +2,11 @@ package no.hiof.android.ambiguous.model;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
-import no.hiof.android.ambiguous.R;
-import no.hiof.android.ambiguous.floatingtext.FloatingHandler;
-import no.hiof.android.ambiguous.floatingtext.FloatingTextAnimationListener;
 import android.graphics.Color;
-import android.view.LayoutInflater;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
-import android.widget.TextView;
 
 public class Player {
-	private int id;
+	//private int id;
 	private String name;
 	private List<Card> deck;
 	private Card[] cards;
@@ -24,20 +16,12 @@ public class Player {
 	private int armor = 0;
 	private int resources = 10;
 	private boolean alive = true;
-	private Random deckRandom;
-	private boolean isAI = false;
 	
 	
 	public Player(String name)
 	{
 		this.name = name;
 		cards = new Card[8];
-	}
-
-	public Player(String name, boolean isAI)
-	{
-		this(name);
-		this.isAI = isAI;
 	}
 
 	public void PullCards()

@@ -1,13 +1,10 @@
 package no.hiof.android.ambiguous.activities;
 
-import java.util.List;
-
 import no.hiof.android.ambiguous.Db;
 import no.hiof.android.ambiguous.GameMachine;
 import no.hiof.android.ambiguous.OpponentController.OpponentListener;
 import no.hiof.android.ambiguous.R;
 import no.hiof.android.ambiguous.adapter.GameDeckAdapter;
-import no.hiof.android.ambiguous.datasource.CardDataSource;
 import no.hiof.android.ambiguous.floatingtext.FloatingHandler;
 import no.hiof.android.ambiguous.floatingtext.FloatingTextAnimationListener;
 import no.hiof.android.ambiguous.layouts.CardLayout;
@@ -36,7 +33,6 @@ import android.widget.TextView;
 public class GameActivity extends Activity implements OnDragListener,
 		GameMachine.GameMachineListener, OpponentListener, PlayerUpdateListener {
 	private SQLiteDatabase db;
-	private CardDataSource cs;
 	private View layoutView;
 	private GridView deckView;
 	private GameMachine gameMachine;
@@ -55,10 +51,6 @@ public class GameActivity extends Activity implements OnDragListener,
 		gameMachine = new GameMachine(this.db);
 		gameMachine.setGameMachineListener(this);
 		gameMachine.opponentController.setOpponentListener(this);
-
-		this.cs = new CardDataSource(db);
-
-		List<Card> cards = cs.getCards();
 
 		deckView = (GridView) findViewById(R.id.game_grid);
 

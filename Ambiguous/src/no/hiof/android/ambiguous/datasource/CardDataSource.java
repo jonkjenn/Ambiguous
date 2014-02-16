@@ -12,7 +12,7 @@ public class CardDataSource {
 
 	private static final String SELECT_CARDS = "SELECT * FROM Card";
 	private static final String SELECT_CARDS_ID = "SELECT * FROM Card WHERE id = ?";
-	private static final String UPDATE_CARD = "UPDATE Card SET name = ?, description = ?, image = ? WHERE id = ?";
+	//private static final String UPDATE_CARD = "UPDATE Card SET name = ?, description = ?, image = ? WHERE id = ?";
 
 	private EffectDataSource effectDs;
 	private SQLiteDatabase db;
@@ -68,7 +68,7 @@ public class CardDataSource {
 	{
 		ContentValues cv = getCardContentValues(card);
 
-		int i = db.update("Card", cv, "id = ?", new String[]{Integer.toString(card.getId())});
+		db.update("Card", cv, "id = ?", new String[]{Integer.toString(card.getId())});
 	}
 	
 	//id<0 returns all cards

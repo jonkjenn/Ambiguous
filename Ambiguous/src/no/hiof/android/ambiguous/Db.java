@@ -1,7 +1,6 @@
 package no.hiof.android.ambiguous;
 
 import no.hiof.android.ambiguous.datasource.CardDataSource;
-import no.hiof.android.ambiguous.datasource.DeckDataSource;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabase.CursorFactory;
@@ -11,8 +10,8 @@ public class Db extends SQLiteOpenHelper {
 	
 	private static final String CREATE_CARD_TABLE = "CREATE TABLE Card (id INTEGER PRIMARY KEY, name TEXT, description TEXT, cost INTEGER, image TEXT)";
 	private static final String CREATE_EFFECT_TABLE = "CREATE TABLE Effect (id INTEGER PRIMARY KEY, type VARCHAR(10), target VARCHAR(10), minvalue INTEGER, maxvalue INTEGER, crit INTEGER, card_id INTEGER REFERENCES Card(id))";
-	private static final String CREATE_DECK_TABLE = "CREATE TABLE Deck (id INTEGER PRIMARY KEY), name TEXT";
-	private static final String CREATE_DECK_CARDS_TABLE = "CREATE TABLE DeckCards id INTEGER PRIMARY KEY, deck_id INTEGER REFERENCES Deck(id) NOT NULL, card_id INTEGER REFERENCES Card(id) NOT NULL, count INTEGER NOT NULL";
+	//private static final String CREATE_DECK_TABLE = "CREATE TABLE Deck (id INTEGER PRIMARY KEY), name TEXT";
+	//private static final String CREATE_DECK_CARDS_TABLE = "CREATE TABLE DeckCards id INTEGER PRIMARY KEY, deck_id INTEGER REFERENCES Deck(id) NOT NULL, card_id INTEGER REFERENCES Card(id) NOT NULL, count INTEGER NOT NULL";
 	
 	private static final String name = "db";
 	

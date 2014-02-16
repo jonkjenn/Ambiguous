@@ -3,18 +3,13 @@ package no.hiof.android.ambiguous.adapter;
 import java.util.List;
 
 import no.hiof.android.ambiguous.R;
-import no.hiof.android.ambiguous.R.id;
 import no.hiof.android.ambiguous.cardlistener.CardOnClickListener;
 import no.hiof.android.ambiguous.datasource.CardDataSource;
 import no.hiof.android.ambiguous.layouts.CardLayout;
 import no.hiof.android.ambiguous.model.Card;
-import no.hiof.android.ambiguous.model.Effect;
-import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Color;
 import android.util.Log;
 import android.view.DragEvent;
-import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.DragShadowBuilder;
@@ -23,21 +18,16 @@ import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 
 
 public class DeckmanagerAdapter extends BaseAdapter {
         
         List<Card> cards;
-        private int cardLayout;
 
-        public DeckmanagerAdapter(SQLiteDatabase db, int cardLayout)
+        public DeckmanagerAdapter(SQLiteDatabase db)
         {
         	CardDataSource cd = new CardDataSource(db);
         	cards = cd.getCards();
-        	this.cardLayout = cardLayout;  
         }
         
         @Override

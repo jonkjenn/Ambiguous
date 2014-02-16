@@ -3,7 +3,6 @@ package no.hiof.android.ambiguous.floatingtext;
 import java.util.TimerTask;
 
 import android.os.Handler;
-import android.widget.TextView;
 
 public class FloatingTextTimerTask extends TimerTask{
 	

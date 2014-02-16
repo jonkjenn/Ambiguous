@@ -3,7 +3,6 @@ package no.hiof.android.ambiguous.activities;
 import no.hiof.android.ambiguous.Db;
 import no.hiof.android.ambiguous.R;
 import no.hiof.android.ambiguous.adapter.DeckmanagerAdapter;
-import no.hiof.android.ambiguous.datasource.CardDataSource;
 import android.app.Activity;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -23,7 +22,7 @@ public class DeckManagerActivity extends Activity {
         this.db = Db.getDb(getApplicationContext()).getWritableDatabase();
         
         GridView deckmanager = (GridView)findViewById(R.id.deckmanager_grid);
-        DeckmanagerAdapter adapter = new DeckmanagerAdapter(db,R.layout.card);
+        DeckmanagerAdapter adapter = new DeckmanagerAdapter(db);
         deckmanager.setAdapter(adapter);
         
     }

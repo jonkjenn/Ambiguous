@@ -1,16 +1,12 @@
 package no.hiof.android.ambiguous;
 
 import java.util.List;
-import java.util.Random;
 
 import no.hiof.android.ambiguous.model.Card;
 import no.hiof.android.ambiguous.model.Effect;
-import no.hiof.android.ambiguous.model.Effect.Target;
 import no.hiof.android.ambiguous.model.Player;
-import no.hiof.android.ambiguous.model.Effect.EffectType;
 
 public class AI {
-	private Random rand = new Random();
 	private Player computer;
 	private Player player;
 	private Card[] cards;

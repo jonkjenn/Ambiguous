@@ -18,7 +18,6 @@ public class GameMachine implements OpponentListener {
 	public Player opponent;
 	public OpponentController opponentController;
 
-	private SQLiteDatabase db;
 	private CardDataSource cs;
 
 	private enum states {
@@ -28,12 +27,11 @@ public class GameMachine implements OpponentListener {
 	private states state;
 
 	public GameMachine(SQLiteDatabase db) {
-		this.db = db;
 		this.cs = new CardDataSource(db);
 
 		List<Card> cards = cs.getCards();
 
-		opponent = new Player("Computer", true);
+		opponent = new Player("Computer");
 		opponent.SetDeck(DeckBuilder.StandardDeck(cards));
 
 		opponentController = new OpponentController();

@@ -1,20 +1,15 @@
 package no.hiof.android.ambiguous.model;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import no.hiof.android.ambiguous.DeckBuilder;
 import no.hiof.android.ambiguous.R;
 import no.hiof.android.ambiguous.floatingtext.FloatingHandler;
 import no.hiof.android.ambiguous.floatingtext.FloatingTextAnimationListener;
 import android.graphics.Color;
-import android.os.Handler;
-import android.os.Handler.Callback;
-import android.os.Message;
 import android.view.LayoutInflater;
-import android.view.ViewGroup;
 import android.view.animation.Animation;
-import android.view.animation.Animation.AnimationListener;
 import android.view.animation.AnimationUtils;
 import android.widget.TextView;
 
@@ -32,18 +27,16 @@ public class Player {
 	private Random deckRandom;
 	private boolean isAI = false;
 	
-	private ViewGroup viewGroup;
 	
-	public Player(String name, ViewGroup viewGroup)
+	public Player(String name)
 	{
 		this.name = name;
 		cards = new Card[8];
-		this.viewGroup = viewGroup;
 	}
 
-	public Player(String name, ViewGroup viewGroup, boolean isAI)
+	public Player(String name, boolean isAI)
 	{
-		this(name,viewGroup);
+		this(name);
 		this.isAI = isAI;
 	}
 
@@ -57,6 +50,7 @@ public class Player {
 			{
 				//cards[i] = deck.get(deckRandom.nextInt(deck.size()-1));
 				cards[i] = deck.remove(0);
+				notifyCardsUpdateListeners();
 			}
 		}
 	}
@@ -79,6 +73,11 @@ public class Player {
 		return deck;
 	}
 
+	public Card GetCard(int position)
+	{
+		return cards[position];
+	}
+	
 	public Card[] GetCards()
 	{
 		return cards;
@@ -99,18 +98,21 @@ public class Player {
 		}
 
 		this.health -= amount;
+		notifyStatsUpdateListeners();
 		if(this.health<=0){this.alive = false;}
 	}
 	
 	public void Heal(int amount)
 	{
 		this.health = (this.health + amount>this.maxHealth?this.maxHealth:this.health+amount);
+		notifyStatsUpdateListeners();
 		displayFloatingNumber(amount,Color.rgb(45, 190, 50));
 	}
 
 	public void ModArmor(int amount)
 	{
 		this.armor = (this.armor + amount>this.maxArmor?this.maxArmor:this.armor+amount);
+		notifyStatsUpdateListeners();
 		
 		displayFloatingNumber(amount,Color.BLUE);
 	}
@@ -124,6 +126,7 @@ public class Player {
 	{
 		if(amount > this.resources){return false;}		
 		this.resources -= amount;
+		notifyStatsUpdateListeners();
 		return true;
 	}
 	
@@ -131,9 +134,10 @@ public class Player {
 	{
 		this.resources = (this.resources + amount < 0?0:this.resources+amount);
 		if(amount>1){displayFloatingNumber(amount,Color.rgb(180,180,50));}
+		notifyStatsUpdateListeners();
 	}
 	
-	public String getStats()
+	private String getStats()
 	{
 		return this.name + " Health: " + this.health + " Armor: " + this.armor + " Res: " + this.resources;
 	}
@@ -155,16 +159,48 @@ public class Player {
 	
 	private void displayFloatingNumber(int amount, int color)
 	{
-
-		TextView floatingText = (TextView)LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.floatingtextview,null);
-		
-		viewGroup.addView(floatingText);
-		
-		floatingText.setText(Integer.toString(amount));
-		floatingText.setTextColor(color);		
-		
-		Animation ani = AnimationUtils.makeInAnimation(floatingText.getContext(),(isAI?false:true));
-		ani.setAnimationListener(new FloatingTextAnimationListener(floatingText,new FloatingHandler(floatingText,(isAI?true:false)),TextView.VISIBLE));
-		floatingText.startAnimation(ani);
+		notifyFloatingText(this, amount,color);
+/*
+		*/
+	}
+	
+	private ArrayList<PlayerUpdateListener> listeners = new ArrayList<PlayerUpdateListener>();
+	public interface PlayerUpdateListener
+	{
+		void onCardsUpdateListener(Player player, Card[] cards);		
+		void onStatsUpdateListener(Player player,String str);
+		void onFloatingText(Player player, int amount, int color);
+	}
+	
+	private void notifyFloatingText(Player player, int amount, int color)
+	{
+		for(PlayerUpdateListener listener:listeners)
+		{
+			listener.onFloatingText(this, amount,color);
+		}
+	}
+	
+	//For adding, notifying listeners to update in players cards. The cards "on the board" not the deck we pull cards from.
+	public void notifyCardsUpdateListeners()
+	{
+		for(PlayerUpdateListener listener:listeners)
+		{
+			listener.onCardsUpdateListener(this,this.cards);
+		}
+	}
+	public void setPlayerUpdateListeners(PlayerUpdateListener listener)
+	{
+		this.listeners.add(listener);
+		notifyCardsUpdateListeners();
+		notifyStatsUpdateListeners();
+	}
+	
+	//For notifying listeners to updates in players stats.
+	public void notifyStatsUpdateListeners()
+	{
+		for(PlayerUpdateListener listener:listeners)
+		{
+			listener.onStatsUpdateListener(this,getStats());			
+		}
 	}
 }

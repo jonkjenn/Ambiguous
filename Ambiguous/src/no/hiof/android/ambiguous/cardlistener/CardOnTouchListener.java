@@ -3,7 +3,6 @@ package no.hiof.android.ambiguous.cardlistener;
 import no.hiof.android.ambiguous.CardDragShadowBuilder;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.DragShadowBuilder;
 import android.view.View.OnTouchListener;
 
 public class CardOnTouchListener implements OnTouchListener{

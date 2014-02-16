@@ -15,6 +15,7 @@ import android.app.Activity;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.DragEvent;
 import android.view.Gravity;
@@ -24,7 +25,9 @@ import android.view.View;
 import android.view.View.OnDragListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
+import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
+import android.view.animation.Animation.AnimationListener;
 import android.view.animation.AnimationUtils;
 import android.widget.GridView;
 import android.widget.RelativeLayout;
@@ -280,10 +283,11 @@ public class GameActivity extends Activity implements OnDragListener,
 
 	@Override
 	public void onFloatingText(Player player, int amount, int color) {
-		ViewGroup viewGroup = (ViewGroup) findViewById((player == gameMachine.player ? R.id.floating_container
+		final boolean isPlayer = player==gameMachine.player;
+		final ViewGroup viewGroup = (ViewGroup) findViewById((isPlayer ? R.id.floating_container
 				: R.id.floating_container2));
 
-		TextView floatingText = (TextView) LayoutInflater.from(
+		final TextView floatingText = (TextView) LayoutInflater.from(
 				viewGroup.getContext())
 				.inflate(R.layout.floatingtextview, null);
 
@@ -292,13 +296,49 @@ public class GameActivity extends Activity implements OnDragListener,
 		floatingText.setText(Integer.toString(amount));
 		floatingText.setTextColor(color);
 
-		Animation ani = AnimationUtils.makeInAnimation(floatingText
-				.getContext(), (player == gameMachine.player ? true : false));
-		ani.setAnimationListener(new FloatingTextAnimationListener(
-				floatingText, new FloatingHandler(floatingText,
-						(player == gameMachine.player ? false : true)),
-				TextView.VISIBLE));
-		floatingText.startAnimation(ani);
+		final AlphaAnimation fadeIn = new AlphaAnimation(0.0f,1.0f);
+		fadeIn.setDuration(500);
+		final AlphaAnimation fadeOut = new AlphaAnimation(1.0f,0.0f);
+		fadeOut.setAnimationListener(new AnimationListener() {
+			
+			@Override
+			public void onAnimationStart(Animation animation) {
+			}
+			
+			@Override
+			public void onAnimationRepeat(Animation animation) {
+			}
+			
+			@Override
+			public void onAnimationEnd(Animation animation) {
+				viewGroup.removeView(floatingText);
+			}
+		});
+		fadeOut.setDuration(500);
+		fadeIn.setAnimationListener(new AnimationListener() {
+			
+			@Override
+			public void onAnimationStart(Animation animation) {
+			}
+			
+			@Override
+			public void onAnimationRepeat(Animation animation) {
+			}
+			
+			@Override
+			public void onAnimationEnd(Animation animation) {
+				Runnable r = new Runnable() {
+					
+					@Override
+					public void run() {
+						floatingText.startAnimation(fadeOut);
+					}
+				};
+				new Handler().postDelayed(r,1000);
+			}
+		});
+		
+		floatingText.startAnimation(fadeIn);
 	}
 
 }

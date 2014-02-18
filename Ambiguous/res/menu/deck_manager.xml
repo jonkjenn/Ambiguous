@@ -5,11 +5,5 @@
         android:orderInCategory="100"
         android:showAsAction="never"
         android:title="@string/action_settings"/>
-    <item
-        android:id="@+id/action_network"
-        android:showAsAction="ifRoom"
-        android:title="@string/menu_button_network"
-        android:icon="@android:drawable/ic_menu_mapmode"
-        android:onClick="onActionNetworkClicked" />
 
 </menu>

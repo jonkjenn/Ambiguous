@@ -9,6 +9,7 @@ import no.hiof.android.ambiguous.layouts.CardLayout;
 import no.hiof.android.ambiguous.model.Card;
 import no.hiof.android.ambiguous.model.Player;
 import no.hiof.android.ambiguous.model.Player.PlayerUpdateListener;
+import android.app.ActionBar;
 import android.app.Activity;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
@@ -45,6 +46,9 @@ public class GameActivity extends Activity implements OnDragListener,
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_game);
 		layoutView = findViewById(R.id.game_layout);
+		
+		ActionBar actionBar = getActionBar();
+		actionBar.hide();
 
 		this.db = Db.getDb(getApplicationContext()).getWritableDatabase();
 

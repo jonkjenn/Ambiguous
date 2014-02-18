@@ -77,10 +77,10 @@ public class Db extends SQLiteOpenHelper {
 		cs.addCard(CardBuilder.SelfHeal("Heal2","","plus_drawing",10,15,50,15));
 		cs.addCard(CardBuilder.SelfHeal("Heal3","","plus_drawing",15,35,60,30));
 		cs.addCard(CardBuilder.SelfHeal("Heal4","","plus_drawing",20,50,100,0));
-		cs.addCard(CardBuilder.SelfArmor("Armor","","smiley_drawing_small",4,15));
-		cs.addCard(CardBuilder.SelfArmor("Armo2","","smiley_drawing_small",10,40));
-		cs.addCard(CardBuilder.SelfArmor("Armor3","","smiley_drawing_small",15,65));
-		cs.addCard(CardBuilder.SelfArmor("Armor4","","smiley_drawing_small",20,90));
+		cs.addCard(CardBuilder.SelfArmor("Armor","","kevlar_drawing",4,15));
+		cs.addCard(CardBuilder.SelfArmor("Armo2","","kevlar_drawing",10,40));
+		cs.addCard(CardBuilder.SelfArmor("Armor3","","kevlar_drawing",15,65));
+		cs.addCard(CardBuilder.SelfArmor("Armor4","","kevlar_drawing",20,90));
 
 		
 		cs.addCard(CardBuilder.AddResources("Resource2", "Gives more resources", "smiley_drawing_small", 5, 30));

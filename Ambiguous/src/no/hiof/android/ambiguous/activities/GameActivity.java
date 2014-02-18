@@ -121,13 +121,14 @@ public class GameActivity extends Activity implements OnDragListener,
 	}
 
 	private void startDrag(int card, int x, int y) {
-		// deckView.getChildAt(card).setVisibility(View.GONE);
-		Card c = gameMachine.player.GetCard(card);
-
+		//deckView.getChildAt(card).setVisibility(View.GONE);
 		ViewGroup parent = (ViewGroup) findViewById(R.id.drag_card);
+		Card c = gameMachine.player.GetCard(card);
+		View layout = CardLayout.getCardLayout(c, parent);
+
 		parent.setVisibility(ViewGroup.GONE);
 		parent.removeAllViews();
-		parent.addView(CardLayout.getCardLayout(c, parent));
+		parent.addView(layout);
 	}
 
 	private void stopDrag(int card) {
@@ -346,19 +347,19 @@ public class GameActivity extends Activity implements OnDragListener,
 	public void onArmorUpdateListener(Player player, int armor) {
 		ImageView img = (ImageView)findViewById((player==gameMachine.player)?R.id.image_player:R.id.image_opponent);
 		
-		if(armor >= gameMachine.player.maxArmor *0.8)
+		if(armor >= gameMachine.player.maxArmor *0.7)
 		{
 			img.setImageResource(R.drawable.soldier_armor100);
 		}
-		else if(armor >= gameMachine.player.maxArmor *0.6)
+		else if(armor >= gameMachine.player.maxArmor *0.5)
 		{
 			img.setImageResource(R.drawable.soldier_armor80);
 		}
-		else if(armor >= gameMachine.player.maxArmor *0.4)
+		else if(armor >= gameMachine.player.maxArmor *0.3)
 		{
 			img.setImageResource(R.drawable.soldier_armor60);
 		}
-		else if(armor >= gameMachine.player.maxArmor *0.2)
+		else if(armor >= gameMachine.player.maxArmor *0.1)
 		{
 			img.setImageResource(R.drawable.soldier_armor40);
 		}

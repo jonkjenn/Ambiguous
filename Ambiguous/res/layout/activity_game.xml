@@ -16,6 +16,13 @@
 	    android:visibility="gone"
 	    android:layout_alignParentTop="true"
 	    />
+	<ImageView android:src="@drawable/soldier"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:layout_alignParentLeft="true"
+	    android:layout_marginLeft="10dp"
+	    android:contentDescription="Soldier1"
+	    ></ImageView>
 	<RelativeLayout 
 	    android:id="@+id/opponent_card"
 	    android:layout_centerHorizontal="true"
@@ -24,6 +31,21 @@
 	    android:orientation="horizontal"
 	    android:gravity="center"
 	    ></RelativeLayout>
+	<LinearLayout
+	    android:id="@+id/floating_container"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+		android:orientation="vertical"
+		android:layout_marginTop="50dp"
+	    ></LinearLayout>
+	<LinearLayout
+	    android:id="@+id/floating_container2"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+		android:orientation="vertical"
+		android:layout_alignParentRight="true"
+		android:layout_marginTop="50dp"
+	    ></LinearLayout>
 	<LinearLayout
 		android:id="@+id/game_layout"
 	    android:layout_width="match_parent"
@@ -53,25 +75,6 @@
 		</GridView>
 		
 	</LinearLayout>
-	<ImageView android:src="@drawable/soldier"
-	    android:layout_width="wrap_content"
-	    android:layout_height="wrap_content"
-	    android:layout_alignParentLeft="true"
-	    android:contentDescription="Soldier1"
-	    ></ImageView>
-	<LinearLayout
-	    android:id="@+id/floating_container"
-	    android:layout_width="wrap_content"
-	    android:layout_height="wrap_content"
-		android:orientation="vertical"
-	    ></LinearLayout>
-	<LinearLayout
-	    android:id="@+id/floating_container2"
-	    android:layout_width="wrap_content"
-	    android:layout_height="wrap_content"
-		android:orientation="vertical"
-		android:layout_alignParentRight="true"
-	    ></LinearLayout>
 	<TextView 
 	    android:id="@+id/gameview_discard"
 	    android:layout_width="match_parent"

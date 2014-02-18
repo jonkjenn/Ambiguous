@@ -153,7 +153,6 @@ public class GameActivity extends Activity implements OnDragListener,
 				startDrag(dState[1], (int) event.getX(), (int) event.getY());
 			}
 
-			// Log.d("test", "Drag started");
 			return true;
 
 		case DragEvent.ACTION_DRAG_LOCATION:

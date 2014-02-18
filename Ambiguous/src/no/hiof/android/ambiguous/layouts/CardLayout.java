@@ -19,7 +19,6 @@ public class CardLayout {
 
 	public static View getCardLayout(Card card, ViewGroup parent) {
                 
-		parent.getContext();
 		LayoutInflater inflater = (LayoutInflater)parent.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		View view = inflater.inflate(R.layout.card_game,parent,false);
 		if(card == null){return view;}

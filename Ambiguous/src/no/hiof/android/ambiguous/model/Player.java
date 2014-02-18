@@ -74,11 +74,13 @@ public class Player {
 		{
 			this.armor -= amount;
 			amount = 0;
+			notifyArmorUpdateListener();
 		}
-		else
+		else if(this.armor>0)
 		{
 			amount -= this.armor;
 			this.armor = 0;
+			notifyArmorUpdateListener();
 		}
 
 		this.health -= amount;
@@ -97,6 +99,7 @@ public class Player {
 	{
 		this.armor = (this.armor + amount>this.maxArmor?this.maxArmor:this.armor+amount);
 		notifyStatsUpdateListeners();
+		notifyArmorUpdateListener();
 		
 		displayFloatingNumber(amount,Color.BLUE);
 	}
@@ -153,6 +156,7 @@ public class Player {
 	{
 		void onCardsUpdateListener(Player player, Card[] cards);		
 		void onStatsUpdateListener(Player player,String str);
+		void onArmorUpdateListener(Player player, int armor);
 		void onFloatingText(Player player, int amount, int color);
 	}
 	
@@ -161,6 +165,14 @@ public class Player {
 		for(PlayerUpdateListener listener:listeners)
 		{
 			listener.onFloatingText(this, amount,color);
+		}
+	}
+	
+	private void notifyArmorUpdateListener()
+	{
+		for(PlayerUpdateListener listener:listeners)
+		{
+			listener.onArmorUpdateListener(this,this.armor);
 		}
 	}
 	

@@ -28,6 +28,7 @@ import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.widget.GridView;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -340,6 +341,36 @@ public class GameActivity extends Activity implements OnDragListener,
 		});
 		
 		floatingText.startAnimation(fadeIn);
+	}
+
+	@Override
+	public void onArmorUpdateListener(Player player, int armor) {
+		ImageView img = (ImageView)findViewById((player==gameMachine.player)?R.id.image_player:R.id.image_opponent);
+		
+		if(armor >= gameMachine.player.maxArmor *0.8)
+		{
+			img.setImageResource(R.drawable.soldier_armor100);
+		}
+		else if(armor >= gameMachine.player.maxArmor *0.6)
+		{
+			img.setImageResource(R.drawable.soldier_armor80);
+		}
+		else if(armor >= gameMachine.player.maxArmor *0.4)
+		{
+			img.setImageResource(R.drawable.soldier_armor60);
+		}
+		else if(armor >= gameMachine.player.maxArmor *0.2)
+		{
+			img.setImageResource(R.drawable.soldier_armor40);
+		}
+		else if(armor > 0)
+		{
+			img.setImageResource(R.drawable.soldier_armor20);
+		}
+		else
+		{
+			img.setImageResource(R.drawable.soldier_armor0);
+		}
 	}
 
 }

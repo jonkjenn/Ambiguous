@@ -3,6 +3,7 @@ package no.hiof.android.ambiguous;
 import java.util.Random;
 
 import no.hiof.android.ambiguous.model.Card;
+import no.hiof.android.ambiguous.model.Effect;
 import no.hiof.android.ambiguous.model.Player;
 
 public class AIController implements GameMachine.GameMachineListener{
@@ -42,7 +43,10 @@ public class AIController implements GameMachine.GameMachineListener{
 		AI ai = new AI(computer, player);
 		int pos = ai.Start();
 		if (pos < 0) {
+			do{
 			pos = computerRandom.nextInt(computer.GetCards().length - 1);
+			}
+			while(computer.GetCard(pos).getEffects().get(0).getType()==Effect.EffectType.RESOURCE);
 			computer.CardUsed(pos);
 			oc.DiscardCard(computer.GetCard(pos));
 			//opponentDiscardCard(opponent.GetCards()[pos]);

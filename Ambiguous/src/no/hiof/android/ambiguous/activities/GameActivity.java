@@ -345,32 +345,7 @@ public class GameActivity extends Activity implements OnDragListener,
 
 	@Override
 	public void onArmorUpdateListener(Player player, int armor) {
-		ImageView img = (ImageView)findViewById((player==gameMachine.player)?R.id.image_player:R.id.image_opponent);
+		// TODO Auto-generated method stub
 		
-		if(armor >= gameMachine.player.maxArmor *0.7)
-		{
-			img.setImageResource(R.drawable.soldier_armor100);
-		}
-		else if(armor >= gameMachine.player.maxArmor *0.5)
-		{
-			img.setImageResource(R.drawable.soldier_armor80);
-		}
-		else if(armor >= gameMachine.player.maxArmor *0.3)
-		{
-			img.setImageResource(R.drawable.soldier_armor60);
-		}
-		else if(armor >= gameMachine.player.maxArmor *0.1)
-		{
-			img.setImageResource(R.drawable.soldier_armor40);
-		}
-		else if(armor > 0)
-		{
-			img.setImageResource(R.drawable.soldier_armor20);
-		}
-		else
-		{
-			img.setImageResource(R.drawable.soldier_armor0);
-		}
 	}
-
 }

@@ -10,6 +10,7 @@ public class Db extends SQLiteOpenHelper {
 	
 	private static final String CREATE_CARD_TABLE = "CREATE TABLE Card (id INTEGER PRIMARY KEY, name TEXT, description TEXT, cost INTEGER, image TEXT)";
 	private static final String CREATE_EFFECT_TABLE = "CREATE TABLE Effect (id INTEGER PRIMARY KEY, type VARCHAR(10), target VARCHAR(10), minvalue INTEGER, maxvalue INTEGER, crit INTEGER, card_id INTEGER REFERENCES Card(id))";
+	private static final String CREATE_CONNECTION_TABLE = "CREATE TABLE Connection (id INTEGER PRIMARY KEY, ip VARCHAR(15) UNIQUE)";
 	//private static final String CREATE_DECK_TABLE = "CREATE TABLE Deck (id INTEGER PRIMARY KEY), name TEXT";
 	//private static final String CREATE_DECK_CARDS_TABLE = "CREATE TABLE DeckCards id INTEGER PRIMARY KEY, deck_id INTEGER REFERENCES Deck(id) NOT NULL, card_id INTEGER REFERENCES Card(id) NOT NULL, count INTEGER NOT NULL";
 	
@@ -17,6 +18,7 @@ public class Db extends SQLiteOpenHelper {
 	
 	private static final String DROP_CARD_TABLE = "DROP TABLE IF EXISTS Card";
 	private static final String DROP_EFFECT_TABLE = "DROP TABLE IF EXISTS Effect";
+	private static final String DROP_CONNECTION_TABLE = "DROP TABLE IF EXISTS Connection";
 	
 	private static Db db;
 
@@ -25,8 +27,8 @@ public class Db extends SQLiteOpenHelper {
 		if(db == null)
 		{
 			db = new Db(ctx,name,null,1);
-			db.dropTables();
-			db.createTables();
+			//db.dropTables();
+			//db.createTables();
 		}
 		
 		return db;
@@ -41,6 +43,7 @@ public class Db extends SQLiteOpenHelper {
 		SQLiteDatabase db = getWritableDatabase();
 		db.execSQL(DROP_CARD_TABLE);
 		db.execSQL(DROP_EFFECT_TABLE);
+		db.execSQL(DROP_CONNECTION_TABLE);
 	}
 
 	@Override
@@ -58,6 +61,7 @@ public class Db extends SQLiteOpenHelper {
 	{
 		db.execSQL(CREATE_CARD_TABLE);
 		db.execSQL(CREATE_EFFECT_TABLE);
+		db.execSQL(CREATE_CONNECTION_TABLE);
 		//db.execSQL(CREATE_DECK_TABLE);
 		//db.execSQL(CREATE_DECK_CARDS_TABLE);
 		

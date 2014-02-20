@@ -1,43 +1,49 @@
 package no.hiof.android.ambiguous.activities;
 
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Enumeration;
+import java.net.Socket;
 import java.util.List;
 
-import no.hiof.android.ambiguous.ClientActivity;
+import no.hiof.android.ambiguous.Db;
+import no.hiof.android.ambiguous.NetworkOpponent;
+import no.hiof.android.ambiguous.OpponentController;
 import no.hiof.android.ambiguous.R;
+import no.hiof.android.ambiguous.datasource.ConnectionDataSource;
+import no.hiof.android.ambiguous.network.Client;
 import no.hiof.android.ambiguous.network.Server;
+import no.hiof.android.ambiguous.network.Utility;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Handler.Callback;
+import android.os.Message;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.EditText;
 import android.widget.PopupMenu;
 import android.widget.PopupMenu.OnMenuItemClickListener;
+import android.widget.TextView;
 import android.widget.Toast;
 
 @SuppressLint("NewApi")
 @TargetApi(Build.VERSION_CODES.HONEYCOMB)
 public class NetworkActivity extends Activity {
+	SQLiteDatabase db;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_network);
+		this.db = Db.getDb(getApplicationContext()).getWritableDatabase();
 	}
 
 	@Override
@@ -51,49 +57,29 @@ public class NetworkActivity extends Activity {
 		return true;
 	}
 
-	private static List<String[]> getInterfaces() {
-		List<String[]> interfaces = new ArrayList<String[]>();
-		try {
-			Enumeration<NetworkInterface> nets = NetworkInterface
-					.getNetworkInterfaces();
-			for (NetworkInterface i : Collections.list(nets)) {
-				String[] str = getInterfaceInformation(i);
-				if (str != null) {
-					interfaces.add(str);
-				}
-			}
-		} catch (SocketException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return interfaces;
-	}
-
-	private static String[] getInterfaceInformation(NetworkInterface netint)
-			throws SocketException {
-		// Log.d("Display name: ", netint.getDisplayName());
-		// Log.d("Name: ", netint.getName());
-		Enumeration<InetAddress> inetAddresses = netint.getInetAddresses();
-		for (InetAddress inetAddress : Collections.list(inetAddresses)) {
-			// Log.d("InetAddress: ", inetAddress.toString());
-			if (inetAddress.toString().contains(String.valueOf('.'))) {
-				return new String[] { netint.getDisplayName(),
-						inetAddress.toString().replaceAll("/", "") };
-			}
-		}
-		return null;
-	}
-
 	private void PickInterface(final boolean server) {
 		Runnable run = new Runnable() {
 
 			@Override
 			public void run() {
-				final List<String[]> interfaces = getInterfaces();
+				final List<String[]> interfaces = Utility.getInterfaces();
 
+				// If not server, show the previous IPs stored in DB so you
+				// possibly dont have to type new address.
+				if (!server) {
+					ConnectionDataSource cd = new ConnectionDataSource(db);
+					List<String> prev_ip = cd.GetAddresses();
+					for(int i=0;i<prev_ip.size();i++)
+					{
+						interfaces.add(new String[]{"db",prev_ip.get(i)});
+					}
+				}
+
+				//Need this for showing the popupmenu under it
 				View serverButton = NetworkActivity.this
-						.findViewById(R.id.button_server);
+						.findViewById((server?R.id.button_server:R.id.button_client));
 
+				//Popumenu that shows the interface/IP to use for server or client
 				PopupMenu menu = new PopupMenu(NetworkActivity.this,
 						serverButton);
 				Menu m = menu.getMenu();
@@ -101,7 +87,9 @@ public class NetworkActivity extends Activity {
 					m.add(Menu.NONE, i, i, interfaces.get(i)[0] + " "
 							+ interfaces.get(i)[1]);
 				}
-				menu.setOnMenuItemClickListener(new OnMenuItemClickListener() {
+
+				menu.setOnMenuItemClickListener(
+						new OnMenuItemClickListener() {
 
 					@Override
 					public boolean onMenuItemClick(MenuItem item) {
@@ -110,10 +98,11 @@ public class NetworkActivity extends Activity {
 							NetworkActivity.this.doStartServer(interfaces
 									.get(item.getItemId())[1]);
 						} else {
+							//if address is from db, we send false to avoid the extra popup screen where u can edit the address
 							NetworkActivity.this.doStartClient(interfaces
-									.get(item.getItemId())[1]);
+									.get(item.getItemId())[1],interfaces.get(item.getItemId())[0] == "db");
 						}
-						return false;
+						return true;
 					}
 				});
 				menu.show();
@@ -129,41 +118,99 @@ public class NetworkActivity extends Activity {
 	}
 
 	private void doStartServer(String address) {
-		//Server s = new Server(address);
+		Handler h = new Handler(getMainLooper(), new Callback() {
+
+			@Override
+			public boolean handleMessage(Message msg) {
+				switch (Server.ServerStates.values()[msg.what]) {
+				case CONNECTED:
+					getActionBar().setIcon(android.R.drawable.presence_online);
+					((TextView)findViewById(R.id.network_status)).setText("Client connected");
+					break;
+				case CONNECTION_FAILED:
+					new AlertDialog.Builder(NetworkActivity.this)
+							.setTitle("Connection failed")
+							.setMessage("Could not connect").show();
+					break;
+				}
+
+				return true;
+			}
+		});
+		Server s = new Server(address, h);
 		// Pretending to tell you that a connection has been made
 		Toast.makeText(this, "Starting Server", Toast.LENGTH_SHORT).show();
-		getActionBar().setIcon(android.R.drawable.presence_online);
 	}
 
-	private void doStartClient(String address) {
+	private void doStartClient(final String address,boolean useAddress) {
 		
+	if(useAddress)
+	{
+		startClient(address);
+		shortToast("Starting client");
+	}
+	else
+	{
 		final EditText input = new EditText(this);
-		input.setText(address.substring(0,address.lastIndexOf(".")+1));
+		input.setText(address.substring(0, address.lastIndexOf(".") + 1));
 		input.setSelection(input.getText().length());
 		new AlertDialog.Builder(this)
-		.setTitle("Server address")
-		.setMessage("Type server IP address")
-		.setView(input)
-		.setPositiveButton("Connect", new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-                Intent i = new Intent(NetworkActivity.this, ClientActivity.class);
-                i.putExtra("address",input.getText().toString());
-                startActivity(i);
-			}
-		})
-		.setNegativeButton("Abort", new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-			}
-		}).show();
-		
-		// Pretending to tell you that a connection has been made
-		Toast.makeText(this, "Starting Client", Toast.LENGTH_SHORT).show();
-		getActionBar().setIcon(android.R.drawable.presence_online);
+				.setTitle("Server address")
+				.setMessage("Type server IP address")
+				.setView(input)
+				.setPositiveButton("Connect",
+						new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog,
+									int which) {
+								ConnectionDataSource cd = new ConnectionDataSource(db);
+								cd.AddConnection(input.getText().toString());
+								startClient(input.getText().toString());								
+								shortToast("Starting client");
+							}
+						})
+				.setNegativeButton("Abort",
+						new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog,
+									int which) {
+							}
+						}).show();
 	}
 
-	public void startClient(View view) {
+		getActionBar().setIcon(android.R.drawable.presence_online);
+	}
+	
+	private void shortToast(String text)
+	{
+		// Pretending to tell you that a connection has been made
+		Toast.makeText(this, text, Toast.LENGTH_SHORT).show();
+	}
+	
+	private void startClient(String address)
+	{
+        Handler h = new Handler(getMainLooper(),new Callback() {
+			
+			@Override
+			public boolean handleMessage(Message msg) {
+				switch(Client.ClientStates.values()[msg.what])
+				{
+				case CONNECTED:
+					shortToast("Connected");
+					NetworkOpponent no = new NetworkOpponent(new OpponentController(), (Socket)msg.obj);
+					break;
+				case CONNECTION_FAILED:
+					shortToast("Connection failed");
+					break;
+				}
+				return false;
+			}
+		});
+        Client client = new Client(address,h);
+        client.Connect();
+	}
+
+	public void showClientAddressPicker(View view) {
 		PickInterface(false);
 	}
 

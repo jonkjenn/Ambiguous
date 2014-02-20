@@ -1,5 +1,6 @@
 package no.hiof.android.ambiguous.network;
 
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -9,14 +10,13 @@ import java.net.Socket;
 import android.os.Handler;
 
 public class Server {
-	public Server(final String address, Handler outputHandler) {
+	public static enum ServerStates{CONNECTION_FAILED, CONNECTED};
+	public Server(final String address, final Handler outputHandler) {
 		Thread t = new Thread(new Runnable() {
 
 			@Override
 			public void run() {
-				do {
 					startServer();
-				}while(true);
 			}
 			
 			private void startServer()
@@ -29,12 +29,21 @@ public class Server {
 
 					DataOutputStream out = new DataOutputStream(connection.getOutputStream());
 					out.writeLong(0xA7B7C7D7);
+					DataInputStream in = new DataInputStream(connection.getInputStream());
+					if(in.readLong()==0xA7B7C7D7)
+					{
+						outputHandler.obtainMessage(ServerStates.CONNECTED.ordinal(),connection).sendToTarget();
+					}
+					else
+					{
+						out.close();
+						in.close();
+						connection.close();
+						outputHandler.obtainMessage(ServerStates.CONNECTION_FAILED.ordinal()).sendToTarget();
+					}
 
-					//BufferedWriter out = new BufferedWriter(
-						//	new OutputStreamWriter(connection.getOutputStream()));
-					out.close();
 				} catch (IOException e) {
-					e.printStackTrace();
+						outputHandler.obtainMessage(ServerStates.CONNECTION_FAILED.ordinal()).sendToTarget();
 				}
 			}
 		});

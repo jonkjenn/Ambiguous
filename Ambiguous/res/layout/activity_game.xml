@@ -1,47 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/game_layout_container"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="#FF333333" >
-
-    <TextView
-        android:id="@+id/gameview_use"
-        android:layout_width="match_parent"
-        android:layout_height="30dp"
-        android:layout_alignParentTop="true"
-        android:background="#00FF00"
-        android:gravity="center"
-        android:text="@string/activity_main_usecard"
-        android:visibility="gone" />
-
-    <RelativeLayout
-        android:id="@+id/opponent_card"
-        android:layout_width="70dp"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:gravity="center"
-        android:orientation="horizontal" >
-    </RelativeLayout>
-
-    <LinearLayout
-        android:id="@+id/game_layout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="bottom"
-        android:orientation="vertical" >
-
-        <TextView
-            android:id="@+id/stats_computer"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-
-        <TextView
-            android:id="@+id/stats_player"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-
-        <LinearLayout
+    	android:id="@+id/game_layout_container"
+	    android:layout_width="match_parent"
+	    android:layout_height="match_parent"
+		android:background="#FF333333"
+    >
+	<TextView 
+	    android:id="@+id/gameview_use"
+	    android:layout_width="match_parent"
+	    android:layout_height="30dp"
+	    android:background="#00FF00"
+	    android:text="@string/activity_main_usecard"
+	    android:gravity="center"
+	    android:visibility="gone"
+	    android:layout_alignParentTop="true"
+	    />
+	<RelativeLayout 
+	    android:id="@+id/opponent_card"
+	    android:layout_centerHorizontal="true"
+	    android:layout_width="70dp"
+	    android:layout_height="wrap_content"
+	    android:orientation="horizontal"
+	    android:gravity="center"
+	    ></RelativeLayout>
+	<LinearLayout
+	    android:id="@+id/floating_container"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+		android:orientation="vertical"
+		android:layout_marginTop="50dp"
+	    ></LinearLayout>
+	<LinearLayout
+	    android:id="@+id/floating_container2"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+		android:orientation="vertical"
+		android:layout_alignParentRight="true"
+		android:layout_marginTop="50dp"
+	    ></LinearLayout>
+	<LinearLayout
+		android:id="@+id/game_layout"
+	    android:layout_width="match_parent"
+	    android:layout_height="match_parent"
+		android:orientation="vertical"
+		android:gravity="bottom"
+		>
+		<TextView 
+		    android:id="@+id/stats_computer"
+			android:layout_height="wrap_content"
+			android:layout_width="match_parent"
+		    />
+		<TextView 
+		    android:id="@+id/stats_player"
+			android:layout_height="wrap_content"
+			android:layout_width="match_parent"
+		    />
+		<LinearLayout
             android:id="@+id/stat_layout_player"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -93,58 +107,34 @@
                 android:layout_height="wrap_content"
                 android:text="0" />
         </LinearLayout>
-
-        <GridView
-            android:id="@+id/game_grid"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:numColumns="4"
-            android:stretchMode="columnWidth"
-            android:verticalSpacing="5dp" >
-        </GridView>
-    </LinearLayout>
-
-    <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:contentDescription="@string/soldier"
-        android:src="@drawable/soldier" >
-    </ImageView>
-
-    <LinearLayout
-        android:id="@+id/floating_container"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical" >
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/floating_container2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:orientation="vertical" >
-    </LinearLayout>
-
-    <TextView
-        android:id="@+id/gameview_discard"
-        android:layout_width="match_parent"
-        android:layout_height="20dp"
-        android:layout_alignParentBottom="true"
-        android:background="#FF0000"
-        android:gravity="center"
-        android:text="@string/activity_main_discard"
-        android:visibility="gone" />
-
-    <RelativeLayout
-        android:id="@+id/drag_card"
-        android:layout_width="70dp"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:gravity="center"
-        android:orientation="horizontal" >
-    </RelativeLayout>
-
+		<GridView 
+		    android:stretchMode="columnWidth"
+			android:id="@+id/game_grid"
+			android:layout_height="wrap_content"
+			android:layout_width="match_parent"
+			android:numColumns="4"
+			android:verticalSpacing="5dp"
+			android:gravity="center"
+			>
+		</GridView>
+		
+	</LinearLayout>
+	<TextView 
+	    android:id="@+id/gameview_discard"
+	    android:layout_width="match_parent"
+	    android:layout_height="20dp"
+	    android:background="#FF0000"
+	    android:text="@string/activity_main_discard"
+	    android:gravity="center"
+	    android:visibility="gone"
+	    android:layout_alignParentBottom="true"
+	    />
+	<RelativeLayout 
+	    android:id="@+id/drag_card"
+	    android:layout_width="70dp"
+	    android:layout_height="wrap_content"
+	    android:orientation="horizontal"
+	    android:gravity="center"
+	    android:layout_alignParentTop="true"
+	    ></RelativeLayout>
 </RelativeLayout>

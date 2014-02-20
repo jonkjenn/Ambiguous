@@ -28,6 +28,7 @@ import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.widget.GridView;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -122,13 +123,14 @@ public class GameActivity extends Activity implements OnDragListener,
 	}
 
 	private void startDrag(int card, int x, int y) {
-		// deckView.getChildAt(card).setVisibility(View.GONE);
-		Card c = gameMachine.player.GetCard(card);
-
+		//deckView.getChildAt(card).setVisibility(View.GONE);
 		ViewGroup parent = (ViewGroup) findViewById(R.id.drag_card);
+		Card c = gameMachine.player.GetCard(card);
+		View layout = CardLayout.getCardLayout(c, parent);
+
 		parent.setVisibility(ViewGroup.GONE);
 		parent.removeAllViews();
-		parent.addView(CardLayout.getCardLayout(c, parent));
+		parent.addView(layout);
 	}
 
 	private void stopDrag(int card) {
@@ -154,7 +156,6 @@ public class GameActivity extends Activity implements OnDragListener,
 				startDrag(dState[1], (int) event.getX(), (int) event.getY());
 			}
 
-			// Log.d("test", "Drag started");
 			return true;
 
 		case DragEvent.ACTION_DRAG_LOCATION:
@@ -353,4 +354,9 @@ public class GameActivity extends Activity implements OnDragListener,
 		floatingText.startAnimation(fadeIn);
 	}
 
+	@Override
+	public void onArmorUpdateListener(Player player, int armor) {
+		// TODO Auto-generated method stub
+		
+	}
 }

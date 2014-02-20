@@ -129,7 +129,7 @@ public class NetworkActivity extends Activity {
 	}
 
 	private void doStartServer(String address) {
-		Server s = new Server(address);
+		//Server s = new Server(address);
 		// Pretending to tell you that a connection has been made
 		Toast.makeText(this, "Starting Server", Toast.LENGTH_SHORT).show();
 		getActionBar().setIcon(android.R.drawable.presence_online);

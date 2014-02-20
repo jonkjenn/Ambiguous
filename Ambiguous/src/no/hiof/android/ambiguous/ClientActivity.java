@@ -24,7 +24,7 @@ public class ClientActivity extends Activity {
 			public boolean handleMessage(Message msg) {
 				switch(Client.ClientStates.values()[msg.what])
 				{
-				case TEST:
+				case CONNECTED:
 					showMessage(msg.obj.toString());
 				}
 				return false;

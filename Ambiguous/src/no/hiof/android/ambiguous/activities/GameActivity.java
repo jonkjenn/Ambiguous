@@ -47,6 +47,7 @@ public class GameActivity extends Activity implements OnDragListener,
 		setContentView(R.layout.activity_game);
 		layoutView = findViewById(R.id.game_layout);
 		
+		
 		ActionBar actionBar = getActionBar();
 		actionBar.hide();
 
@@ -66,6 +67,7 @@ public class GameActivity extends Activity implements OnDragListener,
 		playerstats = (TextView) findViewById(R.id.stats_player);
 		opponentstats = (TextView) findViewById(R.id.stats_computer);
 
+		playerstats.setText("start");
 		gameMachine.player.setPlayerUpdateListeners(this);
 		gameMachine.opponent.setPlayerUpdateListeners(this);
 	}
@@ -277,6 +279,15 @@ public class GameActivity extends Activity implements OnDragListener,
 	public void onStatsUpdateListener(Player player, String str) {
 		if (player == gameMachine.player) {
 			playerstats.setText(str);
+			TextView playerName = ((TextView)findViewById(R.id.stat_player_name));
+					playerName.setText(player.getName());
+			TextView playerHealth = ((TextView)findViewById(R.id.stat_player_health));
+					playerHealth.setText(String.valueOf(player.getHealth()));
+			TextView playerArmor = ((TextView)findViewById(R.id.stat_player_armor));
+					playerArmor.setText(String.valueOf(player.getArmor()));
+			TextView playerResources = ((TextView)findViewById(R.id.stat_player_resource));
+					playerResources.setText(String.valueOf(player.getResources()));
+			
 		} else if (player == gameMachine.opponent) {
 			opponentstats.setText(str);
 		}

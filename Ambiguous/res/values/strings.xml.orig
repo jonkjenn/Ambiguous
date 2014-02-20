@@ -15,7 +15,9 @@
     <string name="menu_button_client">Client</string>
     <string name="activity_main_usecard">Use card</string>
     <string name="activity_main_discard">Discard card</string>
+<<<<<<< HEAD
     <string name="title_activity_client">ClientActivity</string>
+=======
     <string name="soldier">Soldier1</string>
     <string name="armor">Armor</string>
     <string name="health">Health</string>

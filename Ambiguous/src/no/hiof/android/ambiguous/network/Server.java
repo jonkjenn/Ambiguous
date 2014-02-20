@@ -1,16 +1,15 @@
 package no.hiof.android.ambiguous.network;
 
-import java.io.BufferedOutputStream;
-import java.io.BufferedWriter;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import android.os.Handler;
+
 public class Server {
-	public Server(final String address) {
+	public Server(final String address, Handler outputHandler) {
 		Thread t = new Thread(new Runnable() {
 
 			@Override
@@ -29,10 +28,10 @@ public class Server {
 					Socket connection = socket.accept();
 
 					DataOutputStream out = new DataOutputStream(connection.getOutputStream());
+					out.writeLong(0xA7B7C7D7);
 
 					//BufferedWriter out = new BufferedWriter(
 						//	new OutputStreamWriter(connection.getOutputStream()));
-					out.flush();
 					out.close();
 				} catch (IOException e) {
 					e.printStackTrace();

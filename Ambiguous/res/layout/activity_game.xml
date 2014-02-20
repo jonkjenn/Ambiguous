@@ -49,12 +49,64 @@
 		    android:id="@+id/stats_computer"
 			android:layout_height="wrap_content"
 			android:layout_width="match_parent"
-		    />
-		<TextView 
+		    />	
+	<TextView 
 		    android:id="@+id/stats_player"
 			android:layout_height="wrap_content"
 			android:layout_width="match_parent"
 		    />
+		<LinearLayout
+            android:id="@+id/stat_layout_opponent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="bottom"
+            android:orientation="horizontal" >
+
+            <TextView
+                android:id="@+id/stat_opponent_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0" />
+
+            <ImageView
+                android:id="@+id/image_stat_health"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/health"
+                android:src="@android:drawable/ic_input_add" />
+
+            <TextView
+                android:id="@+id/stat_opponent_health"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0" />
+
+            <ImageView
+                android:id="@+id/image_stat_armor"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/armor"
+                android:src="@android:drawable/ic_lock_lock" />
+
+            <TextView
+                android:id="@+id/stat_opponent_armor"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0" />
+
+            <ImageView
+                android:id="@+id/image_stat_resource"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/resource"
+                android:src="@android:drawable/ic_lock_idle_charging" />
+
+            <TextView
+                android:id="@+id/stat_opponent_resource"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0" />
+        </LinearLayout>
 		<LinearLayout
             android:id="@+id/stat_layout_player"
             android:layout_width="match_parent"

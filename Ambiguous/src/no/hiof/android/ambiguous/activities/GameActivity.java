@@ -39,8 +39,8 @@ public class GameActivity extends Activity implements OnDragListener,
 	private GridView deckView;
 	private GameMachine gameMachine;
 
-	TextView playerstats;
-	TextView opponentstats;
+	TextView playerstatus;
+	TextView opponentstatus;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -65,10 +65,10 @@ public class GameActivity extends Activity implements OnDragListener,
 
 		setupDragDrop(layoutView);
 
-		playerstats = (TextView) findViewById(R.id.stats_player);
-		opponentstats = (TextView) findViewById(R.id.stats_computer);
+		playerstatus = (TextView) findViewById(R.id.stats_player);
+		opponentstatus = (TextView) findViewById(R.id.stats_computer);
 
-		playerstats.setText("start");
+		playerstatus.setText(" ");
 		gameMachine.player.setPlayerUpdateListeners(this);
 		gameMachine.opponent.setPlayerUpdateListeners(this);
 	}
@@ -239,12 +239,12 @@ public class GameActivity extends Activity implements OnDragListener,
 
 	@Override
 	public void onPlayerDeadListener(Player player) {
-		playerstats.setText("Player dead");
+		playerstatus.setText("Player dead");
 	}
 
 	@Override
 	public void onOpponentDeadListener(Player opponent) {
-		opponentstats.setText("Opponent dead");
+		opponentstatus.setText("Opponent dead");
 	}
 
 	@Override
@@ -279,7 +279,7 @@ public class GameActivity extends Activity implements OnDragListener,
 	@Override
 	public void onStatsUpdateListener(Player player, String str) {
 		if (player == gameMachine.player) {
-			playerstats.setText(str);
+			//playerstats.setText(str);
 			TextView playerName = ((TextView)findViewById(R.id.stat_player_name));
 					playerName.setText(player.getName());
 			TextView playerHealth = ((TextView)findViewById(R.id.stat_player_health));
@@ -290,7 +290,15 @@ public class GameActivity extends Activity implements OnDragListener,
 					playerResources.setText(String.valueOf(player.getResources()));
 			
 		} else if (player == gameMachine.opponent) {
-			opponentstats.setText(str);
+			//opponentstats.setText(str);
+			TextView opponentName = ((TextView)findViewById(R.id.stat_opponent_name));
+					opponentName.setText(player.getName());
+			TextView opponentHealth = ((TextView)findViewById(R.id.stat_opponent_health));
+					opponentHealth.setText(String.valueOf(player.getHealth()));
+			TextView opponentArmor = ((TextView)findViewById(R.id.stat_opponent_armor));
+					opponentArmor.setText(String.valueOf(player.getArmor()));
+			TextView opponentResources = ((TextView)findViewById(R.id.stat_opponent_resource));
+					opponentResources.setText(String.valueOf(player.getResources()));
 		}
 	}
 

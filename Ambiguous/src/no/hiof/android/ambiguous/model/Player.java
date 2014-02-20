@@ -144,6 +144,11 @@ public class Player {
 		return this.resources;
 	}
 	
+	public String getName()
+	{
+		return this.name;
+	}
+	
 	private void displayFloatingNumber(int amount, int color)
 	{
 		notifyFloatingText(this, amount,color);

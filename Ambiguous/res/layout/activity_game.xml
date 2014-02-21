@@ -59,7 +59,7 @@
             android:id="@+id/stat_layout_opponent"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="bottom"
+            android:gravity="right"
             android:orientation="horizontal" >
 
             <TextView

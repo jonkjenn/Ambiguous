@@ -38,7 +38,7 @@ public class GameMachine implements OpponentListener {
 		opponentController = new OpponentController(cs);
 		opponentController.setOpponentListener(this);
 
-		player = new Player("Jon");
+		player = new Player("JonAndOrAdrian");
 		player.SetDeck(DeckBuilder.StandardDeck(cards));
 
 		AIController aIController = new AIController(opponent, player,

@@ -4,43 +4,49 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.channels.ClosedChannelException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Network {
-	private static Socket socket;
-	private static String address;
-	private static int port = 19999;
-	private static boolean isServer;
-	private static int socketListeners = 0;
+	private Socket socket;
+	private ServerSocket server;
+	private String address;
+	private int port = 19999;
+	private boolean isServer;
 
-	public static Socket StartSocket(final String address, boolean isServer) {
-		if (socket == null) {
-			openSocket(address, isServer);
-		}
-		else if(Network.isServer != isServer)
-		{
-			closeSocket();			
-			openSocket(address,isServer);
-		}
-		else if(socket.isClosed())
-		{
-			openSocket(address,isServer);
-		}
-        socketListeners++;
-		return socket;
+	public Network(final String address, boolean isServer, NetworkConnectionListener listener) {
+		this.listeners.add(listener);
+		this.address = address;
+		this.isServer = isServer;
+		
+		openSocket();
 	}
 	
-	public static void StopSocket()
+	public void StopSocket()
 	{
-		socketListeners--;
-		if(socketListeners<=0){closeSocket();socket = null;}
+		closeSocket();
 	}
 
-	private static void closeSocket()
+	private void closeSocket()
 	{
-		socketListeners = 0;
-		Thread t = new Thread(new Runnable(){
+					if(socket != null)
+					{
+                        try {
+							socket.close();
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}else if(server != null)
+					{
+						try {
+							server.close();
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+					return;
+		/*Thread t = new Thread(new Runnable(){
 
 			@Override
 			public void run() {
@@ -54,10 +60,10 @@ public class Network {
 				}				
 			}
 		});
-		t.start();
+		t.start();*/
 	}
 	
-	private static void openSocket(final String address, final boolean isServer) {
+	private void openSocket() {
 		Thread t = new Thread(new Runnable() {
 
 			@Override
@@ -68,8 +74,9 @@ public class Network {
 			private void startNetwork() {
 				try {
 					if (isServer) {
-						ServerSocket server = new ServerSocket(port, 1,
+						server = new ServerSocket(port, 1,
 								InetAddress.getByName(address));
+						notifyListeningForConnection();
 						socket = server.accept();
 					} else {
 						socket = new Socket(
@@ -77,7 +84,9 @@ public class Network {
 					}
 					
 					notifyConnected();
-
+				}
+				catch(ClosedChannelException e)
+				{
 				} catch (IOException e) {
 					notifyConnectionFailed(e.getMessage());
 				}
@@ -86,7 +95,7 @@ public class Network {
 		t.start();
 	}
 	
-	private static void notifyConnected()
+	private void notifyConnected()
 	{
 		for(int i=0;i<listeners.size();i++)
 		{
@@ -94,7 +103,7 @@ public class Network {
 		}
 	}
 
-	private static void notifyConnectionFailed(String reason)
+	private void notifyConnectionFailed(String reason)
 	{
 		for(int i=0;i<listeners.size();i++)
 		{
@@ -102,7 +111,7 @@ public class Network {
 		}
 	}
 
-	private static void notifyDisconnected(String reason)
+	private void notifyDisconnected(String reason)
 	{
 		for(int i=0;i<listeners.size();i++)
 		{
@@ -110,7 +119,7 @@ public class Network {
 		}
 	}
 	
-	private static void notifyListeningForConnection()
+	private void notifyListeningForConnection()
 	{
 		for(int i=0;i<listeners.size();i++)
 		{
@@ -118,8 +127,8 @@ public class Network {
 		}
 	}
 	
-	private static List<NetworkConnectionListener> listeners = new ArrayList<Network.NetworkConnectionListener>();
-	public static void setOnNetworkConnectionListener(NetworkConnectionListener listener)
+	private List<NetworkConnectionListener> listeners = new ArrayList<Network.NetworkConnectionListener>();
+	public void setOnNetworkConnectionListener(NetworkConnectionListener listener)
 	{
 		for(int i=0;i<listeners.size();i++)
 		{

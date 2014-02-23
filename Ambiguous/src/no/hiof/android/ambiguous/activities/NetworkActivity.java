@@ -15,7 +15,6 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
-import android.location.Address;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -34,6 +33,7 @@ import android.widget.Toast;
 public class NetworkActivity extends Activity implements NetworkConnectionListener {
 	SQLiteDatabase db;
 	Handler uiHandler;
+	Network network;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -57,7 +57,7 @@ public class NetworkActivity extends Activity implements NetworkConnectionListen
 	@Override
 	protected void onPause() {
 		super.onPause();
-		Network.StopSocket();
+		network.StopSocket();
 	}
 	
 	private void startInterfacePicker(final boolean server) {
@@ -120,8 +120,9 @@ public class NetworkActivity extends Activity implements NetworkConnectionListen
 	}
 
 	private void doStartServer(String address) {
-		Network.setOnNetworkConnectionListener(this);
-		Network.StartSocket(address,true);
+		setStatusText("Connecting...");
+		if(network != null){network.StopSocket();}
+		network = new Network(address,true,this);
 		// Pretending to tell you that a connection has been made
 		Toast.makeText(this, "Starting Server", Toast.LENGTH_SHORT).show();
 	}
@@ -173,8 +174,7 @@ public class NetworkActivity extends Activity implements NetworkConnectionListen
 	
 	private void startClient(String address)
 	{
-		Network.setOnNetworkConnectionListener(this);
-		Network.StartSocket(address,false);
+		network = new Network(address,false,this);
 	}
 
 	public void showClientAddressPicker(View view) {
@@ -195,9 +195,14 @@ public class NetworkActivity extends Activity implements NetworkConnectionListen
 			public void run() {
                 shortToast("Connected");
                 getActionBar().setIcon(android.R.drawable.presence_online);
-                ((TextView)findViewById(R.id.network_status)).setText("Client connected");
+                setStatusText("Connected.");
 			}
 		});
+	}
+	
+	private void setStatusText(String text)
+	{
+        ((TextView)findViewById(R.id.network_status)).setText(text);
 	}
 
 	@Override
@@ -206,7 +211,7 @@ public class NetworkActivity extends Activity implements NetworkConnectionListen
 			
 			@Override
 			public void run() {
-                shortToast("Connection failed");
+                shortToast("Connection failed: " + reason);
                 ((TextView)findViewById(R.id.network_status)).setText("Connection failed: " + reason);
 			}
 		});
@@ -220,8 +225,13 @@ public class NetworkActivity extends Activity implements NetworkConnectionListen
 
 	@Override
 	public void onListeningForConnection(String address, int port) {
-		// TODO Auto-generated method stub
-		
+		uiHandler.post(new Runnable() {
+			
+			@Override
+			public void run() {
+                setStatusText("Listening for connection");
+			}
+		});
 	}
 
 	@Override

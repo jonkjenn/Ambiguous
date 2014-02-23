@@ -24,14 +24,16 @@ public class Server {
 				try {
 					ServerSocket socket = new ServerSocket(19999, 1,
 							InetAddress.getByName(address));
-					//Log.d("Nettverk", "Listening");
 					Socket connection = socket.accept();
 
+					//Send and receive a pattern to confirm its a real client
 					DataOutputStream out = new DataOutputStream(connection.getOutputStream());
 					out.writeLong(0xA7B7C7D7);
 					DataInputStream in = new DataInputStream(connection.getInputStream());
 					if(in.readLong()==0xA7B7C7D7)
 					{
+						out.close();
+						in.close();
 						outputHandler.obtainMessage(ServerStates.CONNECTED.ordinal(),connection).sendToTarget();
 					}
 					else

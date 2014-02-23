@@ -3,7 +3,7 @@ package no.hiof.android.ambiguous.model;
 import java.util.ArrayList;
 import java.util.List;
 
-import android.graphics.Color;
+import no.hiof.android.ambiguous.model.Effect.EffectType;
 
 public class Player {
 	//private int id;
@@ -16,7 +16,6 @@ public class Player {
 	private int armor = 0;
 	private int resources = 10;
 	private boolean alive = true;
-	
 	
 	public Player(String name)
 	{
@@ -69,7 +68,7 @@ public class Player {
 
 	public void Damage(int amount)
 	{
-		displayFloatingNumber(amount*-1,Color.RED);
+		notifyStatChange(amount*-1,EffectType.DAMAGE);
 		if(this.armor>=amount)
 		{
 			this.armor -= amount;
@@ -92,7 +91,7 @@ public class Player {
 	{
 		this.health = (this.health + amount>this.maxHealth?this.maxHealth:this.health+amount);
 		notifyStatsUpdateListeners();
-		displayFloatingNumber(amount,Color.rgb(45, 190, 50));
+		notifyStatChange(amount,EffectType.HEALTH);//Color.rgb(45, 190, 50));
 	}
 
 	public void ModArmor(int amount)
@@ -101,7 +100,7 @@ public class Player {
 		notifyStatsUpdateListeners();
 		notifyArmorUpdateListener();
 		
-		displayFloatingNumber(amount,Color.BLUE);
+		notifyStatChange(amount,EffectType.ARMOR);
 	}
 
 	public boolean getAlive()
@@ -120,7 +119,7 @@ public class Player {
 	public void ModResource(int amount)
 	{
 		this.resources = (this.resources + amount < 0?0:this.resources+amount);
-		if(amount>1){displayFloatingNumber(amount,Color.rgb(180,180,50));}
+		notifyStatChange(amount,EffectType.RESOURCE);//Color.rgb(180,180,50));
 		notifyStatsUpdateListeners();
 	}
 	
@@ -149,27 +148,20 @@ public class Player {
 		return this.name;
 	}
 	
-	private void displayFloatingNumber(int amount, int color)
-	{
-		notifyFloatingText(this, amount,color);
-/*
-		*/
-	}
-	
 	private ArrayList<PlayerUpdateListener> listeners = new ArrayList<PlayerUpdateListener>();
 	public interface PlayerUpdateListener
 	{
 		void onCardsUpdateListener(Player player, Card[] cards);		
 		void onStatsUpdateListener(Player player,String str);
 		void onArmorUpdateListener(Player player, int armor);
-		void onFloatingText(Player player, int amount, int color);
+		void onStatChange(Player player, int amount, Effect.EffectType type);
 	}
 	
-	private void notifyFloatingText(Player player, int amount, int color)
+	private void notifyStatChange(int amount, Effect.EffectType type)
 	{
 		for(PlayerUpdateListener listener:listeners)
 		{
-			listener.onFloatingText(this, amount,color);
+			listener.onStatChange(this, amount,type);
 		}
 	}
 	

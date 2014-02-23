@@ -7,6 +7,7 @@ import no.hiof.android.ambiguous.R;
 import no.hiof.android.ambiguous.adapter.GameDeckAdapter;
 import no.hiof.android.ambiguous.layouts.CardLayout;
 import no.hiof.android.ambiguous.model.Card;
+import no.hiof.android.ambiguous.model.Effect.EffectType;
 import no.hiof.android.ambiguous.model.Player;
 import no.hiof.android.ambiguous.model.Player.PlayerUpdateListener;
 import android.app.ActionBar;
@@ -28,7 +29,6 @@ import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.widget.GridView;
-import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -47,7 +47,6 @@ public class GameActivity extends Activity implements OnDragListener,
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_game);
 		layoutView = findViewById(R.id.game_layout);
-		
 		
 		ActionBar actionBar = getActionBar();
 		actionBar.hide();
@@ -215,7 +214,7 @@ public class GameActivity extends Activity implements OnDragListener,
 		}
 		return false;
 	}
-
+	
 	@Override
 	public void onCouldNotPlayCardListener(int position) {
 		stopDrag(position);
@@ -259,7 +258,7 @@ public class GameActivity extends Activity implements OnDragListener,
 	}
 
 	@Override
-	public void onOpponentPlayCard(Card card) {
+	public void onOpponentPlayCard(Card card,boolean generateDamage) {
 		opponentPlayCard(card);
 	}
 
@@ -303,7 +302,26 @@ public class GameActivity extends Activity implements OnDragListener,
 	}
 
 	@Override
-	public void onFloatingText(Player player, int amount, int color) {
+	public void onStatChange(Player player, int amount, EffectType type) {
+		int color;
+		switch(type)
+		{
+		case ARMOR:
+			color = Color.BLUE;
+			break;
+		case DAMAGE:
+			color = Color.RED;
+			break;
+		case HEALTH:
+			color = Color.rgb(45, 190, 50);
+			break;
+		case RESOURCE:
+			color = Color.rgb(180,180,50);
+			break;
+		default:
+			color = Color.WHITE;
+			break;
+		}
 		final boolean isPlayer = player==gameMachine.player;
 		final ViewGroup viewGroup = (ViewGroup) findViewById((isPlayer ? R.id.floating_container
 				: R.id.floating_container2));
@@ -364,6 +382,24 @@ public class GameActivity extends Activity implements OnDragListener,
 
 	@Override
 	public void onArmorUpdateListener(Player player, int armor) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onOpponentUsedEffect(EffectType type, Player target, int amount) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onOpponentTurnDone() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onPlayerUsedeffect(EffectType type, Player target, int amount) {
 		// TODO Auto-generated method stub
 		
 	}

@@ -8,6 +8,7 @@ import no.hiof.android.ambiguous.OpponentController.OpponentListener;
 import no.hiof.android.ambiguous.datasource.CardDataSource;
 import no.hiof.android.ambiguous.model.Card;
 import no.hiof.android.ambiguous.model.Effect;
+import no.hiof.android.ambiguous.model.Effect.EffectType;
 import no.hiof.android.ambiguous.model.Player;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Handler;
@@ -34,7 +35,7 @@ public class GameMachine implements OpponentListener {
 		opponent = new Player("Computer");
 		opponent.SetDeck(DeckBuilder.StandardDeck(cards));
 
-		opponentController = new OpponentController();
+		opponentController = new OpponentController(cs);
 		opponentController.setOpponentListener(this);
 
 		player = new Player("Jon");
@@ -89,7 +90,7 @@ public class GameMachine implements OpponentListener {
 	}
 
 	public void PlayerPlayCard(int card) {
-		playCard(card);
+		playCard(player, card);
 	}
 
 	public void PlayerDiscardCard(int card) {
@@ -113,46 +114,43 @@ public class GameMachine implements OpponentListener {
 		if (state != states.PLAYER_TURN) {
 			return;
 		}
-		switch (state) {
-		case PLAYER_TURN:
-			player.CardUsed(position);
-			state = states.PLAYER_DONE;
-			break;
-		default:
-			break;
-		}
+        player.CardUsed(position);
+        state = states.PLAYER_DONE;
 		doChangeState();
-
 	}
 
-	private void playCard(int position) {
+	private void playCard(Player player, int position) {
 		if (state != states.PLAYER_TURN) {
 			notifyCouldNotPlayCard(position);
 			return;
 		}
 		Card card = player.GetCards()[position];
-		playCard(card, position);
+		playCard(player, card, position);
 		doChangeState();
 	}
 
-	private void playCard(Card card, int position) {
-		if (card == null) {
+	private void playCard(Player caster, Card card, int position) {
+		if (card == null || caster == this.player && state == states.OPPONENT_TURN 
+				|| player == this.opponent && state == states.PLAYER_TURN
+				||!caster.UseResources(card.getCost())) 
+		{
+            if(state == states.PLAYER_TURN){notifyCouldNotPlayCard(position);}
 			return;
 		}
-		switch (state) {
-		case OPPONENT_TURN:
-			useCard(card, opponent, player, position);
-			break;
-		case PLAYER_TURN:
-			useCard(card, player, opponent, position);
-			break;
-		default:
-			break;
+
+		Player target = (caster == player?opponent:player);
+		
+		useCard(card,caster,target);
+		caster.CardUsed(position);
+		
+		if(state == states.PLAYER_TURN)
+		{
+            notifyPlayerPlayedCard(player.GetCard(position));
+            state = states.PLAYER_DONE;
 		}
 	}
 
-	private void useCard(Card card, Player caster, Player opponent, int position) {
-		if (caster.UseResources(card.getCost())) {
+	public void useCard(Card card, Player caster, Player opponent) {
 			for (int i = 0; i < card.getEffects().size(); i++) {
 				Effect e = card.getEffects().get(i);
 				switch (e.getTarget()) {
@@ -166,33 +164,48 @@ public class GameMachine implements OpponentListener {
 					break;
 				}
 			}
-			if (state == states.PLAYER_TURN) {
-				caster.CardUsed(position);
-				notifyPlayerPlayedCard(player.GetCard(position));
-				state = states.PLAYER_DONE;
-			}
-		} else {
-			if (state == states.PLAYER_TURN) {
-				notifyCouldNotPlayCard(position);
-			}
+	}
+	
+	public void useEffect(Effect e, Player target, int amount)
+	{
+		switch (e.getType()) {
+		case ARMOR:
+			target.ModArmor(amount);
+			break;
+		case DAMAGE:
+			target.Damage(amount);
+			break;
+		case HEALTH:
+			target.Heal(amount);
+			break;
+		case RESOURCE:
+			target.ModResource(amount);
+			break;
+		default:
+			break;
+		}
+		
+		if(state == states.PLAYER_TURN)
+		{
+			notifyPlayerUsedEffect(e.getType(),target,amount);
 		}
 	}
 
-	private void useEffect(Effect e, Player target) {
+	public void useEffect(Effect e, Player target) {
 		switch (e.getType()) {
 		case ARMOR:
-			target.ModArmor(e.getMinValue());
+			useEffect(e,target,(e.getMinValue()));
 			break;
 		case DAMAGE:
-			target.Damage(RandomAmountGenerator.GenerateAmount(e.getMinValue(),
+			useEffect(e,target,RandomAmountGenerator.GenerateAmount(e.getMinValue(),
 					e.getMaxValue(), e.getCrit()));
 			break;
 		case HEALTH:
-			target.Heal(RandomAmountGenerator.GenerateAmount(e.getMinValue(),
+			useEffect(e,target,RandomAmountGenerator.GenerateAmount(e.getMinValue(),
 					e.getMaxValue(), e.getCrit()));
 			break;
 		case RESOURCE:
-			target.ModResource(e.getMinValue());
+			useEffect(e,target,e.getMinValue());
 			break;
 		default:
 			break;
@@ -247,6 +260,12 @@ public class GameMachine implements OpponentListener {
 		}
 	}
 
+	private void notifyPlayerUsedEffect(EffectType type, Player target, int amount){
+		for (GameMachineListener listener : gameMachineListeners) {
+			listener.onPlayerUsedeffect(type,target,amount);
+		}
+	}
+
 	/*
 	 * private void notifyOpponentPlayedCard(Card card) {
 	 * for(GameMachineListener listener:gameMachineListeners) {
@@ -276,21 +295,56 @@ public class GameMachine implements OpponentListener {
 		 */
 
 		void onPlayerPlayedCard(Card card);
+		
+		void onPlayerUsedeffect(EffectType type, Player target, int amount);
 
 		void onPlayerDiscardCard(Card card);
 	}
 
 	@Override
-	public void onOpponentPlayCard(Card card) {
-		playCard(card, 0);
-		state = states.PLAYER_TURN;
-		doChangeState();
+	public void onOpponentPlayCard(Card card, boolean generateDamage) {
+		if(generateDamage)
+		{
+            playCard(opponent,card, 0);
+            state = states.PLAYER_TURN;
+            doChangeState();
+		}
 	}
 
 	@Override
 	public void onOpponentDiscardCard(Card card) {
 		state = states.PLAYER_TURN;
 		doChangeState();
+	}
+
+	@Override
+	public void onOpponentUsedEffect(EffectType type, Player target, int amount) {
+		switch(type)
+		{
+		case ARMOR:
+			target.ModArmor(amount);
+			break;
+		case DAMAGE:
+			target.Damage(amount);
+			break;
+		case HEALTH:
+			target.Heal(amount);
+			break;
+		case RESOURCE:
+			target.ModResource(amount);
+			break;
+		default:
+			break;
+		}
+	}
+
+	@Override
+	public void onOpponentTurnDone() {
+		if(state == states.OPPONENT_TURN)
+		{
+			state = states.PLAYER_TURN;
+			changeState();
+		}
 	}
 
 }

@@ -1,15 +1,12 @@
 package no.hiof.android.ambiguous.activities;
 
-import java.net.Socket;
 import java.util.List;
 
 import no.hiof.android.ambiguous.Db;
-import no.hiof.android.ambiguous.NetworkOpponent;
-import no.hiof.android.ambiguous.OpponentController;
 import no.hiof.android.ambiguous.R;
 import no.hiof.android.ambiguous.datasource.ConnectionDataSource;
-import no.hiof.android.ambiguous.network.Client;
-import no.hiof.android.ambiguous.network.Server;
+import no.hiof.android.ambiguous.network.Network;
+import no.hiof.android.ambiguous.network.Network.NetworkConnectionListener;
 import no.hiof.android.ambiguous.network.Utility;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
@@ -18,16 +15,14 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
+import android.location.Address;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Handler.Callback;
-import android.os.Message;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.TextView;
 import android.widget.EditText;
 import android.widget.PopupMenu;
 import android.widget.PopupMenu.OnMenuItemClickListener;
@@ -36,14 +31,16 @@ import android.widget.Toast;
 
 @SuppressLint("NewApi")
 @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-public class NetworkActivity extends Activity {
+public class NetworkActivity extends Activity implements NetworkConnectionListener {
 	SQLiteDatabase db;
+	Handler uiHandler;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_network);
 		this.db = Db.getDb(getApplicationContext()).getWritableDatabase();
+		this.uiHandler = new Handler(getMainLooper());
 	}
 
 	@Override
@@ -56,8 +53,14 @@ public class NetworkActivity extends Activity {
 		}
 		return true;
 	}
-
-	private void PickInterface(final boolean server) {
+	
+	@Override
+	protected void onPause() {
+		super.onPause();
+		Network.StopSocket();
+	}
+	
+	private void startInterfacePicker(final boolean server) {
 		Runnable run = new Runnable() {
 
 			@Override
@@ -113,31 +116,12 @@ public class NetworkActivity extends Activity {
 	}
 
 	public void startServer(View view) {
-		PickInterface(true);
-		// Server s = new Server();
+		startInterfacePicker(true);
 	}
 
 	private void doStartServer(String address) {
-		Handler h = new Handler(getMainLooper(), new Callback() {
-
-			@Override
-			public boolean handleMessage(Message msg) {
-				switch (Server.ServerStates.values()[msg.what]) {
-				case CONNECTED:
-					getActionBar().setIcon(android.R.drawable.presence_online);
-					((TextView)findViewById(R.id.network_status)).setText("Client connected");
-					break;
-				case CONNECTION_FAILED:
-					new AlertDialog.Builder(NetworkActivity.this)
-							.setTitle("Connection failed")
-							.setMessage("Could not connect").show();
-					break;
-				}
-
-				return true;
-			}
-		});
-		Server s = new Server(address, h);
+		Network.setOnNetworkConnectionListener(this);
+		Network.StartSocket(address,true);
 		// Pretending to tell you that a connection has been made
 		Toast.makeText(this, "Starting Server", Toast.LENGTH_SHORT).show();
 	}
@@ -189,34 +173,60 @@ public class NetworkActivity extends Activity {
 	
 	private void startClient(String address)
 	{
-        Handler h = new Handler(getMainLooper(),new Callback() {
-			
-			@Override
-			public boolean handleMessage(Message msg) {
-				switch(Client.ClientStates.values()[msg.what])
-				{
-				case CONNECTED:
-					shortToast("Connected");
-					NetworkOpponent no = new NetworkOpponent(new OpponentController(), (Socket)msg.obj);
-					break;
-				case CONNECTION_FAILED:
-					shortToast("Connection failed");
-					break;
-				}
-				return false;
-			}
-		});
-        Client client = new Client(address,h);
-        client.Connect();
+		Network.setOnNetworkConnectionListener(this);
+		Network.StartSocket(address,false);
 	}
 
 	public void showClientAddressPicker(View view) {
-		PickInterface(false);
+		startInterfacePicker(false);
 	}
 
 	/* Called when the user clicks the network action from the action bar */
 	public void onActionNetworkClicked(MenuItem menuItem) {
 		Intent intent = new Intent(this, NetworkActivity.class);
 		startActivity(intent);
+	}
+
+	@Override
+	public void onConnected(String address, int port, boolean isServer) {
+		uiHandler.post(new Runnable() {
+			
+			@Override
+			public void run() {
+                shortToast("Connected");
+                getActionBar().setIcon(android.R.drawable.presence_online);
+                ((TextView)findViewById(R.id.network_status)).setText("Client connected");
+			}
+		});
+	}
+
+	@Override
+	public void onConnectionFailed(final String reason) {
+		uiHandler.post(new Runnable() {
+			
+			@Override
+			public void run() {
+                shortToast("Connection failed");
+                ((TextView)findViewById(R.id.network_status)).setText("Connection failed: " + reason);
+			}
+		});
+	}
+
+	@Override
+	public void onDisconnected(String reason) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onListeningForConnection(String address, int port) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onTryingToConnectToServer(String address, int port) {
+		// TODO Auto-generated method stub
+		
 	}
 }

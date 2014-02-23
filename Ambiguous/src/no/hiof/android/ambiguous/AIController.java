@@ -4,6 +4,7 @@ import java.util.Random;
 
 import no.hiof.android.ambiguous.model.Card;
 import no.hiof.android.ambiguous.model.Effect;
+import no.hiof.android.ambiguous.model.Effect.EffectType;
 import no.hiof.android.ambiguous.model.Player;
 
 public class AIController implements GameMachine.GameMachineListener{
@@ -53,7 +54,7 @@ public class AIController implements GameMachine.GameMachineListener{
 		} else {
 			//opponentPlayCard(opponent.GetCards()[pos]);
 			//playCard(computer.GetCards()[pos], pos);
-			oc.PlayCard(computer.GetCard(pos));
+			oc.PlayCard(computer.GetCard(pos),true);
 			computer.CardUsed(pos);
 		}
 		computer.ModResource(5);
@@ -79,6 +80,12 @@ public class AIController implements GameMachine.GameMachineListener{
 
 	@Override
 	public void onPlayerDiscardCard(Card card) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onPlayerUsedeffect(EffectType type, Player target, int amount) {
 		// TODO Auto-generated method stub
 		
 	}

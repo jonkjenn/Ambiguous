@@ -350,7 +350,12 @@ public class GameActivity extends Activity implements OnDragListener,
 			
 			@Override
 			public void onAnimationEnd(Animation animation) {
-				viewGroup.removeView(floatingText);
+				new Handler().post(new Runnable() {
+			        public void run() {
+			        	viewGroup.removeView(floatingText);
+			        }
+			    });
+				
 			}
 		});
 		fadeOut.setDuration(500);

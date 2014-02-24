@@ -1,12 +1,17 @@
 package no.hiof.android.ambiguous.activities;
 
+import java.io.Closeable;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.List;
 
 import no.hiof.android.ambiguous.Db;
 import no.hiof.android.ambiguous.R;
 import no.hiof.android.ambiguous.datasource.ConnectionDataSource;
-import no.hiof.android.ambiguous.network.Network;
+import no.hiof.android.ambiguous.network.CloseSocket;
 import no.hiof.android.ambiguous.network.Network.NetworkConnectionListener;
+import no.hiof.android.ambiguous.network.OpenSocket;
+import no.hiof.android.ambiguous.network.OpenSocket.OpenSocketListener;
 import no.hiof.android.ambiguous.network.Utility;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
@@ -30,10 +35,11 @@ import android.widget.Toast;
 
 @SuppressLint("NewApi")
 @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-public class NetworkActivity extends Activity implements NetworkConnectionListener {
+public class NetworkActivity extends Activity implements NetworkConnectionListener, OpenSocketListener {
 	SQLiteDatabase db;
 	Handler uiHandler;
-	Network network;
+	Socket socket;
+	ServerSocket server;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -57,7 +63,13 @@ public class NetworkActivity extends Activity implements NetworkConnectionListen
 	@Override
 	protected void onPause() {
 		super.onPause();
-		network.StopSocket();
+		closeSockets();
+	}
+	
+	private void closeSockets()
+	{
+		if(socket != null){new CloseSocket().execute((Closeable)this.socket);}
+		if(server != null){new CloseSocket().execute((Closeable)this.server);}
 	}
 	
 	private void startInterfacePicker(final boolean server) {
@@ -121,13 +133,17 @@ public class NetworkActivity extends Activity implements NetworkConnectionListen
 
 	private void doStartServer(String address) {
 		setStatusText("Connecting...");
-		if(network != null){network.StopSocket();}
-		network = new Network(address,true,this);
+		closeSockets();
+		//if(network != null){network.StopSocket();}
+		//network = new Network(address,true,this);
+		new OpenSocket().setup(address,19999,true).execute(this);
 		// Pretending to tell you that a connection has been made
 		Toast.makeText(this, "Starting Server", Toast.LENGTH_SHORT).show();
 	}
 
 	private void doStartClient(final String address,boolean useAddress) {
+
+    closeSockets();
 		
 	if(useAddress)
 	{
@@ -174,7 +190,7 @@ public class NetworkActivity extends Activity implements NetworkConnectionListen
 	
 	private void startClient(String address)
 	{
-		network = new Network(address,false,this);
+		new OpenSocket().setup(address,19999,false).execute(this);
 	}
 
 	public void showClientAddressPicker(View view) {
@@ -220,7 +236,6 @@ public class NetworkActivity extends Activity implements NetworkConnectionListen
 	@Override
 	public void onDisconnected(String reason) {
 		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
@@ -238,5 +253,19 @@ public class NetworkActivity extends Activity implements NetworkConnectionListen
 	public void onTryingToConnectToServer(String address, int port) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public void onOpenSocketListener(Socket socket, ServerSocket server, Exception exception){
+		if(exception != null){
+                shortToast("Connection failed: " + exception.getMessage());
+                setStatusText("Connection failed: " + exception.getMessage());
+                return;
+		}
+		if(socket != null){this.socket = socket;}
+		if(server != null){this.server = server;}
+        shortToast("Connected");
+        getActionBar().setIcon(android.R.drawable.presence_online);
+        setStatusText("Connected.");
 	}
 }

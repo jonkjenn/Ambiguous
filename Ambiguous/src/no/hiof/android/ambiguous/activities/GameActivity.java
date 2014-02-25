@@ -51,6 +51,7 @@ public class GameActivity extends Activity implements OnDragListener,
 	private Player savedOpponent;
 	private State savedState;
 
+	// playerStatus currently used for status messages, opponentStatus indicates turns. Should rename!
 	TextView playerStatus;
 	TextView opponentStatus;
 	private boolean isNetwork;
@@ -73,9 +74,12 @@ public class GameActivity extends Activity implements OnDragListener,
 		opponentStatus = (TextView) findViewById(R.id.stats_computer);
 
 		playerStatus.setText(" ");
+		opponentStatus.setText(" ");
 		if(savedInstanceState != null){
-			String savedText = savedInstanceState.getString(KEY_TEXT_PLAYER_VALUE);
-			playerStatus.setText(savedText);
+			String savedPlayerText = savedInstanceState.getString(KEY_TEXT_PLAYER_VALUE);
+			playerStatus.setText(savedPlayerText);
+			String savedOpponentText = savedInstanceState.getString(KEY_TEXT_OPPONENT_VALUE);
+			opponentStatus.setText(savedOpponentText);
 			savedPlayer = savedInstanceState.getParcelable("Player");
 			savedOpponent = savedInstanceState.getParcelable("Opponent");
 			savedState = GameMachine.State.values()[savedInstanceState.getInt("State")];
@@ -284,16 +288,19 @@ public class GameActivity extends Activity implements OnDragListener,
 	@Override
 	public void onPlayerTurnListener() {
 		setupDragDrop(layoutView);
+		// Opponenstatus currently used as turn indicator
+		opponentStatus.setText(gameMachine.player.getName()+"'s turn");
 	}
 
 	@Override
 	public void onPlayerDoneListener() {
 		this.layoutView.setOnDragListener(null);
+		opponentStatus.setText(gameMachine.opponent.getName()+"'s turn");
 	}
 
 	@Override
 	public void onOpponentTurnListener() {
-		// TODO Auto-generated method stub
+		//opponentStatus.setText(gameMachine.opponent.getName()+"'s turn");
 
 	}
 
@@ -304,7 +311,7 @@ public class GameActivity extends Activity implements OnDragListener,
 
 	@Override
 	public void onOpponentDeadListener(Player opponent) {
-		opponentStatus.setText("Opponent dead");
+		playerStatus.setText("Opponent dead");
 	}
 
 	@Override
@@ -360,6 +367,7 @@ public class GameActivity extends Activity implements OnDragListener,
 			TextView opponentResources = ((TextView)findViewById(R.id.stat_opponent_resource));
 					opponentResources.setText(String.valueOf(player.getResources()));
 		}
+		
 	}
 
 	@Override

@@ -71,6 +71,26 @@ public class GameActivity extends Activity implements OnDragListener,
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_game);
 		layoutView = findViewById(R.id.game_layout);
+
+		playerstatus = (TextView) findViewById(R.id.stats_player);
+		opponentstatus = (TextView) findViewById(R.id.stats_computer);
+
+		playerstatus.setText(" ");
+		if(savedInstanceState != null){
+			String savedText = savedInstanceState.getString(KEY_TEXT_PLAYER_VALUE);
+			playerstatus.setText(savedText);
+			/*((TextView)findViewById(R.id.stat_player_name)).setText(savedInstanceState.getString(KEY_TEXT_PLAYER_NAME));
+			((TextView)findViewById(R.id.stat_player_health)).setText(savedInstanceState.getString(KEY_TEXT_PLAYER_HEALTH));
+			((TextView)findViewById(R.id.stat_player_armor)).setText(savedInstanceState.getString(KEY_TEXT_PLAYER_ARMOR));
+			((TextView)findViewById(R.id.stat_player_resource)).setText(savedInstanceState.getString(KEY_TEXT_PLAYER_RESOURCE));
+			((TextView)findViewById(R.id.stat_opponent_name)).setText(savedInstanceState.getString(KEY_TEXT_OPPONENT_NAME));
+			((TextView)findViewById(R.id.stat_opponent_health)).setText(savedInstanceState.getString(KEY_TEXT_OPPONENT_HEALTH));
+			((TextView)findViewById(R.id.stat_opponent_armor)).setText(savedInstanceState.getString(KEY_TEXT_OPPONENT_ARMOR));
+			((TextView)findViewById(R.id.stat_opponent_resource)).setText(savedInstanceState.getString(KEY_TEXT_OPPONENT_RESOURCE));
+			*/
+			gameMachine.player = savedInstanceState.getParcelable("Player");
+			gameMachine.opponent = savedInstanceState.getParcelable("Opponent");
+		}
 		
 		ActionBar actionBar = getActionBar();
 		actionBar.hide();
@@ -103,25 +123,7 @@ public class GameActivity extends Activity implements OnDragListener,
 
 		setupDragDrop(layoutView);
 
-		playerstatus = (TextView) findViewById(R.id.stats_player);
-		opponentstatus = (TextView) findViewById(R.id.stats_computer);
 
-		playerstatus.setText(" ");
-		if(savedInstanceState != null){
-			String savedText = savedInstanceState.getString(KEY_TEXT_PLAYER_VALUE);
-			playerstatus.setText(savedText);
-			/*((TextView)findViewById(R.id.stat_player_name)).setText(savedInstanceState.getString(KEY_TEXT_PLAYER_NAME));
-			((TextView)findViewById(R.id.stat_player_health)).setText(savedInstanceState.getString(KEY_TEXT_PLAYER_HEALTH));
-			((TextView)findViewById(R.id.stat_player_armor)).setText(savedInstanceState.getString(KEY_TEXT_PLAYER_ARMOR));
-			((TextView)findViewById(R.id.stat_player_resource)).setText(savedInstanceState.getString(KEY_TEXT_PLAYER_RESOURCE));
-			((TextView)findViewById(R.id.stat_opponent_name)).setText(savedInstanceState.getString(KEY_TEXT_OPPONENT_NAME));
-			((TextView)findViewById(R.id.stat_opponent_health)).setText(savedInstanceState.getString(KEY_TEXT_OPPONENT_HEALTH));
-			((TextView)findViewById(R.id.stat_opponent_armor)).setText(savedInstanceState.getString(KEY_TEXT_OPPONENT_ARMOR));
-			((TextView)findViewById(R.id.stat_opponent_resource)).setText(savedInstanceState.getString(KEY_TEXT_OPPONENT_RESOURCE));
-			*/
-			gameMachine.player = savedInstanceState.getParcelable("Player");
-			gameMachine.opponent = savedInstanceState.getParcelable("Opponent");
-		}
 		
 		gameMachine.player.setPlayerUpdateListeners(this);
 		gameMachine.opponent.setPlayerUpdateListeners(this);

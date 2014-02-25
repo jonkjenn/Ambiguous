@@ -48,13 +48,23 @@ public class GameActivity extends Activity implements OnDragListener,
 
 	TextView playerstatus;
 	TextView opponentstatus;
-	
 	private boolean isNetwork;
 	private String address;
 	private int port;
 	private boolean isServer;
 	private Socket socket;
 	private ServerSocket server;
+
+	private static final String KEY_TEXT_PLAYER_VALUE = "playerTextValue";
+	private static final String KEY_TEXT_OPPONENT_VALUE = "opponentTextValue";
+	/*private static final String KEY_TEXT_PLAYER_NAME = "playerNameValue";
+	private static final String KEY_TEXT_PLAYER_HEALTH = "playerHealthValue";
+	private static final String KEY_TEXT_PLAYER_ARMOR = "playerArmorValue";
+	private static final String KEY_TEXT_PLAYER_RESOURCE = "playerResourceValue";
+	private static final String KEY_TEXT_OPPONENT_NAME = "opponentNameValue";
+	private static final String KEY_TEXT_OPPONENT_HEALTH = "opponentHealthValue";
+	private static final String KEY_TEXT_OPPONENT_ARMOR = "opponentArmorValue";
+	private static final String KEY_TEXT_OPPONENT_RESOURCE = "opponentResourceValue";*/
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -97,8 +107,41 @@ public class GameActivity extends Activity implements OnDragListener,
 		opponentstatus = (TextView) findViewById(R.id.stats_computer);
 
 		playerstatus.setText(" ");
+		if(savedInstanceState != null){
+			String savedText = savedInstanceState.getString(KEY_TEXT_PLAYER_VALUE);
+			playerstatus.setText(savedText);
+			/*((TextView)findViewById(R.id.stat_player_name)).setText(savedInstanceState.getString(KEY_TEXT_PLAYER_NAME));
+			((TextView)findViewById(R.id.stat_player_health)).setText(savedInstanceState.getString(KEY_TEXT_PLAYER_HEALTH));
+			((TextView)findViewById(R.id.stat_player_armor)).setText(savedInstanceState.getString(KEY_TEXT_PLAYER_ARMOR));
+			((TextView)findViewById(R.id.stat_player_resource)).setText(savedInstanceState.getString(KEY_TEXT_PLAYER_RESOURCE));
+			((TextView)findViewById(R.id.stat_opponent_name)).setText(savedInstanceState.getString(KEY_TEXT_OPPONENT_NAME));
+			((TextView)findViewById(R.id.stat_opponent_health)).setText(savedInstanceState.getString(KEY_TEXT_OPPONENT_HEALTH));
+			((TextView)findViewById(R.id.stat_opponent_armor)).setText(savedInstanceState.getString(KEY_TEXT_OPPONENT_ARMOR));
+			((TextView)findViewById(R.id.stat_opponent_resource)).setText(savedInstanceState.getString(KEY_TEXT_OPPONENT_RESOURCE));
+			*/
+			gameMachine.player = savedInstanceState.getParcelable("Player");
+			gameMachine.opponent = savedInstanceState.getParcelable("Opponent");
+		}
+		
 		gameMachine.player.setPlayerUpdateListeners(this);
 		gameMachine.opponent.setPlayerUpdateListeners(this);
+	}
+	
+	@Override
+	protected void onSaveInstanceState(Bundle outState){
+		super.onSaveInstanceState(outState);
+		/*outState.putString(KEY_TEXT_PLAYER_VALUE, (String)playerstatus.getText());
+		outState.putString(KEY_TEXT_PLAYER_NAME, (String)((TextView)findViewById(R.id.stat_player_name)).getText());
+		outState.putString(KEY_TEXT_PLAYER_HEALTH, (String)((TextView)findViewById(R.id.stat_player_health)).getText());
+		outState.putString(KEY_TEXT_PLAYER_ARMOR, (String)((TextView)findViewById(R.id.stat_player_armor)).getText());
+		outState.putString(KEY_TEXT_PLAYER_RESOURCE, (String)((TextView)findViewById(R.id.stat_player_resource)).getText());
+		outState.putString(KEY_TEXT_OPPONENT_NAME, (String)((TextView)findViewById(R.id.stat_opponent_name)).getText());
+		outState.putString(KEY_TEXT_OPPONENT_ARMOR, (String)((TextView)findViewById(R.id.stat_opponent_armor)).getText());
+		outState.putString(KEY_TEXT_OPPONENT_RESOURCE, (String)((TextView)findViewById(R.id.stat_opponent_resource)).getText());
+		*/
+		outState.putParcelable("Player", gameMachine.player);
+		outState.putParcelable("Opponent", gameMachine.opponent);
+		
 	}
 
 	private void opponentPlayCard(Card card) {
@@ -379,7 +422,12 @@ public class GameActivity extends Activity implements OnDragListener,
 			
 			@Override
 			public void onAnimationEnd(Animation animation) {
-				viewGroup.removeView(floatingText);
+				new Handler().post(new Runnable() {
+			        public void run() {
+			        	viewGroup.removeView(floatingText);
+			        }
+			    });
+				
 			}
 		});
 		fadeOut.setDuration(500);

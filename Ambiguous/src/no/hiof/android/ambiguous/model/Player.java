@@ -3,9 +3,13 @@ package no.hiof.android.ambiguous.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import no.hiof.android.ambiguous.model.Effect.EffectType;
 
-public class Player {
+public class Player implements Parcelable{
+	private int mData;
 	//private int id;
 	private String name;
 	private List<Card> deck;
@@ -195,5 +199,33 @@ public class Player {
 		{
 			listener.onStatsUpdateListener(this,getStats());			
 		}
+	}
+
+	@Override
+	public int describeContents() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	/** save object in parcel */
+	@Override
+	public void writeToParcel(Parcel out, int flags) {
+		out.writeInt(mData);
+		
+	}
+	
+	public static final Parcelable.Creator<Player> CREATOR
+	= new Parcelable.Creator<Player>() {
+		public Player createFromParcel(Parcel in) {
+			return new Player(in);
+		}
+		public Player[] newArray(int size) {
+			return new Player[size];
+		}
+	};
+	
+	/** recreate object from parcel */
+	private Player(Parcel in){
+		mData = in.readInt();
 	}
 }

@@ -5,6 +5,7 @@ import java.net.Socket;
 
 import no.hiof.android.ambiguous.Db;
 import no.hiof.android.ambiguous.GameMachine;
+import no.hiof.android.ambiguous.GameMachine.State;
 import no.hiof.android.ambiguous.OpponentController.OpponentListener;
 import no.hiof.android.ambiguous.R;
 import no.hiof.android.ambiguous.adapter.GameDeckAdapter;
@@ -23,6 +24,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Parcelable;
 import android.util.Log;
 import android.view.DragEvent;
 import android.view.Gravity;
@@ -45,9 +47,12 @@ public class GameActivity extends Activity implements OnDragListener,
 	private View layoutView;
 	private GridView deckView;
 	private GameMachine gameMachine;
+	private Player savedPlayer;
+	private Player savedOpponent;
+	private State savedState;
 
-	TextView playerstatus;
-	TextView opponentstatus;
+	TextView playerStatus;
+	TextView opponentStatus;
 	private boolean isNetwork;
 	private String address;
 	private int port;
@@ -57,14 +62,6 @@ public class GameActivity extends Activity implements OnDragListener,
 
 	private static final String KEY_TEXT_PLAYER_VALUE = "playerTextValue";
 	private static final String KEY_TEXT_OPPONENT_VALUE = "opponentTextValue";
-	/*private static final String KEY_TEXT_PLAYER_NAME = "playerNameValue";
-	private static final String KEY_TEXT_PLAYER_HEALTH = "playerHealthValue";
-	private static final String KEY_TEXT_PLAYER_ARMOR = "playerArmorValue";
-	private static final String KEY_TEXT_PLAYER_RESOURCE = "playerResourceValue";
-	private static final String KEY_TEXT_OPPONENT_NAME = "opponentNameValue";
-	private static final String KEY_TEXT_OPPONENT_HEALTH = "opponentHealthValue";
-	private static final String KEY_TEXT_OPPONENT_ARMOR = "opponentArmorValue";
-	private static final String KEY_TEXT_OPPONENT_RESOURCE = "opponentResourceValue";*/
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -72,24 +69,16 @@ public class GameActivity extends Activity implements OnDragListener,
 		setContentView(R.layout.activity_game);
 		layoutView = findViewById(R.id.game_layout);
 
-		playerstatus = (TextView) findViewById(R.id.stats_player);
-		opponentstatus = (TextView) findViewById(R.id.stats_computer);
+		playerStatus = (TextView) findViewById(R.id.stats_player);
+		opponentStatus = (TextView) findViewById(R.id.stats_computer);
 
-		playerstatus.setText(" ");
+		playerStatus.setText(" ");
 		if(savedInstanceState != null){
 			String savedText = savedInstanceState.getString(KEY_TEXT_PLAYER_VALUE);
-			playerstatus.setText(savedText);
-			/*((TextView)findViewById(R.id.stat_player_name)).setText(savedInstanceState.getString(KEY_TEXT_PLAYER_NAME));
-			((TextView)findViewById(R.id.stat_player_health)).setText(savedInstanceState.getString(KEY_TEXT_PLAYER_HEALTH));
-			((TextView)findViewById(R.id.stat_player_armor)).setText(savedInstanceState.getString(KEY_TEXT_PLAYER_ARMOR));
-			((TextView)findViewById(R.id.stat_player_resource)).setText(savedInstanceState.getString(KEY_TEXT_PLAYER_RESOURCE));
-			((TextView)findViewById(R.id.stat_opponent_name)).setText(savedInstanceState.getString(KEY_TEXT_OPPONENT_NAME));
-			((TextView)findViewById(R.id.stat_opponent_health)).setText(savedInstanceState.getString(KEY_TEXT_OPPONENT_HEALTH));
-			((TextView)findViewById(R.id.stat_opponent_armor)).setText(savedInstanceState.getString(KEY_TEXT_OPPONENT_ARMOR));
-			((TextView)findViewById(R.id.stat_opponent_resource)).setText(savedInstanceState.getString(KEY_TEXT_OPPONENT_RESOURCE));
-			*/
-			gameMachine.player = savedInstanceState.getParcelable("Player");
-			gameMachine.opponent = savedInstanceState.getParcelable("Opponent");
+			playerStatus.setText(savedText);
+			savedPlayer = savedInstanceState.getParcelable("Player");
+			savedOpponent = savedInstanceState.getParcelable("Opponent");
+			savedState = GameMachine.State.values()[savedInstanceState.getInt("State")];
 		}
 		
 		ActionBar actionBar = getActionBar();
@@ -112,7 +101,12 @@ public class GameActivity extends Activity implements OnDragListener,
 	
 	private void setupGameMachine()
 	{
-		gameMachine = new GameMachine(this.db, socket,isServer);
+		if(savedPlayer != null && savedOpponent != null){
+			gameMachine = new GameMachine(this.db, socket, isServer, savedPlayer, savedOpponent, savedState);
+		}
+		else{
+			gameMachine = new GameMachine(this.db, socket,isServer);
+		}
 		gameMachine.setGameMachineListener(this);
 		gameMachine.opponentController.setOpponentListener(this);
 
@@ -132,17 +126,10 @@ public class GameActivity extends Activity implements OnDragListener,
 	@Override
 	protected void onSaveInstanceState(Bundle outState){
 		super.onSaveInstanceState(outState);
-		/*outState.putString(KEY_TEXT_PLAYER_VALUE, (String)playerstatus.getText());
-		outState.putString(KEY_TEXT_PLAYER_NAME, (String)((TextView)findViewById(R.id.stat_player_name)).getText());
-		outState.putString(KEY_TEXT_PLAYER_HEALTH, (String)((TextView)findViewById(R.id.stat_player_health)).getText());
-		outState.putString(KEY_TEXT_PLAYER_ARMOR, (String)((TextView)findViewById(R.id.stat_player_armor)).getText());
-		outState.putString(KEY_TEXT_PLAYER_RESOURCE, (String)((TextView)findViewById(R.id.stat_player_resource)).getText());
-		outState.putString(KEY_TEXT_OPPONENT_NAME, (String)((TextView)findViewById(R.id.stat_opponent_name)).getText());
-		outState.putString(KEY_TEXT_OPPONENT_ARMOR, (String)((TextView)findViewById(R.id.stat_opponent_armor)).getText());
-		outState.putString(KEY_TEXT_OPPONENT_RESOURCE, (String)((TextView)findViewById(R.id.stat_opponent_resource)).getText());
-		*/
+		//Parcelable pars = gameMachine.player.CREATOR.
 		outState.putParcelable("Player", gameMachine.player);
 		outState.putParcelable("Opponent", gameMachine.opponent);
+		outState.putInt("State", gameMachine.state.ordinal());
 		
 	}
 
@@ -312,12 +299,12 @@ public class GameActivity extends Activity implements OnDragListener,
 
 	@Override
 	public void onPlayerDeadListener(Player player) {
-		playerstatus.setText("Player dead");
+		playerStatus.setText("Player dead");
 	}
 
 	@Override
 	public void onOpponentDeadListener(Player opponent) {
-		opponentstatus.setText("Opponent dead");
+		opponentStatus.setText("Opponent dead");
 	}
 
 	@Override

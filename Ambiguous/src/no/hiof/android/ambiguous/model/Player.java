@@ -9,7 +9,6 @@ import android.os.Parcelable;
 import no.hiof.android.ambiguous.model.Effect.EffectType;
 
 public class Player implements Parcelable{
-	private int mData;
 	//private int id;
 	private String name;
 	private List<Card> deck;
@@ -210,8 +209,18 @@ public class Player implements Parcelable{
 	/** save object in parcel */
 	@Override
 	public void writeToParcel(Parcel out, int flags) {
-		out.writeInt(mData);
-		
+		/*out.writeString(name);
+		out.writeInt(health);
+		out.writeInt(armor);
+		out.writeInt(resources);
+		int[] cardInt = new int[cards.length];
+		for(int i = 0; i < cardInt.length; i++){
+			cardInt[i] = cards[i].getId();
+		}
+		int[] deckInt = new int[deck.size()];
+		for(int i = 0; i < deckInt.length; i++){
+			deckInt[i] = deck.get(i).getId();
+		}*/
 	}
 	
 	public static final Parcelable.Creator<Player> CREATOR
@@ -225,7 +234,11 @@ public class Player implements Parcelable{
 	};
 	
 	/** recreate object from parcel */
-	private Player(Parcel in){
-		mData = in.readInt();
+	public Player(Parcel in){
+		/*name = in.readString();
+		health = in.readInt();
+		armor = in.readInt();
+		resources = in.readInt();
+		*/
 	}
 }

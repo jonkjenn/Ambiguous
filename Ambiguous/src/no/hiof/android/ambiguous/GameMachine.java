@@ -23,56 +23,67 @@ public class GameMachine implements OpponentListener {
 
 	private CardDataSource cs;
 
-	private enum states {
+	public enum State {
 		PLAYER_TURN, PLAYER_DONE, OPPONENT_TURN, GAME_OVER
 	};
 
-	private states state;
+	public State state;
 
-	public GameMachine(SQLiteDatabase db, Socket socket, boolean isServer) {
+	public GameMachine(SQLiteDatabase db, Socket socket, boolean isServer){
+		
+		this(db, socket, isServer, null, null, null);
+	}
+	public GameMachine(SQLiteDatabase db, Socket socket, boolean isServer, Player savedPlayer, Player savedOpponent, State new_york ) {
 
 		this.cs = new CardDataSource(db);
 
 		List<Card> cards = cs.getCards();
 
-        opponent = new Player("Computer");
-        opponent.SetDeck(DeckBuilder.StandardDeck(cards));
-
-		player = new Player("JonAndOrAdrian");
-		player.SetDeck(DeckBuilder.StandardDeck(cards));
+		if(savedPlayer != null){
+			player = savedPlayer;
+		}
+		else{
+			player = new Player("JonAndOrAdrian");
+			player.SetDeck(DeckBuilder.StandardDeck(cards));
+		}
 
         opponentController = new OpponentController(cs);
         opponentController.setOpponentListener(this);
 
 		if (socket == null) {
-            opponent = new Player("Computer");
-            opponent.SetDeck(DeckBuilder.StandardDeck(cards));
 
-            opponentController = new OpponentController(cs);
-            opponentController.setOpponentListener(this);
+			if(savedOpponent != null){
+				opponent = savedOpponent; 
+			}
+			else{
+		        opponent = new Player("Computer");
+		        opponent.SetDeck(DeckBuilder.StandardDeck(cards));
+			}
 
             AIController aIController = new AIController(opponent, player,
                             opponentController);
             this.setGameMachineListener(aIController);
 
-            state = (new Random().nextInt(2) == 0 ? states.PLAYER_TURN
-                            : states.OPPONENT_TURN);
+            state = (state == null ? (new Random().nextInt(2) == 0 ? State.PLAYER_TURN
+                            : State.OPPONENT_TURN) : new_york);
             changeState();
 		}
 		else
 		{
-            opponent = new Player("Network");
-            opponent.SetDeck(DeckBuilder.StandardDeck(cards));
-
-            opponentController = new OpponentController(cs);
-            opponentController.setOpponentListener(this);
+			if(savedOpponent != null){
+				opponent = savedOpponent;
+			}
+			else{
+	            opponent = new Player("Network");
+	            opponent.SetDeck(DeckBuilder.StandardDeck(cards));
+			}
 			
 			networkOpponent = new NetworkOpponent(opponentController,player,opponent,socket);
 			setGameMachineListener(networkOpponent);
 
 			if(isServer)
-            {state = (new Random().nextInt(2) == 0 ? states.PLAYER_TURN
-				: states.OPPONENT_TURN);
+            {state = (new Random().nextInt(2) == 0 ? State.PLAYER_TURN
+				: State.OPPONENT_TURN);
                 changeState();
             }
 		}
@@ -81,7 +92,7 @@ public class GameMachine implements OpponentListener {
 	}
 
 	public boolean playersTurn() {
-		return state == states.PLAYER_TURN;
+		return state == State.PLAYER_TURN;
 	}
 
 	private void changeState() {
@@ -108,7 +119,7 @@ public class GameMachine implements OpponentListener {
 		case PLAYER_DONE:
 			player.ModResource(5);
 			notifyPlayerDone();
-			state = states.OPPONENT_TURN;
+			state = State.OPPONENT_TURN;
 			changeState();
 			break;
 		case GAME_OVER:
@@ -129,26 +140,26 @@ public class GameMachine implements OpponentListener {
 	private void checkDead() {
 		if (!player.getAlive()) {
 			notifyPlayerDead();
-			state = states.GAME_OVER;
+			state = State.GAME_OVER;
 		}
 		if (!opponent.getAlive()) {
 			notifyOpponentDead();
-			state = states.GAME_OVER;
+			state = State.GAME_OVER;
 		}
 	}
 
 	private void discardCard(int position) {
 
-		if (state != states.PLAYER_TURN) {
+		if (state != State.PLAYER_TURN) {
 			return;
 		}
 		player.CardUsed(position);
-		state = states.PLAYER_DONE;
+		state = State.PLAYER_DONE;
 		doChangeState();
 	}
 
 	private void playCard(Player player, int position) {
-		if (state != states.PLAYER_TURN) {
+		if (state != State.PLAYER_TURN) {
 			notifyCouldNotPlayCard(position);
 			return;
 		}
@@ -159,10 +170,10 @@ public class GameMachine implements OpponentListener {
 
 	private void playCard(Player caster, Card card, int position) {
 		if (card == null || caster == this.player
-				&& state == states.OPPONENT_TURN || player == this.opponent
-				&& state == states.PLAYER_TURN
+				&& state == State.OPPONENT_TURN || player == this.opponent
+				&& state == State.PLAYER_TURN
 				|| !caster.UseResources(card.getCost())) {
-			if (state == states.PLAYER_TURN) {
+			if (state == State.PLAYER_TURN) {
 				notifyCouldNotPlayCard(position);
 			}
 			return;
@@ -173,9 +184,9 @@ public class GameMachine implements OpponentListener {
 		useCard(card, caster, target);
 		caster.CardUsed(position);
 
-		if (state == states.PLAYER_TURN) {
+		if (state == State.PLAYER_TURN) {
 			notifyPlayerPlayedCard(card);
-			state = states.PLAYER_DONE;
+			state = State.PLAYER_DONE;
 		}
 	}
 
@@ -213,7 +224,7 @@ public class GameMachine implements OpponentListener {
 			break;
 		}
 
-		if (state == states.PLAYER_TURN) {
+		if (state == State.PLAYER_TURN) {
 			notifyPlayerUsedEffect(e.getType(), target, amount);
 		}
 	}
@@ -339,14 +350,14 @@ public class GameMachine implements OpponentListener {
 	public void onOpponentPlayCard(Card card, boolean generateDamage) {
 		if (generateDamage) {
 			playCard(opponent, card, 0);
-			state = states.PLAYER_TURN;
+			state = State.PLAYER_TURN;
 			doChangeState();
 		}
 	}
 
 	@Override
 	public void onOpponentDiscardCard(Card card) {
-		state = states.PLAYER_TURN;
+		state = State.PLAYER_TURN;
 		doChangeState();
 	}
 
@@ -372,8 +383,8 @@ public class GameMachine implements OpponentListener {
 
 	@Override
 	public void onOpponentTurnDone() {
-		if (state == null || state == states.OPPONENT_TURN) {
-			state = states.PLAYER_TURN;
+		if (state == null || state == State.OPPONENT_TURN) {
+			state = State.PLAYER_TURN;
 			changeState();
 		}
 	}

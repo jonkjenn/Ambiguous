@@ -223,15 +223,15 @@ public class Player implements Parcelable{
 		}*/
 	}
 	
-	public static final Parcelable.Creator<Player> CREATOR
-	= new Parcelable.Creator<Player>() {
+	public static final Parcelable.Creator<Player> CREATOR = null;
+	/*= new Parcelable.Creator<Player>() {
 		public Player createFromParcel(Parcel in) {
 			return new Player(in);
 		}
 		public Player[] newArray(int size) {
 			return new Player[size];
 		}
-	};
+	};*/
 	
 	/** recreate object from parcel */
 	public Player(Parcel in){

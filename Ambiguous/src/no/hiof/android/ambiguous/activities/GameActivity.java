@@ -397,7 +397,7 @@ public class GameActivity extends Activity implements OnDragListener,
 		floatingText.setTextColor(color);
 
 		final AlphaAnimation fadeIn = new AlphaAnimation(0.0f,1.0f);
-		fadeIn.setDuration(500);
+		fadeIn.setDuration((isNetwork?0:500));
 		final AlphaAnimation fadeOut = new AlphaAnimation(1.0f,0.0f);
 		fadeOut.setAnimationListener(new AnimationListener() {
 			
@@ -419,7 +419,7 @@ public class GameActivity extends Activity implements OnDragListener,
 				
 			}
 		});
-		fadeOut.setDuration(500);
+		fadeOut.setDuration(isNetwork?0:500);
 		fadeIn.setAnimationListener(new AnimationListener() {
 			
 			@Override

@@ -353,6 +353,7 @@ public class GameMachine implements OpponentListener {
 			state = State.PLAYER_TURN;
 			doChangeState();
 		}
+		
 	}
 
 	@Override

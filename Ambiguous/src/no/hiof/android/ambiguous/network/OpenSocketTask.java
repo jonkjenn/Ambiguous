@@ -7,10 +7,10 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
-import no.hiof.android.ambiguous.network.OpenSocket.OpenSocketListener;
+import no.hiof.android.ambiguous.network.OpenSocketTask.OpenSocketListener;
 import android.os.AsyncTask;
 
-public class OpenSocket extends AsyncTask<OpenSocketListener,Void,Socket>{
+public class OpenSocketTask extends AsyncTask<OpenSocketListener,Void,Socket>{
 	private boolean isServer;
 	private String address;
 	private int port;
@@ -18,7 +18,7 @@ public class OpenSocket extends AsyncTask<OpenSocketListener,Void,Socket>{
 	private Socket socket;
 	private ServerSocket server;
 	
-	public OpenSocket setup(String address, int port, boolean isServer)
+	public OpenSocketTask setup(String address, int port, boolean isServer)
 	{
 		this.address = address;
 		this.port = port;

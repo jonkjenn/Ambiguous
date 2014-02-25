@@ -1,5 +1,8 @@
 package no.hiof.android.ambiguous.activities;
 
+import java.net.ServerSocket;
+import java.net.Socket;
+
 import no.hiof.android.ambiguous.Db;
 import no.hiof.android.ambiguous.GameMachine;
 import no.hiof.android.ambiguous.OpponentController.OpponentListener;
@@ -10,6 +13,10 @@ import no.hiof.android.ambiguous.model.Card;
 import no.hiof.android.ambiguous.model.Effect.EffectType;
 import no.hiof.android.ambiguous.model.Player;
 import no.hiof.android.ambiguous.model.Player.PlayerUpdateListener;
+import no.hiof.android.ambiguous.network.CloseServerSocketTask;
+import no.hiof.android.ambiguous.network.CloseSocketTask;
+import no.hiof.android.ambiguous.network.OpenSocketTask;
+import no.hiof.android.ambiguous.network.OpenSocketTask.OpenSocketListener;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.database.sqlite.SQLiteDatabase;
@@ -33,7 +40,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 public class GameActivity extends Activity implements OnDragListener,
-		GameMachine.GameMachineListener, OpponentListener, PlayerUpdateListener {
+		GameMachine.GameMachineListener, OpponentListener, PlayerUpdateListener, OpenSocketListener {
 	private SQLiteDatabase db;
 	private View layoutView;
 	private GridView deckView;
@@ -41,6 +48,13 @@ public class GameActivity extends Activity implements OnDragListener,
 
 	TextView playerstatus;
 	TextView opponentstatus;
+	
+	private boolean isNetwork;
+	private String address;
+	private int port;
+	private boolean isServer;
+	private Socket socket;
+	private ServerSocket server;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -52,8 +66,23 @@ public class GameActivity extends Activity implements OnDragListener,
 		actionBar.hide();
 
 		this.db = Db.getDb(getApplicationContext()).getWritableDatabase();
+		
+		if(isNetwork = getIntent().getBooleanExtra("isNetwork",false))
+		{
+            this.address = getIntent().getStringExtra("address");
+            this.port = getIntent().getIntExtra("port",19999);
+            this.isServer = getIntent().getBooleanExtra("isServer",false);
+            new OpenSocketTask().setup(this.address,this.port,this.isServer).execute(this);
+		}
+		else{
+            setupGameMachine();
+		}
 
-		gameMachine = new GameMachine(this.db);
+	}
+	
+	private void setupGameMachine()
+	{
+		gameMachine = new GameMachine(this.db, socket,isServer);
 		gameMachine.setGameMachineListener(this);
 		gameMachine.opponentController.setOpponentListener(this);
 
@@ -402,5 +431,38 @@ public class GameActivity extends Activity implements OnDragListener,
 	public void onPlayerUsedeffect(EffectType type, Player target, int amount) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public void onOpenSocketListener(Socket socket, ServerSocket server,
+			Exception exception) {
+		if(server != null){this.server = server;}
+		if(socket != null){
+			this.socket = socket;
+			setupGameMachine();
+		}
+		if(exception != null && !isServer)
+		{
+            final OpenSocketTask task = new OpenSocketTask().setup(this.address,this.port,this.isServer);
+            new Handler().postDelayed(new Runnable() {
+				
+				@Override
+				public void run() {
+					task.execute(GameActivity.this);										
+				}
+			},1000);
+		}
+	}
+	
+	@Override
+	protected void onPause() {
+		super.onPause();
+		closeSockets();
+	}
+	
+	private void closeSockets()
+	{
+		if(socket != null){new CloseSocketTask().execute(this.socket);}
+		if(server != null){new CloseServerSocketTask().execute(this.server);}
 	}
 }

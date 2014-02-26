@@ -79,20 +79,7 @@ public class NetworkOpponent implements GameMachineListener {
 
 					int r;
 					while ((r = in.read(buffer, 0, buffer.length)) > 0) {
-						// More data incomming then being removed from
-						// databuffer,
-						// should never happen.
-						// Prolly best to close network, show msg about network
-						// error
-						// etc.
-						// if(dataBufferPosition+r-1 >= dataBuffer.length){
-						// in.close();}
-
-						// Concat all the buffers read into a larger buffer
-						// incase we
-						// get packets split over multiple reads.
 						for (int i = 0; i < r; i++) {
-							// dataBuffer[dataBufferPosition++] = buffer[i];
 							dataBuffer.add(buffer[i]);
 						}
 
@@ -188,6 +175,18 @@ public class NetworkOpponent implements GameMachineListener {
 		}
 	}
 
+	private void sendDiscardCard(int card) {
+		try {
+			ByteArrayOutputStream stream = new ByteArrayOutputStream(2);
+			DataOutputStream writer = new DataOutputStream(stream);
+			writer.writeByte(Packets.PLAYER_DISCARD_CARD.getValue());
+			writer.writeByte(card);
+			new WriteBytesTask().Setup(out).execute(stream.toByteArray());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
 	private void sendUsedEffect(EffectType type, Player target, int amount) {
 		try {
 			ByteArrayOutputStream stream = new ByteArrayOutputStream(4);
@@ -248,14 +247,13 @@ public class NetworkOpponent implements GameMachineListener {
 	}
 
 	@Override
-	public void onPlayerPlayedCard(final Card card) {
+	public void onPlayerPlayedCard(Card card) {
             sendPlayedCard(card.getId());
 	}
 
 	@Override
 	public void onPlayerDiscardCard(Card card) {
-		// TODO Auto-generated method stub
-
+		sendDiscardCard(card.getId());
 	}
 
 	@Override

@@ -141,7 +141,6 @@ public class GameActivity extends Activity implements OnDragListener,
 		outState.putParcelable("Player", gameMachine.player);
 		outState.putParcelable("Opponent", gameMachine.opponent);
 		outState.putInt("State", gameMachine.state.ordinal());
-		
 	}
 
 	private void opponentPlayCard(Card card) {

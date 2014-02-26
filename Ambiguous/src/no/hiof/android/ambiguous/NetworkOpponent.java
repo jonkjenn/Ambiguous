@@ -149,6 +149,7 @@ public class NetworkOpponent implements GameMachineListener {
                         oc.UseEffect(type, target, amount);
 					}
 				});
+				break;
 				// Not implemented
 			case PLAYER_STATS:
 				if (dataBuffer.size() < 3) {
@@ -197,7 +198,7 @@ public class NetworkOpponent implements GameMachineListener {
 			writer.writeByte(amount);
 			new WriteBytesTask().Setup(out).execute(stream.toByteArray());
 		} catch (IOException e) {
-
+			e.printStackTrace();
 		}
 	}
 
@@ -248,13 +249,7 @@ public class NetworkOpponent implements GameMachineListener {
 
 	@Override
 	public void onPlayerPlayedCard(final Card card) {
-		handler.post(new Runnable() {
-
-			@Override
-			public void run() {
-				sendPlayedCard(card.getId());
-			}
-		});
+            sendPlayedCard(card.getId());
 	}
 
 	@Override
@@ -266,13 +261,7 @@ public class NetworkOpponent implements GameMachineListener {
 	@Override
 	public void onPlayerUsedeffect(final EffectType type, final Player target,
 			final int amount) {
-		handler.post(new Runnable() {
-
-			@Override
-			public void run() {
 				sendUsedEffect(type, target, amount);
-			}
-		});
 	}
 
 }

@@ -20,6 +20,7 @@ public class GameMachine implements OpponentListener {
 	public Player opponent;
 	public OpponentController opponentController;
 	private NetworkOpponent networkOpponent;
+	private boolean isNetwork = false;
 
 	private CardDataSource cs;
 
@@ -70,6 +71,7 @@ public class GameMachine implements OpponentListener {
 		}
 		else
 		{
+			isNetwork = true;
 			if(savedOpponent != null){
 				opponent = savedOpponent;
 			}
@@ -96,6 +98,21 @@ public class GameMachine implements OpponentListener {
 	}
 
 	private void changeState() {
+		if(isNetwork)
+		{
+		Handler h = new Handler();
+		h.postAtTime(new Runnable() {
+
+			
+			@Override
+			public void run() {
+				doChangeState();
+			}
+		}, SystemClock.uptimeMillis() + 50);
+		}
+		else
+		{
+		
 		Handler h = new Handler();
 		h.postAtTime(new Runnable() {
 
@@ -104,6 +121,7 @@ public class GameMachine implements OpponentListener {
 				doChangeState();
 			}
 		}, SystemClock.uptimeMillis() + 1000);
+		}
 	}
 
 	private void doChangeState() {
@@ -118,6 +136,7 @@ public class GameMachine implements OpponentListener {
 			break;
 		case PLAYER_DONE:
 			player.ModResource(5);
+			notifyPlayerUsedEffect(EffectType.RESOURCE,player,5);
 			notifyPlayerDone();
 			state = State.OPPONENT_TURN;
 			changeState();
@@ -352,6 +371,10 @@ public class GameMachine implements OpponentListener {
 			playCard(opponent, card, 0);
 			state = State.PLAYER_TURN;
 			doChangeState();
+		}
+		else
+		{
+            opponent.UseResources(card.getCost());
 		}
 		
 	}

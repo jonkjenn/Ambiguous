@@ -95,7 +95,13 @@ public class GameActivity extends Activity implements OnDragListener,
             this.address = getIntent().getStringExtra("address");
             this.port = getIntent().getIntExtra("port",19999);
             this.isServer = getIntent().getBooleanExtra("isServer",false);
-            new OpenSocketTask().setup(this.address,this.port,this.isServer).execute(this);
+            new Handler().postDelayed(new Runnable() {
+				
+				@Override
+				public void run() {
+                    new OpenSocketTask().setup(GameActivity.this.address,GameActivity.this.port,GameActivity.this.isServer).execute(GameActivity.this);
+				}
+			},2000);
 		}
 		else{
             setupGameMachine();

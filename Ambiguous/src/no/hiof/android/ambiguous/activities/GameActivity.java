@@ -22,9 +22,9 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Parcelable;
 import android.util.Log;
 import android.view.DragEvent;
 import android.view.Gravity;
@@ -38,6 +38,7 @@ import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.widget.GridView;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -179,28 +180,39 @@ public class GameActivity extends Activity implements OnDragListener,
 
 	private void drag(int card, int x, int y, int insideX, int insideY) {
 		deckView.getChildAt(card).setVisibility(View.GONE);
-		RelativeLayout parent = (RelativeLayout) findViewById(R.id.drag_card);
-		parent.setVisibility(RelativeLayout.VISIBLE);
-		if (parent.getChildCount() > 0) {
-			android.widget.RelativeLayout.LayoutParams par = new RelativeLayout.LayoutParams(
+		ImageView parent = (ImageView) findViewById(R.id.drag_card);
+		parent.setVisibility(ImageView.VISIBLE);
+		/*if (parent.getChildCount() > 0) {
+			RelativeLayout.LayoutParams par = new RelativeLayout.LayoutParams(
 					parent.getLayoutParams());
-			//par.addRule(RelativeLayout.ALIGN_PARENT_TOP);
-			// par.setMargins(x-parent.getWidth()/2, y-parent.getHeight()/2, 0,
-			// 0);
+
 			par.setMargins(x - insideX, y - insideY, 0, 0);
 			parent.setLayoutParams(par);
-		}
+		}*/
+
+        RelativeLayout.LayoutParams par = new RelativeLayout.LayoutParams(
+                        parent.getLayoutParams());
+        
+        if((par.leftMargin + par.width) > deckView.getWidth()){
+        	return;
+        	}
+
+        par.setMargins(x - insideX, y - insideY, 0, 0);
+        parent.setLayoutParams(par);
 	}
 
 	private void startDrag(int card, int x, int y) {
 		//deckView.getChildAt(card).setVisibility(View.GONE);
-		ViewGroup parent = (ViewGroup) findViewById(R.id.drag_card);
+		ImageView layout = (ImageView) findViewById(R.id.drag_card);
 		Card c = gameMachine.player.GetCard(card);
-		View layout = CardLayout.getCardLayout(c, parent);
+		ImageView i = (ImageView)deckView.getChildAt(card);
+		//View layout = CardLayout.getCardLayout(c, parent);
+		//ImageView layout = new ImageView(this);
+		layout.setImageBitmap(((BitmapDrawable)i.getDrawable()).getBitmap());
 
-		parent.setVisibility(ViewGroup.GONE);
-		parent.removeAllViews();
-		parent.addView(layout);
+		layout.setVisibility(ImageView.GONE);
+		//parent.removeAllViews();
+		//parent.addView(layout);
 	}
 
 	private void stopDrag(int card) {
@@ -209,8 +221,8 @@ public class GameActivity extends Activity implements OnDragListener,
 	}
 
 	private void removeDrag() {
-		ViewGroup parent = (ViewGroup) findViewById(R.id.drag_card);
-		parent.removeAllViews();
+		((ImageView) findViewById(R.id.drag_card)).setVisibility(ImageView.GONE);
+		//parent.removeAllViews();
 	}
 
 	@Override

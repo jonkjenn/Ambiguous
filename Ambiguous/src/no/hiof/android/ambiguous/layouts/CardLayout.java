@@ -6,10 +6,12 @@ import no.hiof.android.ambiguous.R;
 import no.hiof.android.ambiguous.model.Card;
 import no.hiof.android.ambiguous.model.Effect;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.MeasureSpec;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -48,8 +50,18 @@ public class CardLayout {
 		{
 			l.addView(getEffectView(e.get(i),parent.getContext()));
 		}
-
-		return view;
+		
+		view.measure(MeasureSpec.makeMeasureSpec(view.getLayoutParams().width,MeasureSpec.EXACTLY),MeasureSpec.makeMeasureSpec(view.getLayoutParams().height,MeasureSpec.EXACTLY));
+		//view.layout(0,0,view.getMeasuredWidth(), view.getMeasuredHeight());
+		view.layout(0,0,view.getMeasuredWidth(), view.getMeasuredHeight());
+		view.setDrawingCacheEnabled(true);
+		
+		Bitmap b =Bitmap.createBitmap(view.getDrawingCache());
+        
+		ImageView v = (ImageView)inflater.inflate(R.layout.card_game2,parent,false);
+        v.setImageBitmap(b);
+        
+		return v;
 	}
 
         private static TextView getEffectView(Effect e,Context context)

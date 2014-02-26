@@ -177,16 +177,15 @@
 	    android:layout_height="20dp"
 	    android:background="#FF0000"
 	    android:text="@string/activity_main_discard"
-	    android:gravity="center"
 	    android:visibility="gone"
 	    android:layout_alignParentBottom="true"
 	    />
-	<RelativeLayout 
+	<ImageView 
 	    android:id="@+id/drag_card"
 	    android:layout_width="70dp"
-	    android:layout_height="wrap_content"
-	    android:orientation="horizontal"
-	    android:gravity="center"
+	    android:layout_height="110dp"
+	    android:adjustViewBounds="true"
 	    android:layout_alignParentTop="true"
-	    ></RelativeLayout>
+	    android:scaleType="matrix"
+	    ></ImageView>
 </RelativeLayout>

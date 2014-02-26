@@ -3,7 +3,8 @@
     	android:id="@+id/game_layout_container"
 	    android:layout_width="match_parent"
 	    android:layout_height="match_parent"
-		android:background="#FF333333"
+	    android:background="#11CC33"
+		<!-- android:background="#FF333333" -->
     >
 	<TextView 
 	    android:id="@+id/gameview_use"

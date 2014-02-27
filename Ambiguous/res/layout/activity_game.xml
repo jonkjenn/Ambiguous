@@ -3,13 +3,13 @@
     	android:id="@+id/game_layout_container"
 	    android:layout_width="match_parent"
 	    android:layout_height="match_parent"
-	    android:background="#11CC33"
+	    android:background="#0F7F0F"
     >
 	<TextView 
 	    android:id="@+id/gameview_use"
 	    android:layout_width="match_parent"
 	    android:layout_height="30dp"
-	    android:background="#00FF00"
+	    android:background="#50CC33"
 	    android:text="@string/activity_main_usecard"
 	    android:gravity="center"
 	    android:visibility="gone"

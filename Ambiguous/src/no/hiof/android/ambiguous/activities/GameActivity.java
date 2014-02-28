@@ -144,16 +144,19 @@ public class GameActivity extends Activity implements OnDragListener,
 	}
 
 	private void opponentPlayCard(Card card) {
-		ViewGroup parent = (ViewGroup) findViewById(R.id.opponent_card);
-		parent.removeAllViews();
-		parent.addView(CardLayout.getCardLayout(card, parent));
+		ImageView parent = (ImageView)findViewById(R.id.opponent_card);
+		parent.setImageBitmap(CardLayout.getCardBitmap(card,(ViewGroup) findViewById(R.id.game_layout_container)));
+		findViewById(R.id.discard).setVisibility(View.INVISIBLE);
+		//parent.addView(CardLayout.getCardLayout(card, parent));
 	}
 
 	private void opponentDiscardCard(Card card) {
-		ViewGroup parent = (ViewGroup) findViewById(R.id.opponent_card);
-		parent.removeAllViews();
-		parent.addView(CardLayout.getCardLayout(card, parent));
-		TextView v = new TextView(this);
+		ImageView parent = (ImageView) findViewById(R.id.opponent_card);
+		parent.setImageBitmap(CardLayout.getCardBitmap(card,(ViewGroup) findViewById(R.id.game_layout_container)));
+		findViewById(R.id.discard).setVisibility(View.VISIBLE);
+		//parent.removeAllViews();
+		//parent.addView(CardLayout.getCardLayout(card, parent));
+		/*TextView v = new TextView(this);
 		RelativeLayout.LayoutParams par = new RelativeLayout.LayoutParams(
 				LayoutParams.MATCH_PARENT, 30);
 		par.addRule(RelativeLayout.CENTER_HORIZONTAL);
@@ -162,8 +165,8 @@ public class GameActivity extends Activity implements OnDragListener,
 		v.setLayoutParams(par);
 		v.setGravity(Gravity.CENTER);
 		v.setTextColor(Color.BLACK);
-		v.setText("DISCARD");
-		parent.addView(v);
+		v.setText("DISCARD");*/
+		//parent.addView(v);
 	}
 
 	private void setupDragDrop(View view) {
@@ -178,7 +181,7 @@ public class GameActivity extends Activity implements OnDragListener,
 	}
 
 	private void drag(int card, int x, int y, int insideX, int insideY) {
-		deckView.getChildAt(card).setVisibility(View.GONE);
+		deckView.getChildAt(card).setVisibility(View.INVISIBLE);
 		ImageView parent = (ImageView) findViewById(R.id.drag_card);
 		parent.setVisibility(ImageView.VISIBLE);
 		/*if (parent.getChildCount() > 0) {
@@ -220,7 +223,7 @@ public class GameActivity extends Activity implements OnDragListener,
 	}
 
 	private void removeDrag() {
-		((ImageView) findViewById(R.id.drag_card)).setVisibility(ImageView.GONE);
+		findViewById(R.id.drag_card).setVisibility(View.INVISIBLE);
 		//parent.removeAllViews();
 	}
 
@@ -247,12 +250,12 @@ public class GameActivity extends Activity implements OnDragListener,
 
 				if (dState.length > 2
 						&& dState[2] / 2 + event.getY() < dState[0] - 100) {
-					Log.d("test", "Oppover");
+					///Log.d("test", "Oppover");
 					findViewById(R.id.gameview_use).setVisibility(
 							TextView.VISIBLE);
 				} else {
 					findViewById(R.id.gameview_use)
-							.setVisibility(TextView.GONE);
+							.setVisibility(TextView.INVISIBLE);
 				}
 				if (dState.length > 2
 						&& dState[2] / 2 + event.getY() > this.layoutView
@@ -262,32 +265,33 @@ public class GameActivity extends Activity implements OnDragListener,
 							TextView.VISIBLE);
 				} else {
 					findViewById(R.id.gameview_discard).setVisibility(
-							TextView.GONE);
+							TextView.INVISIBLE);
 				}
 			}
 			break;
 
 		case DragEvent.ACTION_DROP:
-			float y = event.getY();
+//			float y = event.getY();
 			if (event.getLocalState() != null) {
 				int[] dragState = (int[]) event.getLocalState();
-				float starty = (float) dragState[0];
-				Log.d("test", y + " " + starty);
+//				float starty = (float) dragState[0];
+//				Log.d("test", y + " " + starty);
 
 				if (dragState.length > 2
 						&& dragState[2] / 2 + event.getY() < dragState[0] - 100) {
-					Log.d("test", "Oppover");
+//					Log.d("test", "Oppover");
 					findViewById(R.id.gameview_use)
-							.setVisibility(TextView.GONE);
+							.setVisibility(TextView.INVISIBLE);
+					removeDrag();
 					gameMachine.PlayerPlayCard(dragState[1]);
 				} else if (dragState.length > 2
 						&& dragState[2] / 2 + event.getY() > this.layoutView
 								.getHeight()) {
-					Log.d("test", "funker?");
+//					Log.d("test", "funker?");
 					findViewById(R.id.gameview_discard).setVisibility(
-							TextView.GONE);
-					gameMachine.PlayerDiscardCard(dragState[1]);
+							TextView.INVISIBLE);
 					removeDrag();
+					gameMachine.PlayerDiscardCard(dragState[1]);
 				} else {
 					stopDrag(dragState[1]);
 				}

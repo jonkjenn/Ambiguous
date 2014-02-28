@@ -1,5 +1,6 @@
 package no.hiof.android.ambiguous.layouts;
 
+import java.util.HashMap;
 import java.util.List;
 
 import no.hiof.android.ambiguous.R;
@@ -18,12 +19,35 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 public class CardLayout {
+	
+	private static HashMap<String,Bitmap> bitmaps = new HashMap<String,Bitmap>();
 
+	public static Bitmap getCardBitmap(Card card,ViewGroup parent)
+	{
+		if(bitmaps.containsKey(card.getImage()))
+		{
+			return bitmaps.get(card.getImage());
+		}
+		else
+		{
+			getCardLayout(card,parent);
+			getCardBitmap(card,parent);
+		}
+		return null;
+	}
+	
 	public static View getCardLayout(Card card, ViewGroup parent) {
-                
+		
 		LayoutInflater inflater = (LayoutInflater)parent.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		View view = inflater.inflate(R.layout.card_game,parent,false);
 		if(card == null){return view;}
+		
+		if(bitmaps.containsKey(card.getImage()))
+		{
+            ImageView v = (ImageView)inflater.inflate(R.layout.card_game2,parent,false);
+            v.setTag(card.getImage());
+            v.setImageBitmap(bitmaps.get(card.getImage()));
+		}
 		
 		TextView id = (TextView)view.findViewById(R.id.card_id);
 		TextView cost = (TextView)view.findViewById(R.id.card_cost);
@@ -59,7 +83,9 @@ public class CardLayout {
 		Bitmap b =Bitmap.createBitmap(view.getDrawingCache());
         
 		ImageView v = (ImageView)inflater.inflate(R.layout.card_game2,parent,false);
+		v.setTag(card.getImage());
         v.setImageBitmap(b);
+        bitmaps.put(card.getImage(),b);
         
 		return v;
 	}

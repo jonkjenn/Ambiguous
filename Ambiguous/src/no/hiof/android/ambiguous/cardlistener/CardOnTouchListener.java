@@ -17,7 +17,9 @@ public class CardOnTouchListener implements OnTouchListener{
 	@Override
 	public boolean onTouch(View v, MotionEvent me) {
         CardDragShadowBuilder shadow = new CardDragShadowBuilder(v);
+        //DragShadowBuilder shadow = new DragShadowBuilder(new View());
         //v.startDrag(null, shadow, new int[]{(int)me.getRawY(),position, v.getHeight()}, 0);
+
         v.startDrag(null, shadow, new int[]{(int)me.getRawY(),position, v.getHeight(),(int)me.getX(),(int)me.getY()}, 0);
 		return false;
 	}

@@ -153,6 +153,7 @@ public class AI {
 	private int hasEffect(Effect.EffectType type, Effect.Target target) {
 		int outcard = -1;
 		for (int i = 0; i < cards.length; i++) {
+			if(cards[i]==null){continue;}
 			int effect = hasEffect(cards[i].getEffects(), type, target);
 
 			if (effect >= 0 && cards[i].getCost() <= computer.getResources()) {

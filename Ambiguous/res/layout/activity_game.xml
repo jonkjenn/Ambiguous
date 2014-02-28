@@ -15,14 +15,27 @@
 	    android:visibility="gone"
 	    android:layout_alignParentTop="true"
 	    />
-	<RelativeLayout 
+	<ImageView 
 	    android:id="@+id/opponent_card"
 	    android:layout_centerHorizontal="true"
+	    android:layout_marginTop="20dp"
 	    android:layout_width="70dp"
 	    android:layout_height="wrap_content"
 	    android:orientation="horizontal"
 	    android:gravity="center"
-	    ></RelativeLayout>
+	    ></ImageView>
+	<TextView
+	    android:layout_width="wrap_content"	    
+	    android:layout_height="wrap_content"
+	    android:layout_marginTop="80dp"
+	    android:layout_centerHorizontal="true"
+	    android:gravity="center"
+	    android:text="DISCARDED"
+	    android:textColor="#000000"
+	    android:background="#FF0000"
+	    android:id="@+id/discard"
+	    android:visibility="gone"
+	    ></TextView>
 	<LinearLayout
 	    android:id="@+id/floating_container"
 	    android:layout_width="wrap_content"

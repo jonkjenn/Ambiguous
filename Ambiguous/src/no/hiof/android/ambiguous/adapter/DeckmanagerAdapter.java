@@ -47,14 +47,18 @@ public class DeckmanagerAdapter extends BaseAdapter {
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-                Card card = getItem(position);
+        	if(convertView == null){
+        		return CardLayout.getCardLayout(getItem(position),parent);
+        	}
+        	return convertView;
+                /*Card card = getItem(position);
 
                 View view = CardLayout.getCardLayout(card, parent);
                 
-                final Button button = (Button) view.findViewById(R.id.card_edit);
-                button.setOnClickListener(new CardOnClickListener(parent.getContext(), card.getId()));
+                //final Button button = (Button) view.findViewById(R.id.card_edit);
+                //button.setOnClickListener(new CardOnClickListener(parent.getContext(), card.getId()));
                 
-                ((View)parent.getParent()).setOnDragListener(new OnDragListener() {
+                /*((View)parent.getParent()).setOnDragListener(new OnDragListener() {
 					
 					@Override
 					public boolean onDrag(View v, DragEvent event) {
@@ -92,7 +96,7 @@ public class DeckmanagerAdapter extends BaseAdapter {
 					}
 				});
 					
-                return view;
+                //return view;*/
         }
 
 

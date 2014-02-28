@@ -9,7 +9,7 @@ public class CardDragShadowBuilder extends DragShadowBuilder{
 	{
 		super(view);
 	}
-	
+
 	@Override
 	public void onDrawShadow(Canvas canvas) {
 		//super.onDrawShadow(canvas);

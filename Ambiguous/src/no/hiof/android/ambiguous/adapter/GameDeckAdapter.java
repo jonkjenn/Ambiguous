@@ -6,6 +6,7 @@ import no.hiof.android.ambiguous.model.Card;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 
 
 public class GameDeckAdapter extends BaseAdapter {
@@ -35,7 +36,11 @@ public class GameDeckAdapter extends BaseAdapter {
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
                 Card card = getItem(position);
-                
+                if(convertView != null && convertView instanceof ImageView && convertView.getTag() == card.getImage() )
+                {
+                        return convertView;
+                }
+
                 if(card == null){
                 	return CardLayout.getCardLayout(null, parent);
                 };

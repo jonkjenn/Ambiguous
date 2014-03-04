@@ -6,42 +6,23 @@
     android:background="@drawable/layout_bg"
     android:orientation="vertical"
      >
-
-    	<LinearLayout
-    	    android:layout_width="match_parent"
-    	    android:layout_height="wrap_content"
-    	    android:gravity="left"
-    	    android:orientation="horizontal"
-    	    android:paddingTop="5dp"
-    	    >
-
             <TextView
-                android:id="@+id/card_id"
-                android:layout_width="wrap_content"
+                android:id="@+id/card_cost"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:visibility="gone"
+				android:textColor="#B4B432"
+                android:gravity="center_horizontal"
+                style="@android:style/TextAppearance.Small"
                 />
 
             <TextView
                 android:textSize="12sp"
                 android:id="@+id/card_name"
-                android:layout_width="45dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="left"
+                android:gravity="center_horizontal"
                 android:paddingLeft="3dp"
                 />
-
-            <TextView
-                android:padding="0dp"
-                android:id="@+id/card_cost"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-				android:textColor="#B4B432"
-                android:gravity="right"
-                style="@android:style/TextAppearance.Small"
-                />
-
-        </LinearLayout>
 
     	<LinearLayout
     	    android:layout_width="fill_parent"
@@ -50,8 +31,8 @@
     	    android:gravity="center_horizontal">
             <ImageView
                 android:id="@+id/card_image"
-                android:layout_width="80dp"
-                android:layout_height="55dp"
+                android:layout_width="65dp"
+                android:layout_height="50dp"
                 />
     	</LinearLayout>
 

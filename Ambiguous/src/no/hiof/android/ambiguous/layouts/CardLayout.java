@@ -49,13 +49,13 @@ public class CardLayout {
             v.setImageBitmap(bitmaps.get(card.getImage()));
 		}
 		
-		TextView id = (TextView)view.findViewById(R.id.card_id);
+		//TextView id = (TextView)view.findViewById(R.id.card_id);
 		TextView cost = (TextView)view.findViewById(R.id.card_cost);
 		TextView name = (TextView)view.findViewById(R.id.card_name);
 		TextView description = (TextView)view.findViewById(R.id.card_description);
 		ImageView image = (ImageView)view.findViewById(R.id.card_image);
 
-		id.setText(Integer.toString(card.getId()));
+		//id.setText(Integer.toString(card.getId()));
 		cost.setText(Integer.toString(card.getCost()));
 		name.setText(card.getName());
 		if(description != null){description.setText(card.getDescription());}

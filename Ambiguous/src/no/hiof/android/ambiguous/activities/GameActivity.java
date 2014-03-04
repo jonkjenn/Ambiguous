@@ -27,13 +27,10 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.DragEvent;
-import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnDragListener;
 import android.view.ViewGroup;
-import android.view.ViewGroup.LayoutParams;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
@@ -45,8 +42,8 @@ import android.widget.TextView;
 public class GameActivity extends Activity implements OnDragListener,
 		GameMachine.GameMachineListener, OpponentListener, PlayerUpdateListener, OpenSocketListener {
 	private SQLiteDatabase db;
-	private View layoutView;
 	private GridView deckView;
+	private RelativeLayout layoutContainer;
 	private GameMachine gameMachine;
 	private Player savedPlayer;
 	private Player savedOpponent;
@@ -54,7 +51,7 @@ public class GameActivity extends Activity implements OnDragListener,
 
 	// playerStatus currently used for status messages, opponentStatus indicates turns. Should rename!
 	TextView playerStatus;
-	TextView opponentStatus;
+	TextView turnStatus;
 	private boolean isNetwork;
 	private String address;
 	private int port;
@@ -69,18 +66,18 @@ public class GameActivity extends Activity implements OnDragListener,
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_game);
-		layoutView = findViewById(R.id.game_layout);
 
+		layoutContainer = (RelativeLayout)findViewById(R.id.game_layout_container);
 		playerStatus = (TextView) findViewById(R.id.stats_player);
-		opponentStatus = (TextView) findViewById(R.id.stats_computer);
+		turnStatus = (TextView) findViewById(R.id.turnIndicator);
 
 		playerStatus.setText(" ");
-		opponentStatus.setText(" ");
+		turnStatus.setText(" ");
 		if(savedInstanceState != null){
 			String savedPlayerText = savedInstanceState.getString(KEY_TEXT_PLAYER_VALUE);
 			playerStatus.setText(savedPlayerText);
 			String savedOpponentText = savedInstanceState.getString(KEY_TEXT_OPPONENT_VALUE);
-			opponentStatus.setText(savedOpponentText);
+			turnStatus.setText(savedOpponentText);
 			savedPlayer = savedInstanceState.getParcelable("Player");
 			savedOpponent = savedInstanceState.getParcelable("Opponent");
 			savedState = GameMachine.State.values()[savedInstanceState.getInt("State")];
@@ -126,7 +123,7 @@ public class GameActivity extends Activity implements OnDragListener,
 		// Listen to the player class for updates on the players current cards
 		// "on the table", NOT the players deck we pull cards from.
 
-		setupDragDrop(layoutView);
+		setupDragDrop(layoutContainer);
 
 
 		
@@ -258,7 +255,7 @@ public class GameActivity extends Activity implements OnDragListener,
 							.setVisibility(TextView.INVISIBLE);
 				}
 				if (dState.length > 2
-						&& dState[2] / 2 + event.getY() > this.layoutView
+						&& dState[2] / 2 + event.getY() > this.layoutContainer
 								.getHeight()) {
 					Log.d("test", "funker?");
 					findViewById(R.id.gameview_discard).setVisibility(
@@ -285,7 +282,7 @@ public class GameActivity extends Activity implements OnDragListener,
 					removeDrag();
 					gameMachine.PlayerPlayCard(dragState[1]);
 				} else if (dragState.length > 2
-						&& dragState[2] / 2 + event.getY() > this.layoutView
+						&& dragState[2] / 2 + event.getY() > this.layoutContainer
 								.getHeight()) {
 //					Log.d("test", "funker?");
 					findViewById(R.id.gameview_discard).setVisibility(
@@ -308,15 +305,15 @@ public class GameActivity extends Activity implements OnDragListener,
 
 	@Override
 	public void onPlayerTurnListener() {
-		setupDragDrop(layoutView);
+		setupDragDrop(layoutContainer);
 		// Opponenstatus currently used as turn indicator
-		opponentStatus.setText(gameMachine.player.getName()+"'s turn");
+		turnStatus.setText(gameMachine.player.getName()+"'s turn");
 	}
 
 	@Override
 	public void onPlayerDoneListener() {
-		this.layoutView.setOnDragListener(null);
-		opponentStatus.setText(gameMachine.opponent.getName()+"'s turn");
+		this.layoutContainer.setOnDragListener(null);
+		turnStatus.setText(gameMachine.opponent.getName()+"'s turn");
 	}
 
 	@Override
@@ -393,36 +390,61 @@ public class GameActivity extends Activity implements OnDragListener,
 
 	@Override
 	public void onStatChange(Player player, int amount, EffectType type) {
+
+		final boolean isPlayer = player==gameMachine.player;
+		
+		final ViewGroup viewGroup;
+		final TextView floatingText;
+
 		int color;
 		switch(type)
 		{
 		case ARMOR:
+			viewGroup = (ViewGroup)findViewById(isPlayer?R.id.floating_armor_player:R.id.floating_armor_opponent);
 			color = Color.BLUE;
 			break;
 		case DAMAGE:
+			viewGroup = (ViewGroup)findViewById(isPlayer?R.id.floating_health_player:R.id.floating_health_opponent);
 			color = Color.RED;
 			break;
 		case HEALTH:
+			viewGroup = (ViewGroup)findViewById(isPlayer?R.id.floating_health_player:R.id.floating_health_opponent);
 			color = Color.rgb(45, 190, 50);
 			break;
 		case RESOURCE:
+			viewGroup = (ViewGroup)findViewById(isPlayer?R.id.floating_resource_player:R.id.floating_resource_opponent);
 			color = Color.rgb(180,180,50);
 			break;
 		default:
+			viewGroup = null;
 			color = Color.WHITE;
 			break;
 		}
-		final boolean isPlayer = player==gameMachine.player;
-		final ViewGroup viewGroup = (ViewGroup) findViewById((isPlayer ? R.id.floating_container
+		
+		int index = -1;
+		
+		for(int i=0;i<viewGroup.getChildCount();i++)
+		{
+			if(((TextView)viewGroup.getChildAt(i)).getText().length() == 0){
+				index = i;
+                break;
+			}
+		}
+
+        floatingText = (index>=0?(TextView)viewGroup.getChildAt(index):null);
+		
+        if(floatingText == null || viewGroup == null){return;}
+        
+		/*final ViewGroup viewGroup = (ViewGroup) findViewById((isPlayer ? R.id.floating_container
 				: R.id.floating_container2));
 
 		final TextView floatingText = (TextView) LayoutInflater.from(
 				viewGroup.getContext())
 				.inflate(R.layout.floatingtextview, null);
 
-		viewGroup.addView(floatingText);
+		viewGroup.addView(floatingText);*/
 
-		floatingText.setText(Integer.toString(amount));
+		floatingText.setText((amount>=0?"+":"") + Integer.toString(amount));
 		floatingText.setTextColor(color);
 
 		final AlphaAnimation fadeIn = new AlphaAnimation(0.0f,1.0f);
@@ -442,7 +464,7 @@ public class GameActivity extends Activity implements OnDragListener,
 			public void onAnimationEnd(Animation animation) {
 				new Handler().post(new Runnable() {
 			        public void run() {
-			        	viewGroup.removeView(floatingText);
+			        	floatingText.setText("");
 			        }
 			    });
 				

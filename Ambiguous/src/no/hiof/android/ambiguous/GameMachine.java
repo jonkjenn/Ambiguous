@@ -120,7 +120,7 @@ public class GameMachine implements OpponentListener {
 			public void run() {
 				doChangeState();
 			}
-		}, SystemClock.uptimeMillis() + 200);
+		}, SystemClock.uptimeMillis() + 1000);
 		}
 	}
 

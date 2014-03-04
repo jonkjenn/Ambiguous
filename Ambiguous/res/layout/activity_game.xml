@@ -1,85 +1,99 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    	android:id="@+id/game_layout_container"
-	    android:layout_width="match_parent"
-	    android:layout_height="match_parent"
-	    android:background="#0F7F0F"
-    >
-	<TextView 
-	    android:id="@+id/gameview_use"
-	    android:layout_width="match_parent"
-	    android:layout_height="30dp"
-	    android:background="#50CC33"
-	    android:text="@string/activity_main_usecard"
-	    android:gravity="center"
-	    android:visibility="gone"
-	    android:layout_alignParentTop="true"
-	    />
-	<ImageView 
-	    android:id="@+id/opponent_card"
-	    android:layout_centerHorizontal="true"
-	    android:layout_marginTop="20dp"
-	    android:layout_width="70dp"
-	    android:layout_height="wrap_content"
-	    android:orientation="horizontal"
-	    android:gravity="center"
-	    ></ImageView>
-	<TextView
-	    android:layout_width="wrap_content"	    
-	    android:layout_height="wrap_content"
-	    android:layout_marginTop="80dp"
-	    android:layout_centerHorizontal="true"
-	    android:gravity="center"
-	    android:text="DISCARDED"
-	    android:textColor="#000000"
-	    android:background="#FF0000"
-	    android:id="@+id/discard"
-	    android:visibility="gone"
-	    ></TextView>
-	<LinearLayout
-	    android:id="@+id/floating_container"
-	    android:layout_width="wrap_content"
-	    android:layout_height="wrap_content"
-		android:orientation="vertical"
-		android:layout_marginTop="50dp"
-	    ></LinearLayout>
-	<LinearLayout
-	    android:id="@+id/floating_container2"
-	    android:layout_width="wrap_content"
-	    android:layout_height="wrap_content"
-		android:orientation="vertical"
-		android:layout_alignParentRight="true"
-		android:layout_marginTop="50dp"
-	    ></LinearLayout>
-	<LinearLayout
-		android:id="@+id/game_layout"
-	    android:layout_width="match_parent"
-	    android:layout_height="match_parent"
-		android:orientation="vertical"
-		android:gravity="bottom"
-		>
-		<TextView 
-		    android:id="@+id/stats_computer"
-			android:layout_height="wrap_content"
-			android:layout_width="match_parent"
-		    />	
-	<TextView 
-		    android:id="@+id/stats_player"
-			android:layout_height="wrap_content"
-			android:layout_width="match_parent"
-		    />
-		<LinearLayout
-            android:id="@+id/stat_layout_opponent"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="right"
-            android:orientation="horizontal" >
+    android:id="@+id/game_layout_container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0F7F0F" >
+
+
+    <TextView
+        android:id="@+id/gameview_use"
+        android:layout_width="match_parent"
+        android:layout_height="30dp"
+        android:layout_alignParentTop="true"
+        android:background="#50CC33"
+        android:gravity="center"
+        android:text="@string/activity_main_usecard"
+        android:visibility="gone" />
+
+    <ImageView
+        android:id="@+id/opponent_card"
+        android:layout_width="70dp"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:gravity="center"
+        android:orientation="horizontal" >
+    </ImageView>
+
+    <TextView
+        android:id="@+id/discard"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="80dp"
+        android:background="#FF0000"
+        android:gravity="center"
+        android:text="DISCARDED"
+        android:textColor="#000000"
+        android:visibility="gone" >
+    </TextView>
+
+
+    <GridView
+        android:id="@+id/game_grid"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:numColumns="4"
+        android:stretchMode="columnWidth"
+        android:verticalSpacing="5dp" >
+    </GridView>
+
+    <TextView
+        android:id="@+id/turnIndicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" 
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:textSize="12sp"
+        />
+
+    <TextView
+        android:id="@+id/stats_player"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <TableLayout
+        android:id="@+id/stat_layout_opponent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:paddingRight="5dp"
+        android:layout_above="@id/game_grid">
+
+        <TableRow>
 
             <TextView
                 android:id="@+id/stat_opponent_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_span="3"
+                android:gravity="right"
+                android:paddingRight="5dp"
+                android:text="0" />
+        </TableRow>
+
+        <TableRow>
+            <LinearLayout
+                android:id="@+id/floating_health_opponent"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="0" />
+                android:orientation="horizontal" >
+                <include layout="@layout/floatingtextview"/>
+                <include layout="@layout/floatingtextview"/>
+                <include layout="@layout/floatingtextview"></include>
+            </LinearLayout>
 
             <ImageView
                 android:id="@+id/image_stat_health"
@@ -92,7 +106,21 @@
                 android:id="@+id/stat_opponent_health"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textSize="22sp"
                 android:text="0" />
+
+        </TableRow>
+
+        <TableRow>
+            <LinearLayout
+                android:id="@+id/floating_armor_opponent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" >
+                <include layout="@layout/floatingtextview"/>
+                <include layout="@layout/floatingtextview"/>
+                <include layout="@layout/floatingtextview"/>
+            </LinearLayout>
 
             <ImageView
                 android:id="@+id/image_stat_armor"
@@ -105,7 +133,21 @@
                 android:id="@+id/stat_opponent_armor"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textSize="22sp"
                 android:text="0" />
+
+        </TableRow>
+
+        <TableRow>
+            <LinearLayout
+                android:id="@+id/floating_resource_opponent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" >
+                <include layout="@layout/floatingtextview"/>
+                <include layout="@layout/floatingtextview"/>
+                <include layout="@layout/floatingtextview"/>
+            </LinearLayout>
 
             <ImageView
                 android:id="@+id/image_stat_resource"
@@ -118,25 +160,40 @@
                 android:id="@+id/stat_opponent_resource"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textSize="22sp"
                 android:text="0" />
-        </LinearLayout>
-		<LinearLayout
-            android:id="@+id/stat_layout_player"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="bottom"
-            android:orientation="horizontal" >
+
+        </TableRow>
+    </TableLayout>
+
+    <TableLayout
+        android:id="@+id/stat_layout_player"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/game_grid"
+        android:layout_alignParentLeft="true"
+        android:orientation="horizontal" >
+
+        <TableRow
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" >
 
             <TextView
                 android:id="@+id/stat_player_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_span="2"
+                android:paddingLeft="5dp"
                 android:text="0" />
+        </TableRow>
+
+        <TableRow>
 
             <ImageView
                 android:id="@+id/image_stat_health"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
                 android:contentDescription="@string/health"
                 android:src="@android:drawable/ic_input_add" />
 
@@ -144,12 +201,28 @@
                 android:id="@+id/stat_player_health"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="0" />
+                android:text="0"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:id="@+id/floating_health_player"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" >
+                <include layout="@layout/floatingtextview"/>
+                <include layout="@layout/floatingtextview"/>
+                <include layout="@layout/floatingtextview"></include>
+            </LinearLayout>
+        </TableRow>
+
+        <TableRow>
 
             <ImageView
                 android:id="@+id/image_stat_armor"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
                 android:contentDescription="@string/armor"
                 android:src="@android:drawable/ic_lock_lock" />
 
@@ -157,12 +230,27 @@
                 android:id="@+id/stat_player_armor"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="0" />
+                android:text="0"
+                android:textSize="22sp" />
+
+            <LinearLayout
+                android:id="@+id/floating_armor_player"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" >
+                <include layout="@layout/floatingtextview"/>
+                <include layout="@layout/floatingtextview"/>
+                <include layout="@layout/floatingtextview"/>
+            </LinearLayout>
+        </TableRow>
+
+        <TableRow>
 
             <ImageView
                 android:id="@+id/image_stat_resource"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
                 android:contentDescription="@string/resource"
                 android:src="@android:drawable/ic_lock_idle_charging" />
 
@@ -170,35 +258,37 @@
                 android:id="@+id/stat_player_resource"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="0" />
-        </LinearLayout>
-		<GridView 
-		    android:stretchMode="columnWidth"
-			android:id="@+id/game_grid"
-			android:layout_height="wrap_content"
-			android:layout_width="match_parent"
-			android:numColumns="4"
-			android:verticalSpacing="5dp"
-			android:gravity="center"
-			>
-		</GridView>
-		
-	</LinearLayout>
-	<TextView 
-	    android:id="@+id/gameview_discard"
-	    android:layout_width="match_parent"
-	    android:layout_height="20dp"
-	    android:background="#FF0000"
-	    android:text="@string/activity_main_discard"
-	    android:visibility="gone"
-	    android:layout_alignParentBottom="true"
-	    />
-	<ImageView 
-	    android:id="@+id/drag_card"
-	    android:layout_width="70dp"
-	    android:layout_height="110dp"
-	    android:adjustViewBounds="true"
-	    android:layout_alignParentTop="true"
-	    android:scaleType="matrix"
-	    ></ImageView>
+                android:text="0"
+                android:textSize="22sp" />
+
+            <LinearLayout
+                android:id="@+id/floating_resource_player"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" >
+                <include layout="@layout/floatingtextview"/>
+                <include layout="@layout/floatingtextview"/>
+                <include layout="@layout/floatingtextview"/>
+            </LinearLayout>
+        </TableRow>
+    </TableLayout>
+
+    <TextView
+        android:id="@+id/gameview_discard"
+        android:layout_width="match_parent"
+        android:layout_height="20dp"
+        android:layout_alignParentBottom="true"
+        android:background="#FF0000"
+        android:text="@string/activity_main_discard"
+        android:visibility="gone" />
+
+    <ImageView
+        android:id="@+id/drag_card"
+        android:layout_width="70dp"
+        android:layout_height="110dp"
+        android:layout_alignParentTop="true"
+        android:adjustViewBounds="true"
+        android:scaleType="matrix" >
+    </ImageView>
+
 </RelativeLayout>

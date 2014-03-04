@@ -45,11 +45,11 @@ public class AIController implements GameMachine.GameMachineListener{
 		int pos = ai.Start();
 		if (pos < 0) {
 			do{
-			pos = computerRandom.nextInt(computer.GetCards().length - 1);
+                pos = computerRandom.nextInt(computer.GetCards().length - 1);
 			}
 			while(computer.GetCard(pos).getEffects().get(0).getType()==Effect.EffectType.RESOURCE);
-			computer.CardUsed(pos);
 			oc.DiscardCard(computer.GetCard(pos));
+			computer.CardUsed(pos);
 			//opponentDiscardCard(opponent.GetCards()[pos]);
 		} else {
 			//opponentPlayCard(opponent.GetCards()[pos]);

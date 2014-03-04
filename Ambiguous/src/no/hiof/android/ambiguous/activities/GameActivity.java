@@ -308,12 +308,16 @@ public class GameActivity extends Activity implements OnDragListener,
 		setupDragDrop(layoutContainer);
 		// Opponenstatus currently used as turn indicator
 		turnStatus.setText(gameMachine.player.getName()+"'s turn");
+		((TextView)findViewById(R.id.stat_player_name)).setBackgroundColor(Color.RED);
+		((TextView)findViewById(R.id.stat_opponent_name)).setBackgroundColor(Color.TRANSPARENT);
 	}
 
 	@Override
 	public void onPlayerDoneListener() {
 		this.layoutContainer.setOnDragListener(null);
 		turnStatus.setText(gameMachine.opponent.getName()+"'s turn");
+		((TextView)findViewById(R.id.stat_player_name)).setBackgroundColor(Color.TRANSPARENT);
+		((TextView)findViewById(R.id.stat_opponent_name)).setBackgroundColor(Color.RED);
 	}
 
 	@Override
@@ -493,8 +497,16 @@ public class GameActivity extends Activity implements OnDragListener,
 				new Handler().postDelayed(r,1000);
 			}
 		});
+				Runnable r = new Runnable() {
+					
+					@Override
+					public void run() {
+						floatingText.setText("");
+					}
+				};
+				new Handler().postDelayed(r,2000);
 		
-		floatingText.startAnimation(fadeIn);
+		//floatingText.startAnimation(fadeIn);
 	}
 
 	@Override

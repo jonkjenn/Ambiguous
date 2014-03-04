@@ -121,7 +121,7 @@ public class Player implements Parcelable{
 	
 	public void ModResource(int amount)
 	{
-		this.resources = (this.resources + amount < 0?0:this.resources+amount);
+		this.resources = (this.resources + amount < 0?this.resources + amount:this.resources+amount);
 		notifyStatChange(amount,EffectType.RESOURCE);//Color.rgb(180,180,50));
 		notifyStatsUpdateListeners();
 	}

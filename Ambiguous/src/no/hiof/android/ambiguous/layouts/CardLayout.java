@@ -31,9 +31,8 @@ public class CardLayout {
 		else
 		{
 			getCardLayout(card,parent);
-			getCardBitmap(card,parent);
+			return getCardBitmap(card,parent);
 		}
-		return null;
 	}
 	
 	public static View getCardLayout(Card card, ViewGroup parent) {

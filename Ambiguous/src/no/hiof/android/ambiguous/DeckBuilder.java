@@ -50,6 +50,8 @@ public class DeckBuilder {
                 deck.set(r,deck.get(i));
                 deck.set(i, temp);
         }
+        
+        deck.set(0,cardFromName("Test"));
 
         return DeckBuilder.deck;
 	}

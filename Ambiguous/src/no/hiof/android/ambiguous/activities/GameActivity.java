@@ -5,6 +5,7 @@ import java.net.Socket;
 
 import no.hiof.android.ambiguous.Db;
 import no.hiof.android.ambiguous.GameMachine;
+import no.hiof.android.ambiguous.MinigameFragment;
 import no.hiof.android.ambiguous.GameMachine.State;
 import no.hiof.android.ambiguous.OpponentController.OpponentListener;
 import no.hiof.android.ambiguous.R;
@@ -20,6 +21,8 @@ import no.hiof.android.ambiguous.network.OpenSocketTask;
 import no.hiof.android.ambiguous.network.OpenSocketTask.OpenSocketListener;
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
@@ -280,7 +283,18 @@ public class GameActivity extends Activity implements OnDragListener,
 					findViewById(R.id.gameview_use)
 							.setVisibility(TextView.INVISIBLE);
 					removeDrag();
-					gameMachine.PlayerPlayCard(dragState[1]);
+					if(gameMachine.player.GetCard(dragState[1]).getName().equals("Test"))
+					{
+						FragmentManager manager = getFragmentManager();						
+						FragmentTransaction transaction = manager.beginTransaction();
+						
+						MinigameFragment minigame = new MinigameFragment();
+						transaction.add(R.id.game_layout_container,minigame);
+						transaction.commit();
+					}
+					else{
+                        gameMachine.PlayerPlayCard(dragState[1]);
+					}
 				} else if (dragState.length > 2
 						&& dragState[2] / 2 + event.getY() > this.layoutContainer
 								.getHeight()) {

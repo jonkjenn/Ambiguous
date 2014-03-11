@@ -138,6 +138,7 @@ public class GameActivity extends Activity implements OnDragListener,
 		outState.putParcelable("Player", gameMachine.player);
 		outState.putParcelable("Opponent", gameMachine.opponent);
 		outState.putInt("State", gameMachine.state.ordinal());
+		
 	}
 
 	private void opponentPlayCard(Card card) {
@@ -557,7 +558,15 @@ public class GameActivity extends Activity implements OnDragListener,
 	@Override
 	protected void onPause() {
 		super.onPause();
-		closeSockets();
+		
+		if(isNetwork){
+			closeSockets();
+		}
+		
+	}
+	@Override
+	protected void onResume(){
+		super.onResume();
 	}
 	
 	private void closeSockets()

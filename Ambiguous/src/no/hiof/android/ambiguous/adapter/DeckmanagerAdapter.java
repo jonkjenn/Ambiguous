@@ -2,22 +2,13 @@ package no.hiof.android.ambiguous.adapter;
 
 import java.util.List;
 
-import no.hiof.android.ambiguous.R;
-import no.hiof.android.ambiguous.cardlistener.CardOnClickListener;
 import no.hiof.android.ambiguous.datasource.CardDataSource;
 import no.hiof.android.ambiguous.layouts.CardLayout;
 import no.hiof.android.ambiguous.model.Card;
 import android.database.sqlite.SQLiteDatabase;
-import android.util.Log;
-import android.view.DragEvent;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.DragShadowBuilder;
-import android.view.View.OnDragListener;
-import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.Button;
 
 
 public class DeckmanagerAdapter extends BaseAdapter {

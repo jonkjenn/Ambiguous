@@ -13,17 +13,20 @@ public class Player implements Parcelable{
 	private String name;
 	private List<Card> deck;
 	private Card[] cards;
+//	private List<Integer> deck;
+//	private int[] cards;
 	public final int maxHealth = 150;
 	public final int maxArmor = 250;
 	private int health = maxHealth;
 	private int armor = 0;
 	private int resources = 10;
+	private static final int NUMBER_OF_CARDS = 8;
 	private boolean alive = true;
 	
 	public Player(String name)
 	{
 		this.name = name;
-		cards = new Card[8];
+		cards = new Card[NUMBER_OF_CARDS];
 	}
 
 	public void PullCards()
@@ -209,36 +212,39 @@ public class Player implements Parcelable{
 	/** save object in parcel */
 	@Override
 	public void writeToParcel(Parcel out, int flags) {
-		/*out.writeString(name);
+		out.writeString(name);
 		out.writeInt(health);
 		out.writeInt(armor);
 		out.writeInt(resources);
-		int[] cardInt = new int[cards.length];
-		for(int i = 0; i < cardInt.length; i++){
-			cardInt[i] = cards[i].getId();
-		}
-		int[] deckInt = new int[deck.size()];
-		for(int i = 0; i < deckInt.length; i++){
-			deckInt[i] = deck.get(i).getId();
-		}*/
+		out.writeParcelableArray(cards, 0);
+		out.writeList(deck);
+//		int[] cardInt = new int[cards.length];
+//		for(int i = 0; i < cardInt.length; i++){
+//			cardInt[i] = cards[i].getId();
+//		}
+//		int[] deckInt = new int[deck.size()];
+//		for(int i = 0; i < deckInt.length; i++){
+//			deckInt[i] = deck.get(i).getId();
+//		}
 	}
 	
-	public static final Parcelable.Creator<Player> CREATOR = null;
-	/*= new Parcelable.Creator<Player>() {
+	public static final Parcelable.Creator<Player> CREATOR  = new Parcelable.Creator<Player>() {
 		public Player createFromParcel(Parcel in) {
 			return new Player(in);
 		}
 		public Player[] newArray(int size) {
 			return new Player[size];
 		}
-	};*/
+	};
 	
 	/** recreate object from parcel */
 	public Player(Parcel in){
-		/*name = in.readString();
+		name = in.readString();
 		health = in.readInt();
 		armor = in.readInt();
 		resources = in.readInt();
-		*/
+		in.readParcelableArray(null);
+		in.readList(deck,null);
+		
 	}
 }

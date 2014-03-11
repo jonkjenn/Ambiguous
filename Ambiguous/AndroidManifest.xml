@@ -35,10 +35,13 @@
         </activity>
         <activity
             android:name="no.hiof.android.ambiguous.activities.DeckManagerActivity"
-            android:label="@string/title_activity_deckmanager" >
+            android:label="@string/title_activity_deckmanager" 
+            android:parentActivityName="no.hiof.android.ambiguous.activities.MainActivity" >
+            <meta-data 
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="no.hiof.android.ambiguous.activities.MainActivity" />
             <intent-filter>
                 <action android:name="no.hiof.android.ambiguous.activities.DeckManagerActivity" />
-
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
@@ -47,7 +50,6 @@
             android:label="@string/title_activity_network" >
             <intent-filter>
                 <action android:name="no.hiof.android.ambiguous.activities.NetworkActivity" />
-
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>

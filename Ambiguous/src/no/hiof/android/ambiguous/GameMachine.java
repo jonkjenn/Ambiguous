@@ -30,66 +30,65 @@ public class GameMachine implements OpponentListener {
 
 	public State state;
 
-	public GameMachine(SQLiteDatabase db, Socket socket, boolean isServer){
-		
+	public GameMachine(SQLiteDatabase db, Socket socket, boolean isServer) {
+
 		this(db, socket, isServer, null, null, null);
 	}
-	public GameMachine(SQLiteDatabase db, Socket socket, boolean isServer, Player savedPlayer, Player savedOpponent, State new_york ) {
+
+	public GameMachine(SQLiteDatabase db, Socket socket, boolean isServer,
+			Player savedPlayer, Player savedOpponent, State new_york) {
 
 		this.cs = new CardDataSource(db);
 
 		List<Card> cards = cs.getCards();
 
-		if(savedPlayer != null){
+		if (savedPlayer != null) {
 			player = savedPlayer;
-		}
-		else{
+		} else {
 			player = new Player("JonAndOrAdrian");
 			player.SetDeck(DeckBuilder.StandardDeck(cards));
 		}
 
-        opponentController = new OpponentController(cs);
-        opponentController.setOpponentListener(this);
+		opponentController = new OpponentController(cs);
+		opponentController.setOpponentListener(this);
 
 		if (socket == null) {
 
-			if(savedOpponent != null){
-				opponent = savedOpponent; 
-			}
-			else{
-		        opponent = new Player("Computer");
-		        opponent.SetDeck(DeckBuilder.StandardDeck(cards));
-			}
-
-            AIController aIController = new AIController(opponent, player,
-                            opponentController);
-            this.setGameMachineListener(aIController);
-
-            state = (state == null ? (new Random().nextInt(2) == 0 ? State.PLAYER_TURN
-                            : State.OPPONENT_TURN) : new_york);
-            changeState();
-		}
-		else
-		{
-			isNetwork = true;
-			if(savedOpponent != null){
+			if (savedOpponent != null) {
 				opponent = savedOpponent;
+			} else {
+				opponent = new Player("Computer");
+				opponent.SetDeck(DeckBuilder.StandardDeck(cards));
 			}
-			else{
-	            opponent = new Player("Network");
-	            opponent.SetDeck(DeckBuilder.StandardDeck(cards));
+
+			AIController aIController = new AIController(opponent, player,
+					opponentController);
+			this.setGameMachineListener(aIController);
+
+			state = (new_york == null ? (new Random().nextInt(2) == 0 ? State.PLAYER_TURN
+					: State.OPPONENT_TURN)
+					: new_york);
+			changeState();
+		} else {
+			isNetwork = true;
+			if (savedOpponent != null) {
+				opponent = savedOpponent;
+			} else {
+				opponent = new Player("Network");
+				opponent.SetDeck(DeckBuilder.StandardDeck(cards));
 			}
-			
-			networkOpponent = new NetworkOpponent(opponentController,player,opponent,socket);
+
+			networkOpponent = new NetworkOpponent(opponentController, player,
+					opponent, socket);
 			setGameMachineListener(networkOpponent);
 
-			if(isServer)
-            {state = (new Random().nextInt(2) == 0 ? State.PLAYER_TURN
-				: State.OPPONENT_TURN);
-                changeState();
-            }
+			if (isServer) {
+				state = (new_york == null ? (new Random().nextInt(2) == 0 ? State.PLAYER_TURN
+						: State.OPPONENT_TURN)
+						: new_york);
+				changeState();
+			}
 		}
-
 
 	}
 
@@ -98,29 +97,25 @@ public class GameMachine implements OpponentListener {
 	}
 
 	private void changeState() {
-		if(isNetwork)
-		{
-		Handler h = new Handler();
-		h.postAtTime(new Runnable() {
+		if (isNetwork) {
+			Handler h = new Handler();
+			h.postAtTime(new Runnable() {
 
-			
-			@Override
-			public void run() {
-				doChangeState();
-			}
-		}, SystemClock.uptimeMillis() + 50);
-		}
-		else
-		{
-		
-		Handler h = new Handler();
-		h.postAtTime(new Runnable() {
+				@Override
+				public void run() {
+					doChangeState();
+				}
+			}, SystemClock.uptimeMillis() + 50);
+		} else {
 
-			@Override
-			public void run() {
-				doChangeState();
-			}
-		}, SystemClock.uptimeMillis() + 1000);
+			Handler h = new Handler();
+			h.postAtTime(new Runnable() {
+
+				@Override
+				public void run() {
+					doChangeState();
+				}
+			}, SystemClock.uptimeMillis() + 1000);
 		}
 	}
 
@@ -136,7 +131,7 @@ public class GameMachine implements OpponentListener {
 			break;
 		case PLAYER_DONE:
 			player.ModResource(5);
-			notifyPlayerUsedEffect(EffectType.RESOURCE,player,5);
+			notifyPlayerUsedEffect(EffectType.RESOURCE, player, 5);
 			notifyPlayerDone();
 			state = State.OPPONENT_TURN;
 			changeState();
@@ -371,12 +366,10 @@ public class GameMachine implements OpponentListener {
 			playCard(opponent, card, 0);
 			state = State.PLAYER_TURN;
 			doChangeState();
+		} else {
+			opponent.UseResources(card.getCost());
 		}
-		else
-		{
-            opponent.UseResources(card.getCost());
-		}
-		
+
 	}
 
 	@Override

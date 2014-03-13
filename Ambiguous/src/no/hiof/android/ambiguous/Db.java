@@ -8,17 +8,97 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class Db extends SQLiteOpenHelper {
 	
-	private static final String CREATE_CARD_TABLE = "CREATE TABLE Card (id INTEGER PRIMARY KEY, name TEXT, description TEXT, cost INTEGER, image TEXT)";
-	private static final String CREATE_EFFECT_TABLE = "CREATE TABLE Effect (id INTEGER PRIMARY KEY, type VARCHAR(10), target VARCHAR(10), minvalue INTEGER, maxvalue INTEGER, crit INTEGER, card_id INTEGER REFERENCES Card(id))";
-	private static final String CREATE_CONNECTION_TABLE = "CREATE TABLE Connection (id INTEGER PRIMARY KEY, ip VARCHAR(15) UNIQUE)";
+	//private static final String CREATE_CARD_TABLE = "CREATE TABLE Card (id INTEGER PRIMARY KEY, name TEXT, description TEXT, cost INTEGER, image TEXT)";
+	//private static final String CREATE_EFFECT_TABLE = "CREATE TABLE Effect (id INTEGER PRIMARY KEY, type VARCHAR(10), target VARCHAR(10), minvalue INTEGER, maxvalue INTEGER, crit INTEGER, card_id INTEGER REFERENCES Card(id))";
+	//private static final String CREATE_CONNECTION_TABLE = "CREATE TABLE Connection (id INTEGER PRIMARY KEY, ip VARCHAR(15) UNIQUE)";
+	private static final String CREATE_CARDLISTTYPE_TABLE = 
+			"CREATE TABLE IF NOT EXISTS `Cardlisttype` (" +
+			"`name` VARCHAR(45)," +
+			"PRIMARY KEY (`name`))";
+	
+	private static final String CREATE_PLAYERCARDLIST_TABLE = 
+			"CREATE TABLE IF NOT EXISTS `Playercardlist` (" +
+			"`id` INT NOT NULL, " +
+			"`type` VARCHAR(45) NOT NULL, " +
+			"`player` INT NOT NULL, " +
+			"PRIMARY KEY (`type`, `player`), " +
+			"FOREIGN KEY (`type`) REFERENCES `Cardlisttype` (`name`) )";
+	
+	private static final String CREATE_PLAYERPROFILE_TABLE = 
+			"CREATE TABLE IF NOT EXISTS `PlayerProfile` (" +
+			"`name` VARCHAR(45) PRIMARY KEY, " +
+			"`id` INTEGER NOT NULL UNIQUE) ";
+	
+	private static final String CREATE_PLAYER_TABLE = 
+			"CREATE TABLE IF NOT EXISTS `Player` (" +
+			"`name` VARCHAR(45) NOT NULL," +
+			"`armor` INT," +
+			"`resources` INT," +
+			"`deckid` INT," +
+			"`handid` INT," +
+			"`id` INT," +
+			"PRIMARY KEY (`id`)," +
+			"FOREIGN KEY (`deckid`) REFERENCES `Playercardlist` (`id`) , " +
+			"FOREIGN KEY (`handid`) REFERENCES `Playercardlist` (`id`) , " +
+			"FOREIGN KEY (`name`)   REFERENCES `PlayerProfile` (`name`) )";
+	
+	private static final String CREATE_SESSION_TABLE = 
+			"CREATE TABLE IF NOT EXISTS `Session` (" +
+			"`id` INTEGER PRIMARY KEY," +
+			"`player` INTEGER," +
+			"`computer` INTEGER," +
+			"`turn` INTEGER NOT NULL," +
+			"FOREIGN KEY (`player`) REFERENCES `Player` (`id`)," +
+			"FOREIGN KEY (`computer`) REFERENCES `Player` (`id`) )";
+	
+	private static final String CREATE_CARD_TABLE = 
+			"CREATE TABLE IF NOT EXISTS `Card` (" +
+			"`id` INTEGER PRIMARY KEY," +
+			"`name` TEXT," +
+			"`description` TEXT," +
+			"`cost` INTEGER," +
+			"`image` TEXT )";
+	
+	private static final String CREATE_EFFECT_TABLE = 
+			"CREATE TABLE IF NOT EXISTS `Effect` (" +
+			"`id` INTEGER PRIMARY KEY," +
+			"`type` VARCHAR(10)," +
+			"`target` VARCHAR(10)," +
+			"`minvalue` INTEGER," +
+			"`maxvalue` INTEGER," +
+			"`crit` INTEGER," +
+			"`card_id` INTEGER," +
+			"FOREIGN KEY (`card_id`) REFERENCES `Card` (`id`) )";
+	
+	private static final String CREATE_CONNECTION_TABLE = 
+			"CREATE TABLE IF NOT EXISTS `Connection` (" +
+			"`id` INT," +
+			"`ip` VARCHAR(15)," +
+			"PRIMARY KEY (`id`) )";
+	
+	private static final String CREATE_PLAYERCARD_TABLE = 
+			"CREATE TABLE IF NOT EXISTS `Playercard` (" +
+			"`cardid` INT NOT NULL," +
+			"`sessioncardlistid` INT NOT NULL," +
+			"`position` INT NOT NULL," +
+			"PRIMARY KEY (`cardid`, `sessioncardlistid`, `position`)," +
+			"FOREIGN KEY (`sessioncardlistid`) REFERENCES `Playercardlist` (`id`)," +
+			"FOREIGN KEY (`cardid`) REFERENCES `Card` (`id`) )";
+	
 	//private static final String CREATE_DECK_TABLE = "CREATE TABLE Deck (id INTEGER PRIMARY KEY), name TEXT";
 	//private static final String CREATE_DECK_CARDS_TABLE = "CREATE TABLE DeckCards id INTEGER PRIMARY KEY, deck_id INTEGER REFERENCES Deck(id) NOT NULL, card_id INTEGER REFERENCES Card(id) NOT NULL, count INTEGER NOT NULL";
 	
 	private static final String name = "db";
 	
+	private static final String DROP_CARDLISTTYPE_TABLE = "DROP TABLE IF EXISTS Cardlisttype";
+	private static final String DROP_PLAYERCARDLIST_TABLE = "DROP TABLE IF EXISTS Playercardlist";
+	private static final String DROP_PLAYERPROFILE_TABLE = "DROP TABLE IF EXISTS PlayerProfile";
+	private static final String DROP_PLAYER_TABLE = "DROP TABLE IF EXISTS Player";
+	private static final String DROP_SESSION_TABLE = "DROP TABLE IF EXISTS Session";
 	private static final String DROP_CARD_TABLE = "DROP TABLE IF EXISTS Card";
 	private static final String DROP_EFFECT_TABLE = "DROP TABLE IF EXISTS Effect";
 	private static final String DROP_CONNECTION_TABLE = "DROP TABLE IF EXISTS Connection";
+	private static final String DROP_PLAYERCARD_TABLE = "DROP TABLE IF EXISTS Playercard";
 	
 	private static Db db;
 
@@ -27,8 +107,8 @@ public class Db extends SQLiteOpenHelper {
 		if(db == null)
 		{
 			db = new Db(ctx,name,null,1);
-			//db.dropTables();
-			//db.createTables();
+			db.dropTables();
+			db.createTables();
 		}
 		
 		return db;
@@ -41,9 +121,15 @@ public class Db extends SQLiteOpenHelper {
 	public void dropTables()
 	{
 		SQLiteDatabase db = getWritableDatabase();
-		db.execSQL(DROP_CARD_TABLE);
-		db.execSQL(DROP_EFFECT_TABLE);
+		db.execSQL(DROP_PLAYERCARD_TABLE);
 		db.execSQL(DROP_CONNECTION_TABLE);
+		db.execSQL(DROP_EFFECT_TABLE);
+		db.execSQL(DROP_CARD_TABLE);
+		db.execSQL(DROP_SESSION_TABLE);
+		db.execSQL(DROP_PLAYER_TABLE);
+		db.execSQL(DROP_PLAYERPROFILE_TABLE);
+		db.execSQL(DROP_PLAYERCARDLIST_TABLE);
+		db.execSQL(DROP_CARDLISTTYPE_TABLE);
 	}
 
 	@Override
@@ -59,9 +145,19 @@ public class Db extends SQLiteOpenHelper {
 	
 	public void createTables(SQLiteDatabase db)
 	{
+		db.execSQL(CREATE_CARDLISTTYPE_TABLE);
+		db.execSQL(CREATE_PLAYERCARDLIST_TABLE);
+		db.execSQL(CREATE_PLAYERPROFILE_TABLE);
+		db.execSQL(CREATE_PLAYER_TABLE);
+		db.execSQL(CREATE_SESSION_TABLE);
 		db.execSQL(CREATE_CARD_TABLE);
 		db.execSQL(CREATE_EFFECT_TABLE);
 		db.execSQL(CREATE_CONNECTION_TABLE);
+		db.execSQL(CREATE_PLAYERCARD_TABLE);
+		
+		
+		
+		
 		//db.execSQL(CREATE_DECK_TABLE);
 		//db.execSQL(CREATE_DECK_CARDS_TABLE);
 		

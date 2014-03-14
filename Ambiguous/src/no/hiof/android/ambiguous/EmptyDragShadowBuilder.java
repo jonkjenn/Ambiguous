@@ -4,15 +4,17 @@ import android.graphics.Canvas;
 import android.view.View;
 import android.view.View.DragShadowBuilder;
 
-public class CardDragShadowBuilder extends DragShadowBuilder{
-	public CardDragShadowBuilder(View view)
+/**
+ * DragShadoBuilder with empty drawShadow.
+ */
+public class EmptyDragShadowBuilder extends DragShadowBuilder{
+	public EmptyDragShadowBuilder(View view)
 	{
 		super(view);
 	}
 
 	@Override
 	public void onDrawShadow(Canvas canvas) {
-		//super.onDrawShadow(canvas);
-		//view.draw(canvas);
+		//This being empty is the reason for extending this class.
 	}
 }

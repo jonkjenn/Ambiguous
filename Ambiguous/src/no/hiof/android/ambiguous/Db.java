@@ -6,11 +6,11 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabase.CursorFactory;
 import android.database.sqlite.SQLiteOpenHelper;
 
+/**
+ * Handles setting up the database and inserting the cards to use in game.
+ */
 public class Db extends SQLiteOpenHelper {
 	
-	//private static final String CREATE_CARD_TABLE = "CREATE TABLE Card (id INTEGER PRIMARY KEY, name TEXT, description TEXT, cost INTEGER, image TEXT)";
-	//private static final String CREATE_EFFECT_TABLE = "CREATE TABLE Effect (id INTEGER PRIMARY KEY, type VARCHAR(10), target VARCHAR(10), minvalue INTEGER, maxvalue INTEGER, crit INTEGER, card_id INTEGER REFERENCES Card(id))";
-	//private static final String CREATE_CONNECTION_TABLE = "CREATE TABLE Connection (id INTEGER PRIMARY KEY, ip VARCHAR(15) UNIQUE)";
 	private static final String CREATE_CARDLISTTYPE_TABLE = 
 			"CREATE TABLE IF NOT EXISTS `Cardlisttype` (" +
 			"`name` VARCHAR(45)," +
@@ -85,8 +85,9 @@ public class Db extends SQLiteOpenHelper {
 			"FOREIGN KEY (`sessioncardlistid`) REFERENCES `Playercardlist` (`id`)," +
 			"FOREIGN KEY (`cardid`) REFERENCES `Card` (`id`) )";
 	
-	//private static final String CREATE_DECK_TABLE = "CREATE TABLE Deck (id INTEGER PRIMARY KEY), name TEXT";
-	//private static final String CREATE_DECK_CARDS_TABLE = "CREATE TABLE DeckCards id INTEGER PRIMARY KEY, deck_id INTEGER REFERENCES Deck(id) NOT NULL, card_id INTEGER REFERENCES Card(id) NOT NULL, count INTEGER NOT NULL";
+	private static final String CREATE_CARD_TABLE = "CREATE TABLE Card (id INTEGER PRIMARY KEY, name TEXT, description TEXT, cost INTEGER, image TEXT)";
+	private static final String CREATE_EFFECT_TABLE = "CREATE TABLE Effect (id INTEGER PRIMARY KEY, type VARCHAR(10), target VARCHAR(10), minvalue INTEGER, maxvalue INTEGER, crit INTEGER, card_id INTEGER REFERENCES Card(id))";
+	private static final String CREATE_CONNECTION_TABLE = "CREATE TABLE Connection (id INTEGER PRIMARY KEY, ip VARCHAR(15) UNIQUE)";
 	
 	private static final String name = "db";
 	
@@ -102,6 +103,11 @@ public class Db extends SQLiteOpenHelper {
 	
 	private static Db db;
 
+	/**
+	 * Return the current database or initiate a new one if a database does not exist.
+	 * @param ctx
+	 * @return
+	 */
 	public static Db getDb(Context ctx)
 	{
 		if(db == null)
@@ -113,7 +119,7 @@ public class Db extends SQLiteOpenHelper {
 		
 		return db;
 	}
-	
+
 	private Db(Context context, String name, CursorFactory factory, int version) {
 		super(context, name, factory, version);
 	}
@@ -140,9 +146,14 @@ public class Db extends SQLiteOpenHelper {
 	public void createTables()
 	{
 		SQLiteDatabase db = getWritableDatabase();
-		createTables(db);		
+		createTables(db);
+		insertCards(db);
 	}
 	
+	/**
+	 * Create all the tables.
+	 * @param db
+	 */
 	public void createTables(SQLiteDatabase db)
 	{
 		db.execSQL(CREATE_CARDLISTTYPE_TABLE);
@@ -154,13 +165,14 @@ public class Db extends SQLiteOpenHelper {
 		db.execSQL(CREATE_EFFECT_TABLE);
 		db.execSQL(CREATE_CONNECTION_TABLE);
 		db.execSQL(CREATE_PLAYERCARD_TABLE);
-		
-		
-		
-		
-		//db.execSQL(CREATE_DECK_TABLE);
-		//db.execSQL(CREATE_DECK_CARDS_TABLE);
-		
+	}
+
+	/**
+	 * Insert all the different cards available in the game.
+	 * @param db
+	 */
+	private void insertCards(SQLiteDatabase db)
+	{
 		CardDataSource cs = new CardDataSource(db);
 
 		cs.addCard(CardBuilder.DamageOponent("Pistol","","pistol1",4,5,10,5));
@@ -183,16 +195,13 @@ public class Db extends SQLiteOpenHelper {
 		cs.addCard(CardBuilder.SelfArmor("Armor3","","kevlar_drawing",15,65));
 		cs.addCard(CardBuilder.SelfArmor("Armor4","","kevlar_drawing",20,90));
 
-		
 		cs.addCard(CardBuilder.AddResources("Resource2", "Gives more resources", "smiley_drawing_small", 5, 30));
 		cs.addCard(CardBuilder.AddResources("Resource1", "Gives more resources", "smiley_drawing_small", 2, 10));
-		
 	}
-
+	
 	@Override
 	public void onUpgrade(SQLiteDatabase arg0, int arg1, int arg2) {
 		// TODO Auto-generated method stub
-
 	}
 
 }

@@ -230,7 +230,7 @@ public class GameActivity extends Activity implements OnDragListener,
 
 	@Override
 	public boolean onDrag(View v, DragEvent event) {
-		if (!gameMachine.playersTurn()) {
+		if (!gameMachine.isPlayersTurn()) {
 			return false;
 		}
 
@@ -294,7 +294,7 @@ public class GameActivity extends Activity implements OnDragListener,
 						transaction.commit();
 					}
 					else{
-                        gameMachine.PlayerPlayCard(dragState[1]);
+                        gameMachine.playerPlayCard(dragState[1]);
 					}
 				} else if (dragState.length > 2
 						&& dragState[2] / 2 + event.getY() > this.layoutContainer
@@ -303,7 +303,7 @@ public class GameActivity extends Activity implements OnDragListener,
 					findViewById(R.id.gameview_discard).setVisibility(
 							TextView.INVISIBLE);
 					removeDrag();
-					gameMachine.PlayerDiscardCard(dragState[1]);
+					gameMachine.playerDiscardCard(dragState[1]);
 				} else {
 					stopDrag(dragState[1]);
 				}

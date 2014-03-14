@@ -15,6 +15,12 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Handler;
 import android.os.SystemClock;
 
+//TODO: This class should be split up into smaller parts.
+/**
+ * Sets up the game and moves the game between the different game states.
+ * Listens to player and opponent game choices. Applies the effects from the
+ * cards used by players. Notifies listeners about game changes.
+ */
 public class GameMachine implements OpponentListener {
 	public Player player;
 	public Player opponent;
@@ -28,15 +34,39 @@ public class GameMachine implements OpponentListener {
 		PLAYER_TURN, PLAYER_DONE, OPPONENT_TURN, GAME_OVER
 	};
 
+	// Current state of the game.
 	public State state;
 
+	/**
+	 * @param db
+	 *            An open writable database.
+	 * @param socket
+	 *            Optional network socket.
+	 * @param isServer
+	 *            True if this game instance is a server.
+	 */
 	public GameMachine(SQLiteDatabase db, Socket socket, boolean isServer) {
 
 		this(db, socket, isServer, null, null, null);
 	}
 
+	/**
+	 * 
+	 * @param db
+	 *            An open writable database.
+	 * @param socket
+	 *            Optional network socket.
+	 * @param isServer
+	 *            True if this game instance is a server.
+	 * @param savedPlayer
+	 *            Used as player instead of creating a new player.
+	 * @param savedOpponent
+	 *            Used as opponent instead of creating new opponent.
+	 * @param turn
+	 *            Current state used instead of creating new random state.
+	 */
 	public GameMachine(SQLiteDatabase db, Socket socket, boolean isServer,
-			Player savedPlayer, Player savedOpponent, State new_york) {
+			Player savedPlayer, Player savedOpponent, State turn) {
 
 		this.cs = new CardDataSource(db);
 
@@ -52,84 +82,72 @@ public class GameMachine implements OpponentListener {
 		opponentController = new OpponentController(cs);
 		opponentController.setOpponentListener(this);
 
-		if (socket == null) {
+		if (savedOpponent != null) {
+			opponent = savedOpponent;
+		} else {
+			opponent = new Player("Opponent");
+			opponent.SetDeck(DeckBuilder.StandardDeck(cards));
+		}
 
-			if (savedOpponent != null) {
-				opponent = savedOpponent;
-			} else {
-				opponent = new Player("Computer");
-				opponent.SetDeck(DeckBuilder.StandardDeck(cards));
-			}
+		if (socket == null) {
 
 			AIController aIController = new AIController(opponent, player,
 					opponentController);
-			this.setGameMachineListener(aIController);
+			this.setTurnChangeListener(aIController);
 
-			state = (new_york == null ? (new Random().nextInt(2) == 0 ? State.PLAYER_TURN
-					: State.OPPONENT_TURN)
-					: new_york);
-			changeState();
 		} else {
 			isNetwork = true;
-			if (savedOpponent != null) {
-				opponent = savedOpponent;
-			} else {
-				opponent = new Player("Network");
-				opponent.SetDeck(DeckBuilder.StandardDeck(cards));
-			}
 
 			networkOpponent = new NetworkOpponent(opponentController, player,
 					opponent, socket);
 			setGameMachineListener(networkOpponent);
+		}
 
-			if (isServer) {
-				state = (new_york == null ? (new Random().nextInt(2) == 0 ? State.PLAYER_TURN
-						: State.OPPONENT_TURN)
-						: new_york);
-				changeState();
-			}
+		if (!isNetwork || isServer) {
+			state = (turn == null ? (new Random().nextInt(2) == 0 ? State.PLAYER_TURN
+					: State.OPPONENT_TURN)
+					: turn);
+			changeState();
 		}
 
 	}
 
-	public boolean playersTurn() {
+	public boolean isPlayersTurn() {
 		return state == State.PLAYER_TURN;
 	}
 
+	/**
+	 * Gives a delay before doing the actual state change.
+	 */
 	private void changeState() {
-		if (isNetwork) {
-			Handler h = new Handler();
-			h.postAtTime(new Runnable() {
+		int delay = (isNetwork ? 50 : 1000);
+		Handler h = new Handler();
+		h.postAtTime(new Runnable() {
 
-				@Override
-				public void run() {
-					doChangeState();
-				}
-			}, SystemClock.uptimeMillis() + 50);
-		} else {
-
-			Handler h = new Handler();
-			h.postAtTime(new Runnable() {
-
-				@Override
-				public void run() {
-					doChangeState();
-				}
-			}, SystemClock.uptimeMillis() + 1000);
-		}
+			@Override
+			public void run() {
+				doChangeState();
+			}
+		}, SystemClock.uptimeMillis() + delay);
 	}
 
+	/**
+	 * Changes the current game state.
+	 */
 	private void doChangeState() {
 		checkDead();
 
 		switch (state) {
 		case OPPONENT_TURN:
 			notifyOpponentTurn();
+			notifyTurnChanged(this.opponent);
 			break;
 		case PLAYER_TURN:
 			notifyPlayerTurn();
+			notifyTurnChanged(this.player);
 			break;
 		case PLAYER_DONE:
+			// TODO:This should be moved elsewhere.
 			player.ModResource(5);
 			notifyPlayerUsedEffect(EffectType.RESOURCE, player, 5);
 			notifyPlayerDone();
@@ -143,14 +161,31 @@ public class GameMachine implements OpponentListener {
 		}
 	}
 
-	public void PlayerPlayCard(int card) {
-		playCard(player, card);
+	// TODO: Think these functions should be done a different way.
+	/**
+	 * Actions in the UI ends up calling this function for player using a card.
+	 * 
+	 * @param card
+	 *            The position in the players card "hand" array.
+	 */
+	public void playerPlayCard(int card) {
+		playCard(card);
 	}
 
-	public void PlayerDiscardCard(int card) {
+	/**
+	 * Actions in the UI ends up calling this function for player discarding a
+	 * card.
+	 * 
+	 * @param card
+	 *            The position in the players card "hand" array.
+	 */
+	public void playerDiscardCard(int card) {
 		discardCard(card);
 	}
 
+	/**
+	 * Checks if player or opponent is dead and changes state if so.
+	 */
 	private void checkDead() {
 		if (!player.getAlive()) {
 			notifyPlayerDead();
@@ -162,6 +197,12 @@ public class GameMachine implements OpponentListener {
 		}
 	}
 
+	/**
+	 * Discards a card from the player and ends player's turn.
+	 * 
+	 * @param position
+	 *            The position in the card "hand" array of the player.
+	 */
 	private void discardCard(int position) {
 
 		if (state != State.PLAYER_TURN) {
@@ -172,7 +213,13 @@ public class GameMachine implements OpponentListener {
 		doChangeState();
 	}
 
-	private void playCard(Player player, int position) {
+	/**
+	 * Plays a card for the player and ends player's turn.
+	 * 
+	 * @param position
+	 *            The position in the player's card "hand" array.
+	 */
+	private void playCard(int position) {
 		if (state != State.PLAYER_TURN) {
 			notifyCouldNotPlayCard(position);
 			return;
@@ -182,17 +229,29 @@ public class GameMachine implements OpponentListener {
 		doChangeState();
 	}
 
+	/**
+	 * Checks if the cast has enough resources. sorts out who is the target of
+	 * the card.
+	 * 
+	 * @param caster
+	 *            The player that uses the card.
+	 * @param card
+	 * @param position
+	 *            The position of the card in the player's card "hand" array.
+	 */
 	private void playCard(Player caster, Card card, int position) {
-		if (card == null || caster == this.player
-				&& state == State.OPPONENT_TURN || player == this.opponent
-				&& state == State.PLAYER_TURN
+		// Some checks to avoid using cards at incorrect states or if do not
+		// have enough resources.
+		if (card == null || caster == this.player && state != State.PLAYER_TURN
+				|| caster == this.opponent && state != State.OPPONENT_TURN
 				|| !caster.UseResources(card.getCost())) {
-			if (state == State.PLAYER_TURN) {
+			if (caster == this.player) {
 				notifyCouldNotPlayCard(position);
 			}
 			return;
 		}
 
+		// Decides if the player or opponent is the target of the card.
 		Player target = (caster == player ? opponent : player);
 
 		useCard(card, caster, target);
@@ -204,12 +263,19 @@ public class GameMachine implements OpponentListener {
 		}
 	}
 
-	public void useCard(Card card, Player caster, Player opponent) {
+	/**
+	 * Iterate through a cards effect and apply them to the target.
+	 * 
+	 * @param card
+	 * @param caster
+	 * @param target
+	 */
+	public void useCard(Card card, Player caster, Player target) {
 		for (int i = 0; i < card.getEffects().size(); i++) {
 			Effect e = card.getEffects().get(i);
 			switch (e.getTarget()) {
 			case OPPONENT:
-				useEffect(e, opponent);
+				useEffect(e, target);
 				break;
 			case SELF:
 				useEffect(e, caster);
@@ -220,6 +286,13 @@ public class GameMachine implements OpponentListener {
 		}
 	}
 
+	/**
+	 * Apply a specific effect amount to a target player.
+	 * 
+	 * @param e
+	 * @param target
+	 * @param amount
+	 */
 	public void useEffect(Effect e, Player target, int amount) {
 		switch (e.getType()) {
 		case ARMOR:
@@ -243,6 +316,12 @@ public class GameMachine implements OpponentListener {
 		}
 	}
 
+	/**
+	 * Generate a effect amount and apply it to a target player.
+	 * 
+	 * @param e
+	 * @param target
+	 */
 	public void useEffect(Effect e, Player target) {
 		switch (e.getType()) {
 		case ARMOR:
@@ -270,10 +349,23 @@ public class GameMachine implements OpponentListener {
 		}
 	}
 
+	// Listeners to changes happening in gamemachine
 	ArrayList<GameMachineListener> gameMachineListeners = new ArrayList<GameMachineListener>();
+	// Listeners to turn changes.
+	ArrayList<TurnChangeListener> turnChangeListeners = new ArrayList<TurnChangeListener>();
 
 	public void setGameMachineListener(GameMachineListener listener) {
 		gameMachineListeners.add(listener);
+	}
+
+	public void setTurnChangeListener(TurnChangeListener listener) {
+		turnChangeListeners.add(listener);
+	}
+
+	private void notifyTurnChanged(Player player) {
+		for (TurnChangeListener listener : turnChangeListeners) {
+			listener.turnChange(player);
+		}
 	}
 
 	private void notifyCouldNotPlayCard(int position) {
@@ -325,16 +417,13 @@ public class GameMachine implements OpponentListener {
 		}
 	}
 
-	/*
-	 * private void notifyOpponentPlayedCard(Card card) {
-	 * for(GameMachineListener listener:gameMachineListeners) {
-	 * listener.onOpponentPlayedCard(card); } }
-	 * 
-	 * private void notifyOpponentDiscardCard(Card card) {
-	 * for(GameMachineListener listener:gameMachineListeners) {
-	 * listener.onOpponentDiscardCard(card); } }
-	 */
+	public interface TurnChangeListener {
+		void turnChange(Player player);
+	}
 
+	/**
+	 * Changes emerging from gamemachine
+	 */
 	public interface GameMachineListener {
 		void onCouldNotPlayCardListener(int position);
 
@@ -348,11 +437,6 @@ public class GameMachine implements OpponentListener {
 
 		void onOpponentDeadListener(Player opponent);
 
-		/*
-		 * void onOpponentPlayedCard(Card card); void onOpponentDiscardCard(Card
-		 * card);
-		 */
-
 		void onPlayerPlayedCard(Card card);
 
 		void onPlayerUsedeffect(EffectType type, Player target, int amount);
@@ -360,9 +444,14 @@ public class GameMachine implements OpponentListener {
 		void onPlayerDiscardCard(Card card);
 	}
 
+	// TODO:Do something else with the bool
 	@Override
-	public void onOpponentPlayCard(Card card, boolean generateDamage) {
-		if (generateDamage) {
+	/**
+	 * Handle when opponent plays cards.  
+	 * @parameter generateAmount Should only be false during network play.
+	 */
+	public void onOpponentPlayCard(Card card, boolean generateAmount) {
+		if (generateAmount) {
 			playCard(opponent, card, 0);
 			state = State.PLAYER_TURN;
 			doChangeState();
@@ -379,6 +468,9 @@ public class GameMachine implements OpponentListener {
 	}
 
 	@Override
+	/**
+	 * Applies effect directly on target.
+	 */
 	public void onOpponentUsedEffect(EffectType type, Player target, int amount) {
 		switch (type) {
 		case ARMOR:

@@ -85,10 +85,6 @@ public class Db extends SQLiteOpenHelper {
 			"FOREIGN KEY (`sessioncardlistid`) REFERENCES `Playercardlist` (`id`)," +
 			"FOREIGN KEY (`cardid`) REFERENCES `Card` (`id`) )";
 	
-	private static final String CREATE_CARD_TABLE = "CREATE TABLE Card (id INTEGER PRIMARY KEY, name TEXT, description TEXT, cost INTEGER, image TEXT)";
-	private static final String CREATE_EFFECT_TABLE = "CREATE TABLE Effect (id INTEGER PRIMARY KEY, type VARCHAR(10), target VARCHAR(10), minvalue INTEGER, maxvalue INTEGER, crit INTEGER, card_id INTEGER REFERENCES Card(id))";
-	private static final String CREATE_CONNECTION_TABLE = "CREATE TABLE Connection (id INTEGER PRIMARY KEY, ip VARCHAR(15) UNIQUE)";
-	
 	private static final String name = "db";
 	
 	private static final String DROP_CARDLISTTYPE_TABLE = "DROP TABLE IF EXISTS Cardlisttype";

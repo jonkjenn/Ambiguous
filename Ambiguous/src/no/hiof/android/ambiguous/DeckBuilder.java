@@ -6,20 +6,24 @@ import java.util.Random;
 
 import no.hiof.android.ambiguous.model.Card;
 
+/**
+ * Builds the deck the local players will use.
+ */
 public class DeckBuilder {
 	private static List<Card> cards;
 	private static List<Card> deck;
 	
+	/**
+	 * Builds and returns a randomized deck.
+	 * @param cards
+	 * @return
+	 */
 	public static List<Card> StandardDeck(List<Card> cards)
 	{
 		DeckBuilder.cards = cards;
         DeckBuilder.deck = new ArrayList<Card>();
 
         Random rand = new Random();
-        /*for(int i=0;i<cards.size();i++)
-        {
-                deck.add(cards.get(i));
-        }*/
         addCard("Pistol",100);
         addCard("Pistol2",50);
         addCard("Pistol3",20);
@@ -56,6 +60,11 @@ public class DeckBuilder {
         return DeckBuilder.deck;
 	}
 	
+	/**
+	 * Add many instances of the same card to the deck.
+	 * @param name Name of the card.
+	 * @param count How many instances of the card to add.
+	 */
 	private static void addCard(String name, int count)
 	{
 		Card card = cardFromName(name);
@@ -66,6 +75,10 @@ public class DeckBuilder {
 		}
 	}
 	
+	/**
+	 * @param name Name of the card.
+	 * @return A card with the wanted name or null if none found.
+	 */
 	private static Card cardFromName(String name)
 	{
 		for(int i=0;i<cards.size();i++)

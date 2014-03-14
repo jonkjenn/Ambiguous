@@ -1,6 +1,5 @@
 package no.hiof.android.ambiguous;
 
-import android.R.bool;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.res.Configuration;
@@ -10,7 +9,6 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;

@@ -7,9 +7,7 @@ import no.hiof.android.ambiguous.model.Effect;
 import no.hiof.android.ambiguous.model.Player;
 
 /**
- * 
  * Generates suggestions for which cards the computer should use.
- *
  */
 
 public class AI {

@@ -109,8 +109,8 @@ public class Db extends SQLiteOpenHelper {
 		if(db == null)
 		{
 			db = new Db(ctx,name,null,1);
-			db.dropTables();
-			db.createTables();
+			//db.dropTables();
+			//db.createTables();
 		}
 		
 		return db;

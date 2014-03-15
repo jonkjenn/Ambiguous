@@ -12,10 +12,23 @@
          >
          	<View
          	    android:layout_height="match_parent"
+         	    android:layout_width="30dp"
+         	    android:id="@+id/minigame_target"
+         	    android:background="#FFFFFF"
+         	    android:layout_centerInParent="true"
+         	    ></View>
+         	<View
+         	    android:layout_height="match_parent"
          	    android:layout_width="15dp"
          	    android:id="@+id/minigame_player"
          	    android:background="#000000"
          	    ></View>
+         	<TextView 
+         	    android:layout_height="wrap_content"
+         	    android:layout_width="wrap_content"
+         	    android:id="@+id/minigame_score"
+         	    android:textSize="20sp"
+         	    />
      </RelativeLayout>
 
 </RelativeLayout>

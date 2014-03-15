@@ -15,6 +15,9 @@ import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import android.widget.RelativeLayout.LayoutParams;
 
+/**
+ * Minigame that affects the amount of effect a card does.
+ */
 public class MinigameFragment extends Fragment implements SensorEventListener {
 
 	View player;
@@ -74,6 +77,7 @@ public class MinigameFragment extends Fragment implements SensorEventListener {
 			
 			@Override
 			public void run() {
+                if(stop){return;}
 				updatePosition(50);
 				loop();
 			}
@@ -87,7 +91,10 @@ public class MinigameFragment extends Fragment implements SensorEventListener {
 				player.getLayoutParams());
 		position += speed * duration/25;
 		params.leftMargin = position;
-		if(params.leftMargin + player.getWidth() >= this.width){speed = -1;}
+
+		if(params.leftMargin + player.getWidth() >= this.width){
+			speed = -1;
+			}
 		player.setLayoutParams(params);
 	}
 

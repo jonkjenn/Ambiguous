@@ -16,34 +16,36 @@ import no.hiof.android.ambiguous.network.WriteBytesTask;
 import android.os.Handler;
 import android.util.Log;
 
+/**
+ * Handles the packet read and write against a network opponent.
+ */
 public class NetworkOpponent implements GameMachineListener {
 
+	/**
+	 * Enumeration of different packet types each with an unique id.
+	 */
 	public enum Packets {
 		PLAYER_STATS(100), PLAYER_PLAYED_CARD(101), PLAYER_DISCARD_CARD(102), PLAYER_AFK(
 				103), PLAYER_USED_EFFECT(104), PLAYER_TURN_DONE(105);
 
-		private int value;
+		private int packetId;
 
-		private Packets(int value) {
-			this.value = value;
+		private Packets(int packetId) {
+			this.packetId = packetId;
 		}
 
-		public int getValue() {
-			return this.value;
+		public int getPacketId() {
+			return this.packetId;
 		}
-		
-		public static Packets getPacket(int value)
-		{
-			for(int i=0;i<Packets.values().length;i++)
-			{
-				if(Packets.values()[i].getValue() == value)
-				{
+
+		public static Packets getPacket(int packetId) {
+			for (int i = 0; i < Packets.values().length; i++) {
+				if (Packets.values()[i].getPacketId() == packetId) {
 					return Packets.values()[i];
 				}
 			}
 			return null;
 		}
-
 	};
 
 	private OpponentController oc;
@@ -54,10 +56,10 @@ public class NetworkOpponent implements GameMachineListener {
 	private Handler handler;
 	private DataOutputStream out;
 
+	/**
+	 * The buffer where we will put incoming packets.
+	 */
 	private Queue<Byte> dataBuffer = new LinkedList<Byte>();
-
-	// private byte[] dataBuffer = new byte[5000];
-	// private int dataBufferPosition = 0;
 
 	public NetworkOpponent(OpponentController oc, Player player,
 			Player opponent, Socket socket) {
@@ -78,6 +80,7 @@ public class NetworkOpponent implements GameMachineListener {
 					byte[] buffer = new byte[100];
 
 					int r;
+					//Reads the currently available data into the buffer.
 					while ((r = in.read(buffer, 0, buffer.length)) > 0) {
 						for (int i = 0; i < r; i++) {
 							dataBuffer.add(buffer[i]);
@@ -87,28 +90,38 @@ public class NetworkOpponent implements GameMachineListener {
 					}
 
 				} catch (IOException e) {
-					try {
-						NetworkOpponent.this.socket.close();
-					} catch (IOException e1) {
-						e1.printStackTrace();
-					}
-					e.printStackTrace();
+					//TODO: Do something about network errors
+					closeSilently();
 				}
 			}
 		});
 		t.start();
 	}
 
+	/**
+	 * Closes the network socket while ignoring any exceptions.
+	 */
+	private void closeSilently() {
+		try {
+			NetworkOpponent.this.socket.close();
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+	}
+
+	/**
+	 * Extract all the packets currently in the data buffer and applies the data to the opponentcontroller.
+	 */
 	private void readPacketsFromBuffer() {
 		while (dataBuffer.size() >= 1) {
 			switch (Packets.getPacket(dataBuffer.peek())) {
 			case PLAYER_DISCARD_CARD:
 				dataBuffer.poll();
 				handler.post(new Runnable() {
-					
+
 					@Override
 					public void run() {
-                        oc.DiscardCard(dataBuffer.poll());
+						oc.DiscardCard(dataBuffer.poll());
 					}
 				});
 				break;
@@ -116,28 +129,29 @@ public class NetworkOpponent implements GameMachineListener {
 				dataBuffer.poll();
 				final int card = dataBuffer.poll();
 				handler.post(new Runnable() {
-					
+
 					@Override
 					public void run() {
-                    oc.PlayCard(card, false);
-						
+						oc.PlayCard(card, false);
+
 					}
 				});
 				break;
 			case PLAYER_USED_EFFECT:
 				dataBuffer.poll();
 				final EffectType type = EffectType.values()[dataBuffer.poll()];
-				final Player target = (dataBuffer.poll() == 1 ? opponent : player);
+				final Player target = (dataBuffer.poll() == 1 ? opponent
+						: player);
 				final int amount = dataBuffer.poll();
 				handler.post(new Runnable() {
-					
+
 					@Override
 					public void run() {
-                        oc.UseEffect(type, target, amount);
+						oc.UseEffect(type, target, amount);
 					}
 				});
 				break;
-				// Not implemented
+			// Not implemented
 			case PLAYER_STATS:
 				if (dataBuffer.size() < 3) {
 					return;
@@ -147,10 +161,10 @@ public class NetworkOpponent implements GameMachineListener {
 			case PLAYER_TURN_DONE:
 				dataBuffer.poll();
 				handler.post(new Runnable() {
-					
+
 					@Override
 					public void run() {
-                        oc.TurnDone();
+						oc.TurnDone();
 					}
 				});
 				break;
@@ -163,11 +177,15 @@ public class NetworkOpponent implements GameMachineListener {
 		}
 	}
 
+	/**
+	 * Writes a packet for player using a card to the network.
+	 * @param card The id of the card the local player uses.
+	 */
 	private void sendPlayedCard(int card) {
 		try {
 			ByteArrayOutputStream stream = new ByteArrayOutputStream(2);
 			DataOutputStream writer = new DataOutputStream(stream);
-			writer.writeByte(Packets.PLAYER_PLAYED_CARD.getValue());
+			writer.writeByte(Packets.PLAYER_PLAYED_CARD.getPacketId());
 			writer.writeByte(card);
 			new WriteBytesTask().Setup(out).execute(stream.toByteArray());
 		} catch (IOException e) {
@@ -175,11 +193,15 @@ public class NetworkOpponent implements GameMachineListener {
 		}
 	}
 
+	/**
+	 * Writes a packet for player discarding a card to the network.
+	 * @param card The id of the card the local player discards.
+	 */
 	private void sendDiscardCard(int card) {
 		try {
 			ByteArrayOutputStream stream = new ByteArrayOutputStream(2);
 			DataOutputStream writer = new DataOutputStream(stream);
-			writer.writeByte(Packets.PLAYER_DISCARD_CARD.getValue());
+			writer.writeByte(Packets.PLAYER_DISCARD_CARD.getPacketId());
 			writer.writeByte(card);
 			new WriteBytesTask().Setup(out).execute(stream.toByteArray());
 		} catch (IOException e) {
@@ -187,11 +209,18 @@ public class NetworkOpponent implements GameMachineListener {
 		}
 	}
 
+	/**
+	 * Writes a packet for player using a specific effect amount on a specific target. 
+	 * 
+	 * @param type
+	 * @param target
+	 * @param amount
+	 */
 	private void sendUsedEffect(EffectType type, Player target, int amount) {
 		try {
 			ByteArrayOutputStream stream = new ByteArrayOutputStream(4);
 			DataOutputStream writer = new DataOutputStream(stream);
-			writer.writeByte(Packets.PLAYER_USED_EFFECT.getValue());
+			writer.writeByte(Packets.PLAYER_USED_EFFECT.getPacketId());
 			writer.writeByte(type.ordinal());
 			writer.writeByte((target == this.opponent ? 0 : 1));
 			writer.writeByte(amount);
@@ -201,8 +230,12 @@ public class NetworkOpponent implements GameMachineListener {
 		}
 	}
 
+	/**
+	 * Writes a packet notifying the network opponent that it's their turn.
+	 */
 	private void sendOpponentTurn() {
-			new WriteBytesTask().Setup(out).execute(new byte[]{(byte) Packets.PLAYER_TURN_DONE.getValue()});
+		new WriteBytesTask().Setup(out).execute(
+				new byte[] { (byte) Packets.PLAYER_TURN_DONE.getPacketId() });
 	}
 
 	@Override
@@ -225,13 +258,7 @@ public class NetworkOpponent implements GameMachineListener {
 
 	@Override
 	public void onOpponentTurnListener() {
-		handler.post(new Runnable() {
-
-			@Override
-			public void run() {
-				sendOpponentTurn();
-			}
-		});
+		sendOpponentTurn();
 	}
 
 	@Override
@@ -248,7 +275,7 @@ public class NetworkOpponent implements GameMachineListener {
 
 	@Override
 	public void onPlayerPlayedCard(Card card) {
-            sendPlayedCard(card.getId());
+		sendPlayedCard(card.getId());
 	}
 
 	@Override
@@ -259,7 +286,7 @@ public class NetworkOpponent implements GameMachineListener {
 	@Override
 	public void onPlayerUsedeffect(final EffectType type, final Player target,
 			final int amount) {
-				sendUsedEffect(type, target, amount);
+		sendUsedEffect(type, target, amount);
 	}
 
 }

@@ -6,7 +6,7 @@ import java.net.ServerSocket;
 import android.os.AsyncTask;
 
 public class CloseServerSocketTask extends AsyncTask<ServerSocket,Void,Void> {
-
+	
 	@Override
 	protected Void doInBackground(ServerSocket... params) {
 		try {

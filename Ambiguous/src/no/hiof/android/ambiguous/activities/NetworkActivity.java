@@ -42,6 +42,7 @@ public class NetworkActivity extends Activity implements OpenSocketListener {
 	private boolean isServer = false;
 	private Socket socket;
 	private ServerSocket server;
+	private OpenSocketTask openSocketTask;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -74,6 +75,10 @@ public class NetworkActivity extends Activity implements OpenSocketListener {
 		}
 		if (server != null) {
 			new CloseServerSocketTask().execute(server);
+		}
+		if(openSocketTask != null)
+		{
+			openSocketTask.cancel(true);
 		}
 	}
 
@@ -141,11 +146,15 @@ public class NetworkActivity extends Activity implements OpenSocketListener {
 	private void doStartServer(String address) {
 		this.address = address;
 		this.isServer = true;
+		startGame();
+		if(true){return;}
 		setStatusText("Connecting...");
 		closeSockets();
 		// if(network != null){network.StopSocket();}
 		// network = new Network(address,true,this);
-		new OpenSocketTask().setup(address, 19999, true).execute(this);
+		if(openSocketTask != null){openSocketTask.cancel(true);}
+		openSocketTask = new OpenSocketTask().setup(address, 19999, true);
+		openSocketTask.execute(this);
 		// Pretending to tell you that a connection has been made
 		Toast.makeText(this, "Starting Server", Toast.LENGTH_SHORT).show();
 	}
@@ -174,11 +183,9 @@ public class NetworkActivity extends Activity implements OpenSocketListener {
 										int which) {
 									ConnectionDataSource cd = new ConnectionDataSource(
 											db);
-									cd.AddConnection(input.getText().toString());
+									NetworkActivity.this.address = input.getText().toString();
+									cd.AddConnection(NetworkActivity.this.address);
 									startClient(input.getText().toString());
-									shortToast("Starting client");
-									NetworkActivity.this.address = input
-											.getText().toString();
 								}
 							})
 					.setNegativeButton("Abort",
@@ -199,7 +206,11 @@ public class NetworkActivity extends Activity implements OpenSocketListener {
 	}
 
 	private void startClient(String address) {
-		new OpenSocketTask().setup(address, 19999, false).execute(this);
+		startGame();
+		if(true)return;
+		if(openSocketTask != null){openSocketTask.cancel(true);}
+		openSocketTask = new OpenSocketTask().setup(address, 19999, false);
+		openSocketTask.execute(this);
 	}
 
 	public void showClientAddressPicker(View view) {

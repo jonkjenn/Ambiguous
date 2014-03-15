@@ -7,6 +7,9 @@ import no.hiof.android.ambiguous.model.Card;
 import no.hiof.android.ambiguous.model.Effect.EffectType;
 import no.hiof.android.ambiguous.model.Player;
 
+/**
+ * For sending opponent actions to the gamemachine and GUI. Helps computer and network opponent to be treated equal in games.
+ */
 public class OpponentController {
 
 	CardDataSource cs;

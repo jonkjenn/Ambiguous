@@ -10,6 +10,10 @@ import android.view.Menu;
 import android.view.MotionEvent;
 import android.widget.GridView;
 
+//TODO: rename to gallery, fix which cards shown.
+/**
+ * Card gallery, shows all the cards available in game.
+ */
 public class DeckManagerActivity extends Activity {
 	
 	private SQLiteDatabase db;
@@ -28,20 +32,9 @@ public class DeckManagerActivity extends Activity {
     }
     
     @Override
-    public boolean onTouchEvent(MotionEvent event) {
-    	// TODO Auto-generated method stub
-    	return super.onTouchEvent(event);
-    }
-
-    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.deck_manager, menu);
         return true;
-    }
-    
-    @Override
-    protected void onResume() {
-    	super.onResume();
     }
 }

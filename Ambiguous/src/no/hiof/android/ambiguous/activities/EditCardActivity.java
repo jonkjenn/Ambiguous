@@ -19,6 +19,11 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+//TODO: Fix or remove this.
+/**
+ * This class is not used, probably will never be used.
+ * For adding and editing cards in the database. Adding and editing effects is missing.
+ */
 public class EditCardActivity extends Activity implements OnClickListener{
 
 	private SQLiteDatabase db;

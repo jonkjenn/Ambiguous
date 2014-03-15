@@ -23,6 +23,7 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
@@ -42,17 +43,26 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+/**
+ * Initializes games and shows/handles the game UI.
+ */
 public class GameActivity extends Activity implements OnDragListener,
-		GameMachine.GameMachineListener, OpponentListener, PlayerUpdateListener, OpenSocketListener {
+		GameMachine.GameMachineListener, OpponentListener,
+		PlayerUpdateListener, OpenSocketListener {
 	private SQLiteDatabase db;
+
+	// Shows the cards on players "hand"
 	private GridView deckView;
+
+	// The outer layout around the whole game view.
 	private RelativeLayout layoutContainer;
 	private GameMachine gameMachine;
 	private Player savedPlayer;
 	private Player savedOpponent;
 	private State savedState;
 
-	// playerStatus currently used for status messages, opponentStatus indicates turns. Should rename!
+	// TODO: playerStatus currently used for status messages, opponentStatus
+	// indicates turns. Should rename!
 	TextView playerStatus;
 	TextView turnStatus;
 	private boolean isNetwork;
@@ -70,104 +80,126 @@ public class GameActivity extends Activity implements OnDragListener,
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_game);
 
-		layoutContainer = (RelativeLayout)findViewById(R.id.game_layout_container);
+		layoutContainer = (RelativeLayout) findViewById(R.id.game_layout_container);
 		playerStatus = (TextView) findViewById(R.id.stats_player);
 		turnStatus = (TextView) findViewById(R.id.turnIndicator);
+		deckView = (GridView) findViewById(R.id.game_grid);
+		setupDragDrop(layoutContainer);
 
+		// TODO: What?
 		playerStatus.setText(" ");
 		turnStatus.setText(" ");
-		if(savedInstanceState != null){
-			String savedPlayerText = savedInstanceState.getString(KEY_TEXT_PLAYER_VALUE);
-			playerStatus.setText(savedPlayerText);
-			String savedOpponentText = savedInstanceState.getString(KEY_TEXT_OPPONENT_VALUE);
-			turnStatus.setText(savedOpponentText);
-			savedPlayer = savedInstanceState.getParcelable("Player");
-			savedOpponent = savedInstanceState.getParcelable("Opponent");
-			savedState = GameMachine.State.values()[savedInstanceState.getInt("State")];
+
+		if (savedInstanceState != null) {
+			loadSavedData(savedInstanceState);
 		}
-		
+
 		ActionBar actionBar = getActionBar();
 		actionBar.hide();
 
+		// Gets the db that will be reused throughout the game.
 		this.db = Db.getDb(getApplicationContext()).getWritableDatabase();
-		
-		if(isNetwork = getIntent().getBooleanExtra("isNetwork",false))
-		{
-            this.address = getIntent().getStringExtra("address");
-            this.port = getIntent().getIntExtra("port",19999);
-            this.isServer = getIntent().getBooleanExtra("isServer",false);
-            new Handler().postDelayed(new Runnable() {
-				
-				@Override
-				public void run() {
-                    new OpenSocketTask().setup(GameActivity.this.address,GameActivity.this.port,GameActivity.this.isServer).execute(GameActivity.this);
-				}
-			},2000);
-		}
-		else{
-            setupGameMachine();
-		}
 
+		this.isNetwork = getIntent().getBooleanExtra("isNetwork", false);
+		if (this.isNetwork && loadNetworkInfo()) {
+			startNetwork();
+		} else {
+			setupGameMachine();
+		}
 	}
-	
-	private void setupGameMachine()
-	{
-		if(savedPlayer != null && savedOpponent != null){
-			gameMachine = new GameMachine(this.db, socket, isServer, savedPlayer, savedOpponent, savedState);
+
+	//TODO: Could be better type testing. 
+	/**
+	 * Sets the network connection info fields.
+	 * @return False if info is missing.
+	 */
+	private boolean loadNetworkInfo() {
+		if(!getIntent().hasExtra("address") || !getIntent().hasExtra("port") || !getIntent().hasExtra("isServer")){return false;}
+		this.address = getIntent().getStringExtra("address");
+		this.port = getIntent().getIntExtra("port", 19999);
+		this.isServer = getIntent().getBooleanExtra("isServer{", false);
+		return true;
+	}
+
+	/**
+	 * Launches the network connection to opponent.
+	 */
+	private void startNetwork() {
+		new OpenSocketTask().setup(GameActivity.this.address,
+				GameActivity.this.port, GameActivity.this.isServer).execute(
+				GameActivity.this);
+	}
+
+	/**
+	 * Loads saved state data into fields and UI when resuming a game.
+	 * @param savedInstanceState
+	 */
+	private void loadSavedData(Bundle savedInstanceState) {
+		String savedPlayerText = savedInstanceState
+				.getString(KEY_TEXT_PLAYER_VALUE);
+		playerStatus.setText(savedPlayerText);
+		String savedOpponentText = savedInstanceState
+				.getString(KEY_TEXT_OPPONENT_VALUE);
+		turnStatus.setText(savedOpponentText);
+		savedPlayer = savedInstanceState.getParcelable("Player");
+		savedOpponent = savedInstanceState.getParcelable("Opponent");
+		savedState = GameMachine.State.values()[savedInstanceState
+				.getInt("State")];
+	}
+
+	/**
+	 * Sets up the game machine that "drives" the game.
+	 */
+	private void setupGameMachine() {
+		//Resume gamemachine with previous player states.
+		if (savedPlayer != null && savedOpponent != null) {
+			gameMachine = new GameMachine(this.db, socket, isServer,
+					savedPlayer, savedOpponent, savedState);
+		} else {	//Start fresh new gamemachine.
+			gameMachine = new GameMachine(this.db, socket, isServer);
 		}
-		else{
-			gameMachine = new GameMachine(this.db, socket,isServer);
-		}
+		
+		//Listen to gamemachine for changes that should be reflect in UI.
 		gameMachine.setGameMachineListener(this);
 		gameMachine.opponentController.setOpponentListener(this);
 
-		deckView = (GridView) findViewById(R.id.game_grid);
-
-		// Listen to the player class for updates on the players current cards
-		// "on the table", NOT the players deck we pull cards from.
-
-		setupDragDrop(layoutContainer);
-
-
-		
+		//Listen to player and opponent for changes that should be reflected in UI.
 		gameMachine.player.setPlayerUpdateListeners(this);
 		gameMachine.opponent.setPlayerUpdateListeners(this);
 	}
-	
+
 	@Override
-	protected void onSaveInstanceState(Bundle outState){
+	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
-		//Parcelable pars = gameMachine.player.CREATOR.
+		//We store stuff so that can resume later.
 		outState.putParcelable("Player", gameMachine.player);
 		outState.putParcelable("Opponent", gameMachine.opponent);
 		outState.putInt("State", gameMachine.state.ordinal());
-		
+		//TODO: Implementing storing state to database so can resume even if app is destroyed.
 	}
 
+	/**
+	 * Updates GUI with the card the opponent has played.
+	 * @param card
+	 */
 	private void opponentPlayCard(Card card) {
-		ImageView parent = (ImageView)findViewById(R.id.opponent_card);
-		parent.setImageBitmap(CardLayout.getCardBitmap(card,(ViewGroup) findViewById(R.id.game_layout_container)));
+		ImageView parent = (ImageView) findViewById(R.id.opponent_card);
+		parent.setImageBitmap(CardLayout.getCardBitmap(card,
+				(ViewGroup) findViewById(R.id.game_layout_container)));
+		//Hide the discard graphic since we're not discarding.
 		findViewById(R.id.discard).setVisibility(View.INVISIBLE);
-		//parent.addView(CardLayout.getCardLayout(card, parent));
 	}
 
+	/**
+	 * Updates GUI with the card the opponent has discarded.
+	 * @param card
+	 */
 	private void opponentDiscardCard(Card card) {
 		ImageView parent = (ImageView) findViewById(R.id.opponent_card);
-		parent.setImageBitmap(CardLayout.getCardBitmap(card,(ViewGroup) findViewById(R.id.game_layout_container)));
+		parent.setImageBitmap(CardLayout.getCardBitmap(card,
+				(ViewGroup) findViewById(R.id.game_layout_container)));
+		//Show the discard graphic since we're discarding.
 		findViewById(R.id.discard).setVisibility(View.VISIBLE);
-		//parent.removeAllViews();
-		//parent.addView(CardLayout.getCardLayout(card, parent));
-		/*TextView v = new TextView(this);
-		RelativeLayout.LayoutParams par = new RelativeLayout.LayoutParams(
-				LayoutParams.MATCH_PARENT, 30);
-		par.addRule(RelativeLayout.CENTER_HORIZONTAL);
-		par.addRule(RelativeLayout.CENTER_VERTICAL);
-		v.setBackgroundColor(Color.RED);
-		v.setLayoutParams(par);
-		v.setGravity(Gravity.CENTER);
-		v.setTextColor(Color.BLACK);
-		v.setText("DISCARD");*/
-		//parent.addView(v);
 	}
 
 	private void setupDragDrop(View view) {
@@ -176,56 +208,64 @@ public class GameActivity extends Activity implements OnDragListener,
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.game, menu);
 		return true;
 	}
 
+	/**
+	 * Moves the card we're dragging around the screen to a new position.
+	 * @param card The position of the card in the players hand.
+	 * @param x The X coordinate of where we are touching/clicking the screen.
+	 * @param y The Y coordinate of where we are touching/clicking the screen.
+	 * @param insideX The X coordinate of where we're pushing on the card to drag it.
+	 * @param insideY The Y coordinate of where we're pushing on the card to drag it.
+	 */
 	private void drag(int card, int x, int y, int insideX, int insideY) {
+		//Hide the original card on players deck.
 		deckView.getChildAt(card).setVisibility(View.INVISIBLE);
+		//Set the view we actually drag around the screen visible. 
 		ImageView parent = (ImageView) findViewById(R.id.drag_card);
 		parent.setVisibility(ImageView.VISIBLE);
-		/*if (parent.getChildCount() > 0) {
-			RelativeLayout.LayoutParams par = new RelativeLayout.LayoutParams(
-					parent.getLayoutParams());
 
-			par.setMargins(x - insideX, y - insideY, 0, 0);
-			parent.setLayoutParams(par);
-		}*/
+		RelativeLayout.LayoutParams par = new RelativeLayout.LayoutParams(
+				parent.getLayoutParams());
+		//So we dont move the card outside the game view.
+		if ((par.leftMargin + par.width) > deckView.getWidth()) {
+			return;
+		}
 
-        RelativeLayout.LayoutParams par = new RelativeLayout.LayoutParams(
-                        parent.getLayoutParams());
-        
-        if((par.leftMargin + par.width) > deckView.getWidth()){
-        	return;
-        	}
-
-        par.setMargins(x - insideX, y - insideY, 0, 0);
-        parent.setLayoutParams(par);
+		//Move the card by changing the left and top margins
+		par.setMargins(x - insideX, y - insideY, 0, 0);
+		parent.setLayoutParams(par);
 	}
 
-	private void startDrag(int card, int x, int y) {
-		//deckView.getChildAt(card).setVisibility(View.GONE);
+	/**
+	 * We drag cards by creating a copy of the image used on the card and move this around while the stationary actual card is hidden.
+	 * @param card The position of the card in the players hand.
+	 */
+	private void startDrag(int card) {
 		ImageView layout = (ImageView) findViewById(R.id.drag_card);
-		Card c = gameMachine.player.GetCard(card);
-		ImageView i = (ImageView)deckView.getChildAt(card);
-		//View layout = CardLayout.getCardLayout(c, parent);
-		//ImageView layout = new ImageView(this);
-		layout.setImageBitmap(((BitmapDrawable)i.getDrawable()).getBitmap());
+		ImageView i = (ImageView) deckView.getChildAt(card);
+		//Get the bitmap used on the stationary card and use this as bitmap on our "drag card".
+		layout.setImageBitmap(((BitmapDrawable) i.getDrawable()).getBitmap());
 
 		layout.setVisibility(ImageView.GONE);
-		//parent.removeAllViews();
-		//parent.addView(layout);
 	}
 
+	/**
+	 * Reshow the stationary card we have previously dragged, typically used when change our mind on wich card to use.
+	 * @param card
+	 */
 	private void stopDrag(int card) {
 		deckView.getChildAt(card).setVisibility(View.VISIBLE);
 		removeDrag();
 	}
 
+	/**
+	 * Hide only the card we drag around, typically called when we have used or discarded a card.
+	 */
 	private void removeDrag() {
 		findViewById(R.id.drag_card).setVisibility(View.INVISIBLE);
-		//parent.removeAllViews();
 	}
 
 	@Override
@@ -238,7 +278,7 @@ public class GameActivity extends Activity implements OnDragListener,
 		case DragEvent.ACTION_DRAG_STARTED:
 			if (event.getLocalState() != null) {
 				int[] dState = (int[]) event.getLocalState();
-				startDrag(dState[1], (int) event.getX(), (int) event.getY());
+				startDrag(dState[1]);//, (int) event.getX(), (int) event.getY());
 			}
 
 			return true;
@@ -251,12 +291,12 @@ public class GameActivity extends Activity implements OnDragListener,
 
 				if (dState.length > 2
 						&& dState[2] / 2 + event.getY() < dState[0] - 100) {
-					///Log.d("test", "Oppover");
+					// /Log.d("test", "Oppover");
 					findViewById(R.id.gameview_use).setVisibility(
 							TextView.VISIBLE);
 				} else {
-					findViewById(R.id.gameview_use)
-							.setVisibility(TextView.INVISIBLE);
+					findViewById(R.id.gameview_use).setVisibility(
+							TextView.INVISIBLE);
 				}
 				if (dState.length > 2
 						&& dState[2] / 2 + event.getY() > this.layoutContainer
@@ -272,34 +312,34 @@ public class GameActivity extends Activity implements OnDragListener,
 			break;
 
 		case DragEvent.ACTION_DROP:
-//			float y = event.getY();
+			// float y = event.getY();
 			if (event.getLocalState() != null) {
 				int[] dragState = (int[]) event.getLocalState();
-//				float starty = (float) dragState[0];
-//				Log.d("test", y + " " + starty);
+				// float starty = (float) dragState[0];
+				// Log.d("test", y + " " + starty);
 
 				if (dragState.length > 2
 						&& dragState[2] / 2 + event.getY() < dragState[0] - 100) {
-//					Log.d("test", "Oppover");
-					findViewById(R.id.gameview_use)
-							.setVisibility(TextView.INVISIBLE);
+					// Log.d("test", "Oppover");
+					findViewById(R.id.gameview_use).setVisibility(
+							TextView.INVISIBLE);
 					removeDrag();
-					if(gameMachine.player.GetCard(dragState[1]).getName().equals("Test"))
-					{
-						FragmentManager manager = getFragmentManager();						
-						FragmentTransaction transaction = manager.beginTransaction();
-						
+					if (gameMachine.player.GetCard(dragState[1]).getName()
+							.equals("Test")) {
+						FragmentManager manager = getFragmentManager();
+						FragmentTransaction transaction = manager
+								.beginTransaction();
+
 						MinigameFragment minigame = new MinigameFragment();
-						transaction.add(R.id.game_layout_container,minigame);
+						transaction.add(R.id.game_layout_container, minigame);
 						transaction.commit();
-					}
-					else{
-                        gameMachine.playerPlayCard(dragState[1]);
+					} else {
+						gameMachine.playerPlayCard(dragState[1]);
 					}
 				} else if (dragState.length > 2
 						&& dragState[2] / 2 + event.getY() > this.layoutContainer
 								.getHeight()) {
-//					Log.d("test", "funker?");
+					// Log.d("test", "funker?");
 					findViewById(R.id.gameview_discard).setVisibility(
 							TextView.INVISIBLE);
 					removeDrag();
@@ -312,7 +352,7 @@ public class GameActivity extends Activity implements OnDragListener,
 		}
 		return false;
 	}
-	
+
 	@Override
 	public void onCouldNotPlayCardListener(int position) {
 		stopDrag(position);
@@ -322,22 +362,26 @@ public class GameActivity extends Activity implements OnDragListener,
 	public void onPlayerTurnListener() {
 		setupDragDrop(layoutContainer);
 		// Opponenstatus currently used as turn indicator
-		turnStatus.setText(gameMachine.player.getName()+"'s turn");
-		((TextView)findViewById(R.id.stat_player_name)).setBackgroundColor(Color.RED);
-		((TextView)findViewById(R.id.stat_opponent_name)).setBackgroundColor(Color.TRANSPARENT);
+		turnStatus.setText(gameMachine.player.getName() + "'s turn");
+		((TextView) findViewById(R.id.stat_player_name))
+				.setBackgroundColor(Color.RED);
+		((TextView) findViewById(R.id.stat_opponent_name))
+				.setBackgroundColor(Color.TRANSPARENT);
 	}
 
 	@Override
 	public void onPlayerDoneListener() {
 		this.layoutContainer.setOnDragListener(null);
-		turnStatus.setText(gameMachine.opponent.getName()+"'s turn");
-		((TextView)findViewById(R.id.stat_player_name)).setBackgroundColor(Color.TRANSPARENT);
-		((TextView)findViewById(R.id.stat_opponent_name)).setBackgroundColor(Color.RED);
+		turnStatus.setText(gameMachine.opponent.getName() + "'s turn");
+		((TextView) findViewById(R.id.stat_player_name))
+				.setBackgroundColor(Color.TRANSPARENT);
+		((TextView) findViewById(R.id.stat_opponent_name))
+				.setBackgroundColor(Color.RED);
 	}
 
 	@Override
 	public void onOpponentTurnListener() {
-		//opponentStatus.setText(gameMachine.opponent.getName()+"'s turn");
+		// opponentStatus.setText(gameMachine.opponent.getName()+"'s turn");
 
 	}
 
@@ -363,7 +407,7 @@ public class GameActivity extends Activity implements OnDragListener,
 	}
 
 	@Override
-	public void onOpponentPlayCard(Card card,boolean generateDamage) {
+	public void onOpponentPlayCard(Card card, boolean generateDamage) {
 		opponentPlayCard(card);
 	}
 
@@ -383,209 +427,222 @@ public class GameActivity extends Activity implements OnDragListener,
 	@Override
 	public void onStatsUpdateListener(Player player, String str) {
 		if (player == gameMachine.player) {
-			//playerstats.setText(str);
-			TextView playerName = ((TextView)findViewById(R.id.stat_player_name));
-					playerName.setText(player.getName());
-			TextView playerHealth = ((TextView)findViewById(R.id.stat_player_health));
-					playerHealth.setText(String.valueOf(player.getHealth()));
-			TextView playerArmor = ((TextView)findViewById(R.id.stat_player_armor));
-					playerArmor.setText(String.valueOf(player.getArmor()));
-			TextView playerResources = ((TextView)findViewById(R.id.stat_player_resource));
-					playerResources.setText(String.valueOf(player.getResources()));
-			
+			// playerstats.setText(str);
+			TextView playerName = ((TextView) findViewById(R.id.stat_player_name));
+			playerName.setText(player.getName());
+			TextView playerHealth = ((TextView) findViewById(R.id.stat_player_health));
+			playerHealth.setText(String.valueOf(player.getHealth()));
+			TextView playerArmor = ((TextView) findViewById(R.id.stat_player_armor));
+			playerArmor.setText(String.valueOf(player.getArmor()));
+			TextView playerResources = ((TextView) findViewById(R.id.stat_player_resource));
+			playerResources.setText(String.valueOf(player.getResources()));
+
 		} else if (player == gameMachine.opponent) {
-			//opponentstats.setText(str);
-			TextView opponentName = ((TextView)findViewById(R.id.stat_opponent_name));
-					opponentName.setText(player.getName());
-			TextView opponentHealth = ((TextView)findViewById(R.id.stat_opponent_health));
-					opponentHealth.setText(String.valueOf(player.getHealth()));
-			TextView opponentArmor = ((TextView)findViewById(R.id.stat_opponent_armor));
-					opponentArmor.setText(String.valueOf(player.getArmor()));
-			TextView opponentResources = ((TextView)findViewById(R.id.stat_opponent_resource));
-					opponentResources.setText(String.valueOf(player.getResources()));
+			// opponentstats.setText(str);
+			TextView opponentName = ((TextView) findViewById(R.id.stat_opponent_name));
+			opponentName.setText(player.getName());
+			TextView opponentHealth = ((TextView) findViewById(R.id.stat_opponent_health));
+			opponentHealth.setText(String.valueOf(player.getHealth()));
+			TextView opponentArmor = ((TextView) findViewById(R.id.stat_opponent_armor));
+			opponentArmor.setText(String.valueOf(player.getArmor()));
+			TextView opponentResources = ((TextView) findViewById(R.id.stat_opponent_resource));
+			opponentResources.setText(String.valueOf(player.getResources()));
 		}
-		
+
 	}
 
 	@Override
 	public void onStatChange(Player player, int amount, EffectType type) {
 
-		final boolean isPlayer = player==gameMachine.player;
-		
+		final boolean isPlayer = player == gameMachine.player;
+
 		final ViewGroup viewGroup;
 		final TextView floatingText;
 
 		int color;
-		switch(type)
-		{
+		switch (type) {
 		case ARMOR:
-			viewGroup = (ViewGroup)findViewById(isPlayer?R.id.floating_armor_player:R.id.floating_armor_opponent);
+			viewGroup = (ViewGroup) findViewById(isPlayer ? R.id.floating_armor_player
+					: R.id.floating_armor_opponent);
 			color = Color.BLUE;
 			break;
 		case DAMAGE:
-			viewGroup = (ViewGroup)findViewById(isPlayer?R.id.floating_health_player:R.id.floating_health_opponent);
+			viewGroup = (ViewGroup) findViewById(isPlayer ? R.id.floating_health_player
+					: R.id.floating_health_opponent);
 			color = Color.RED;
 			break;
 		case HEALTH:
-			viewGroup = (ViewGroup)findViewById(isPlayer?R.id.floating_health_player:R.id.floating_health_opponent);
+			viewGroup = (ViewGroup) findViewById(isPlayer ? R.id.floating_health_player
+					: R.id.floating_health_opponent);
 			color = Color.rgb(45, 190, 50);
 			break;
 		case RESOURCE:
-			viewGroup = (ViewGroup)findViewById(isPlayer?R.id.floating_resource_player:R.id.floating_resource_opponent);
-			color = Color.rgb(180,180,50);
+			viewGroup = (ViewGroup) findViewById(isPlayer ? R.id.floating_resource_player
+					: R.id.floating_resource_opponent);
+			color = Color.rgb(180, 180, 50);
 			break;
 		default:
 			viewGroup = null;
 			color = Color.WHITE;
 			break;
 		}
-		
+
 		int index = -1;
-		
-		for(int i=0;i<viewGroup.getChildCount();i++)
-		{
-			if(((TextView)viewGroup.getChildAt(i)).getText().length() == 0){
+
+		for (int i = 0; i < viewGroup.getChildCount(); i++) {
+			if (((TextView) viewGroup.getChildAt(i)).getText().length() == 0) {
 				index = i;
-                break;
+				break;
 			}
 		}
 
-        floatingText = (index>=0?(TextView)viewGroup.getChildAt(index):null);
-		
-        if(floatingText == null || viewGroup == null){return;}
-        
-		/*final ViewGroup viewGroup = (ViewGroup) findViewById((isPlayer ? R.id.floating_container
-				: R.id.floating_container2));
+		floatingText = (index >= 0 ? (TextView) viewGroup.getChildAt(index)
+				: null);
 
-		final TextView floatingText = (TextView) LayoutInflater.from(
-				viewGroup.getContext())
-				.inflate(R.layout.floatingtextview, null);
+		if (floatingText == null || viewGroup == null) {
+			return;
+		}
 
-		viewGroup.addView(floatingText);*/
+		/*
+		 * final ViewGroup viewGroup = (ViewGroup) findViewById((isPlayer ?
+		 * R.id.floating_container : R.id.floating_container2));
+		 * 
+		 * final TextView floatingText = (TextView) LayoutInflater.from(
+		 * viewGroup.getContext()) .inflate(R.layout.floatingtextview, null);
+		 * 
+		 * viewGroup.addView(floatingText);
+		 */
 
-		floatingText.setText((amount>=0?"+":"") + Integer.toString(amount));
+		floatingText.setText((amount >= 0 ? "+" : "")
+				+ Integer.toString(amount));
 		floatingText.setTextColor(color);
 
-		final AlphaAnimation fadeIn = new AlphaAnimation(0.0f,1.0f);
-		fadeIn.setDuration((isNetwork?0:500));
-		final AlphaAnimation fadeOut = new AlphaAnimation(1.0f,0.0f);
+		final AlphaAnimation fadeIn = new AlphaAnimation(0.0f, 1.0f);
+		fadeIn.setDuration((isNetwork ? 0 : 500));
+		final AlphaAnimation fadeOut = new AlphaAnimation(1.0f, 0.0f);
 		fadeOut.setAnimationListener(new AnimationListener() {
-			
+
 			@Override
 			public void onAnimationStart(Animation animation) {
 			}
-			
+
 			@Override
 			public void onAnimationRepeat(Animation animation) {
 			}
-			
+
 			@Override
 			public void onAnimationEnd(Animation animation) {
 				new Handler().post(new Runnable() {
-			        public void run() {
-			        	floatingText.setText("");
-			        }
-			    });
-				
+					public void run() {
+						floatingText.setText("");
+					}
+				});
+
 			}
 		});
-		fadeOut.setDuration(isNetwork?0:500);
+		fadeOut.setDuration(isNetwork ? 0 : 500);
 		fadeIn.setAnimationListener(new AnimationListener() {
-			
+
 			@Override
 			public void onAnimationStart(Animation animation) {
 			}
-			
+
 			@Override
 			public void onAnimationRepeat(Animation animation) {
 			}
-			
+
 			@Override
 			public void onAnimationEnd(Animation animation) {
 				Runnable r = new Runnable() {
-					
+
 					@Override
 					public void run() {
 						floatingText.startAnimation(fadeOut);
 					}
 				};
-				new Handler().postDelayed(r,1000);
+				new Handler().postDelayed(r, 1000);
 			}
 		});
-				Runnable r = new Runnable() {
-					
-					@Override
-					public void run() {
-						floatingText.setText("");
-					}
-				};
-				new Handler().postDelayed(r,2000);
-		
-		//floatingText.startAnimation(fadeIn);
+		Runnable r = new Runnable() {
+
+			@Override
+			public void run() {
+				floatingText.setText("");
+			}
+		};
+		new Handler().postDelayed(r, 2000);
+
+		// floatingText.startAnimation(fadeIn);
 	}
 
 	@Override
 	public void onArmorUpdateListener(Player player, int armor) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void onOpponentUsedEffect(EffectType type, Player target, int amount) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void onOpponentTurnDone() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void onPlayerUsedeffect(EffectType type, Player target, int amount) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void onOpenSocketListener(Socket socket, ServerSocket server,
 			Exception exception) {
-		if(server != null){this.server = server;}
-		if(socket != null){
+		if (server != null) {
+			this.server = server;
+		}
+		if (socket != null) {
 			this.socket = socket;
 			setupGameMachine();
 		}
-		if(exception != null && !isServer)
-		{
-            final OpenSocketTask task = new OpenSocketTask().setup(this.address,this.port,this.isServer);
-            new Handler().postDelayed(new Runnable() {
-				
+		if (exception != null && !isServer) {
+			final OpenSocketTask task = new OpenSocketTask().setup(
+					this.address, this.port, this.isServer);
+			new Handler().postDelayed(new Runnable() {
+
 				@Override
 				public void run() {
-					task.execute(GameActivity.this);										
+					task.execute(GameActivity.this);
 				}
-			},1000);
+			}, 1000);
 		}
 	}
-	
+
 	@Override
 	protected void onPause() {
 		super.onPause();
-		
-		if(isNetwork){
+
+		if (isNetwork) {
 			closeSockets();
 		}
-		
+
 	}
+
 	@Override
-	protected void onResume(){
+	protected void onResume() {
 		super.onResume();
 	}
-	
-	private void closeSockets()
-	{
-		if(socket != null){new CloseSocketTask().execute(this.socket);}
-		if(server != null){new CloseServerSocketTask().execute(this.server);}
+
+	private void closeSockets() {
+		if (socket != null) {
+			new CloseSocketTask().execute(this.socket);
+		}
+		if (server != null) {
+			new CloseServerSocketTask().execute(this.server);
+		}
 	}
 }

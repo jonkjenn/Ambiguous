@@ -54,24 +54,24 @@ public class GameActivity extends Activity implements OnDragListener,
 	private RelativeLayout layoutContainer;
 	private GameMachine gameMachine;
 
-	private View useCardNotificationView = findViewById(R.id.gameview_use);
-	private View discardCardNotificationView = findViewById(R.id.gameview_discard);
+	private View useCardNotificationView;
+	private View discardCardNotificationView;
 
-	private TextView playerName = (TextView) findViewById(R.id.stat_player_name);
-	private TextView playerHealth = (TextView) findViewById(R.id.stat_player_health);
-	private TextView playerArmor = (TextView) findViewById(R.id.stat_player_armor);
-	private TextView playerResource = (TextView) findViewById(R.id.stat_player_resource);
-	private ViewGroup floatingHealthPlayer = (ViewGroup) findViewById(R.id.floating_health_player);
-	private ViewGroup floatingArmorPlayer = (ViewGroup) findViewById(R.id.floating_armor_player);
-	private ViewGroup floatingResourcehPlayer = (ViewGroup) findViewById(R.id.floating_resource_player);
+	private TextView playerName ;
+	private TextView playerHealth ;
+	private TextView playerArmor ;
+	private TextView playerResource ;
+	private ViewGroup floatingHealthPlayer ;
+	private ViewGroup floatingArmorPlayer ;
+	private ViewGroup floatingResourcehPlayer ;
 
-	private TextView opponentName = (TextView) findViewById(R.id.stat_opponent_name);
-	private TextView opponentHealth = (TextView) findViewById(R.id.stat_opponent_health);
-	private TextView opponentArmor = (TextView) findViewById(R.id.stat_opponent_armor);
-	private TextView opponentResource = (TextView) findViewById(R.id.stat_opponent_resource);
-	private ViewGroup floatingHealthOpponent = (ViewGroup) findViewById(R.id.floating_health_opponent);
-	private ViewGroup floatingArmorOpponent = (ViewGroup) findViewById(R.id.floating_armor_opponent);
-	private ViewGroup floatingResourcehOpponent = (ViewGroup) findViewById(R.id.floating_resource_opponent);
+	private TextView opponentName ;
+	private TextView opponentHealth ;
+	private TextView opponentArmor ;
+	private TextView opponentResource ;
+	private ViewGroup floatingHealthOpponent ;
+	private ViewGroup floatingArmorOpponent ;
+	private ViewGroup floatingResourcehOpponent ;
 
 	// TODO: Possibly recode so don't need these as fields.
 	private Player savedPlayer;
@@ -113,6 +113,24 @@ public class GameActivity extends Activity implements OnDragListener,
 		if (savedInstanceState != null) {
 			loadSavedData(savedInstanceState);
 		}
+		useCardNotificationView = findViewById(R.id.gameview_use);
+		discardCardNotificationView = findViewById(R.id.gameview_discard);
+
+		playerName = (TextView) findViewById(R.id.stat_player_name);
+		playerHealth = (TextView) findViewById(R.id.stat_player_health);
+		playerArmor = (TextView) findViewById(R.id.stat_player_armor);
+		playerResource = (TextView) findViewById(R.id.stat_player_resource);
+		floatingHealthPlayer = (ViewGroup) findViewById(R.id.floating_health_player);
+		floatingArmorPlayer = (ViewGroup) findViewById(R.id.floating_armor_player);
+		floatingResourcehPlayer = (ViewGroup) findViewById(R.id.floating_resource_player);
+
+		opponentName = (TextView) findViewById(R.id.stat_opponent_name);
+		opponentHealth = (TextView) findViewById(R.id.stat_opponent_health);
+		opponentArmor = (TextView) findViewById(R.id.stat_opponent_armor);
+		opponentResource = (TextView) findViewById(R.id.stat_opponent_resource);
+		floatingHealthOpponent = (ViewGroup) findViewById(R.id.floating_health_opponent);
+		floatingArmorOpponent = (ViewGroup) findViewById(R.id.floating_armor_opponent);
+		floatingResourcehOpponent = (ViewGroup) findViewById(R.id.floating_resource_opponent);
 
 		ActionBar actionBar = getActionBar();
 		actionBar.hide();
@@ -643,7 +661,7 @@ public class GameActivity extends Activity implements OnDragListener,
 	@Override
 	protected void onResume() {
 		super.onResume();
-		//TODO: Network reconnect?
+		// TODO: Network reconnect?
 	}
 
 	private void closeSockets() {

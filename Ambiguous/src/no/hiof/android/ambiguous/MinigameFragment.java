@@ -34,9 +34,21 @@ public class MinigameFragment extends Fragment implements SensorEventListener {
 	private int speedSensor = 0;
 	private int width;
 	private int points = 0;
+	
+	private long timeLimit = 5000;
+	
 	Random randomSpeed = new Random();
 	
+	int min,max,cardPosition;
+	
 	private boolean stop = false;
+	
+	public MinigameFragment(int min, int max,int cardPosition)
+	{
+		this.min = min;
+		this.max = max;
+		this.cardPosition = cardPosition;
+	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -104,12 +116,18 @@ public class MinigameFragment extends Fragment implements SensorEventListener {
 	}
 	
 	private int updateCount;
-	private int randomSpeedMod;
+	private int randomSpeedMod = randomSpeed.nextInt(7)-3;
 	private int maxPoints;
+	private int totalDuration;
 	private void updatePosition()
 	{
-		
 		long duration = Calendar.getInstance().getTimeInMillis() - previousLoop;
+		totalDuration+= duration;
+		if(totalDuration>=timeLimit){
+			notifyGameComplete();
+			stop = true;
+			return;
+			}
 		
 		updateCount++;
 		
@@ -122,7 +140,9 @@ public class MinigameFragment extends Fragment implements SensorEventListener {
 		
 		RelativeLayout.LayoutParams params = new LayoutParams(
 				player.getLayoutParams());
-		if(updateCount%20==0){randomSpeedMod=randomSpeed.nextInt(10)-5;}
+		if(updateCount%40==0){
+			while(Math.abs((randomSpeedMod=randomSpeed.nextInt(7)-3)) <= 1){};
+			}
 		
 		speed = randomSpeedMod + speedSensor;
 				
@@ -130,7 +150,7 @@ public class MinigameFragment extends Fragment implements SensorEventListener {
 			speed = 0;
 			}
 		
-		position += speed * duration/25;
+		position += speed * duration/50;
 		params.leftMargin = position;
 
 		player.setLayoutParams(params);
@@ -165,5 +185,24 @@ public class MinigameFragment extends Fragment implements SensorEventListener {
 		{
 			speedSensor = -1 * (int)event.values[0];
 		}
+	}
+	
+	private MinigameListener listener;
+	
+	public void setMinigameListener(MinigameListener listener)
+	{
+		this.listener = listener;
+	}
+	
+	private void notifyGameComplete()
+	{
+		sensorManager.unregisterListener(this);
+		int amount = (int)((max - min)*(points/(maxPoints*0.6)));
+		listener.onGameEnd(amount, cardPosition);
+	}
+	
+	public interface MinigameListener
+	{
+		public void onGameEnd(int amount, int position);
 	}
 }

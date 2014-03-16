@@ -22,6 +22,7 @@ public class RandomAmountGenerator {
 		if (isCrit) {
 			return max + crit;
 		} else {
+			if(max == min){return min;}
 			Random rand = new Random();
 			int range = max - min;
 			int base = rand.nextInt(range) + min;

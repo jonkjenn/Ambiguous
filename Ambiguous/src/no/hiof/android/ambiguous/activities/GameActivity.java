@@ -7,12 +7,14 @@ import no.hiof.android.ambiguous.Db;
 import no.hiof.android.ambiguous.GameMachine;
 import no.hiof.android.ambiguous.GameMachine.State;
 import no.hiof.android.ambiguous.MinigameFragment;
+import no.hiof.android.ambiguous.MinigameFragment.MinigameListener;
 import no.hiof.android.ambiguous.OpponentController.OpponentListener;
 import no.hiof.android.ambiguous.R;
 import no.hiof.android.ambiguous.adapter.GameDeckAdapter;
 import no.hiof.android.ambiguous.cardlistener.CardOnTouchListener;
 import no.hiof.android.ambiguous.layouts.CardLayout;
 import no.hiof.android.ambiguous.model.Card;
+import no.hiof.android.ambiguous.model.Effect;
 import no.hiof.android.ambiguous.model.Effect.EffectType;
 import no.hiof.android.ambiguous.model.Player;
 import no.hiof.android.ambiguous.model.Player.PlayerUpdateListener;
@@ -44,7 +46,7 @@ import android.widget.TextView;
  */
 public class GameActivity extends Activity implements OnDragListener,
 		GameMachine.GameMachineListener, OpponentListener,
-		PlayerUpdateListener, OpenSocketListener {
+		PlayerUpdateListener, OpenSocketListener, MinigameListener {
 	private SQLiteDatabase db;
 
 	// Shows the cards on players "hand"
@@ -376,12 +378,15 @@ public class GameActivity extends Activity implements OnDragListener,
 
 			// TODO: Fix this when minigame is working
 			// Start minigame
-			if (gameMachine.player.GetCard(touchData.position).equals("Test")) {
+			if (gameMachine.player.GetCard(touchData.position).getName().equals("Test")) {
 				FragmentManager manager = getFragmentManager();
 				FragmentTransaction transaction = manager.beginTransaction();
 
-				MinigameFragment minigame = new MinigameFragment();
-				transaction.add(R.id.game_layout_container, minigame);
+				Effect e = gameMachine.player.GetCard(touchData.position).getEffects().get(0);
+				MinigameFragment minigame = new MinigameFragment(e.getMinValue(),e.getMaxValue(), touchData.position);
+				minigame.setMinigameListener(this);
+				transaction.add(R.id.game_layout_container, minigame,"minigame");
+				transaction.addToBackStack(null);
 				transaction.commit();
 			} else {
 				gameMachine.playerPlayCard(touchData.position);
@@ -671,5 +676,14 @@ public class GameActivity extends Activity implements OnDragListener,
 		if (server != null) {
 			new CloseServerSocketTask().execute(this.server);
 		}
+	}
+
+	@Override
+	public void onGameEnd(int amount,int position) {
+		gameMachine.playerPlayCard(position,amount);
+			FragmentTransaction tr = getFragmentManager().beginTransaction();
+			tr.remove(getFragmentManager().findFragmentByTag("minigame"));
+			tr.commit();
+			getFragmentManager().popBackStack();
 	}
 }

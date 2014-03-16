@@ -109,8 +109,8 @@ public class Db extends SQLiteOpenHelper {
 		if(db == null)
 		{
 			db = new Db(ctx,name,null,1);
-			//db.dropTables();
-			//db.createTables();
+			db.dropTables();
+			db.createTables();
 		}
 		
 		return db;
@@ -181,7 +181,7 @@ public class Db extends SQLiteOpenHelper {
 		cs.addCard(CardBuilder.DamageOponent("Shotgun3","","shotgun4",15,10,60,10));
 		cs.addCard(CardBuilder.DamageOponent("Shotgun4","","shotgun6",20,25,65,30));
 		cs.addCard(CardBuilder.DamageOponent("Sword","","sword_of_ambiguity",10,10,30,10));
-		cs.addCard(CardBuilder.DamageOponent("Test","","sword_of_ambiguity",10,10,30,10));
+		cs.addCard(CardBuilder.DamageOponent("Test","","sword_of_ambiguity",10,10,100,0));
 		cs.addCard(CardBuilder.SelfHeal("Heal1","","plus_drawing",4,10,15,5));
 		cs.addCard(CardBuilder.SelfHeal("Heal2","","plus_drawing",10,15,50,15));
 		cs.addCard(CardBuilder.SelfHeal("Heal3","","plus_drawing",15,35,60,30));

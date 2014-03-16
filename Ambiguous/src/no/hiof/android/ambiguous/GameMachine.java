@@ -171,6 +171,18 @@ public class GameMachine implements OpponentListener {
 	public void playerPlayCard(int card) {
 		playCard(card);
 	}
+	
+	public void playerPlayCard(int card,int amount)
+	{
+		if (state != State.PLAYER_TURN) {
+			notifyCouldNotPlayCard(card);
+			return;
+		}
+		Card c = player.GetCards()[card];
+		c.getEffects().get(0).setMinValue(amount).setMaxValue(amount).setCrit(0);
+		playCard(player, c, card);
+		doChangeState();
+	}
 
 	/**
 	 * Actions in the UI ends up calling this function for player discarding a
@@ -262,6 +274,7 @@ public class GameMachine implements OpponentListener {
 			state = State.PLAYER_DONE;
 		}
 	}
+	
 
 	/**
 	 * Iterate through a cards effect and apply them to the target.

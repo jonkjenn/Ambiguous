@@ -158,7 +158,7 @@ public class Player implements Parcelable{
 	public interface PlayerUpdateListener
 	{
 		void onCardsUpdateListener(Player player, Card[] cards);		
-		void onStatsUpdateListener(Player player,String str);
+		void onStatsUpdateListener(Player player);
 		void onArmorUpdateListener(Player player, int armor);
 		void onStatChange(Player player, int amount, Effect.EffectType type);
 	}
@@ -199,7 +199,7 @@ public class Player implements Parcelable{
 	{
 		for(PlayerUpdateListener listener:listeners)
 		{
-			listener.onStatsUpdateListener(this,getStats());			
+			listener.onStatsUpdateListener(this);			
 		}
 	}
 

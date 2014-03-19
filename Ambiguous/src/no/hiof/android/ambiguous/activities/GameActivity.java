@@ -383,8 +383,14 @@ public class GameActivity extends Activity implements OnDragListener,
 				FragmentTransaction transaction = manager.beginTransaction();
 
 				Effect e = gameMachine.player.GetCard(touchData.position).getEffects().get(0);
-				MinigameFragment minigame = new MinigameFragment(e.getMinValue(),e.getMaxValue(), touchData.position);
+				MinigameFragment minigame = new MinigameFragment();//e.getMinValue(),e.getMaxValue(), touchData.position);
 				minigame.setMinigameListener(this);
+				Bundle b = new Bundle();
+				b.putInt("min",e.getMinValue());
+				b.putInt("max",e.getMaxValue());
+				b.putInt("pos",touchData.position);
+				minigame.setArguments(b);
+
 				transaction.add(R.id.game_layout_container, minigame,"minigame");
 				transaction.addToBackStack(null);
 				transaction.commit();

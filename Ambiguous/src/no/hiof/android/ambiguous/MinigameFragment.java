@@ -43,16 +43,12 @@ public class MinigameFragment extends Fragment implements SensorEventListener {
 	
 	private boolean stop = false;
 	
-	public MinigameFragment(int min, int max,int cardPosition)
-	{
-		this.min = min;
-		this.max = max;
-		this.cardPosition = cardPosition;
-	}
-
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		this.min = getArguments().getInt("min");
+		this.max = getArguments().getInt("max");
+		this.cardPosition = getArguments().getInt("pos");
 	}
 
 	@Override

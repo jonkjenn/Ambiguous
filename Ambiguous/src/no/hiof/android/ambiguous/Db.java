@@ -18,9 +18,9 @@ public class Db extends SQLiteOpenHelper {
 	
 	private static final String CREATE_PLAYERCARDLIST_TABLE = 
 			"CREATE TABLE IF NOT EXISTS `Playercardlist` (" +
-			"`id` INT NOT NULL, " +
+			"`id` INTEGER NOT NULL, " +
 			"`type` VARCHAR(45) NOT NULL, " +
-			"`player` INT NOT NULL, " +
+			"`player` INTEGER NOT NULL, " +
 			"PRIMARY KEY (`type`, `player`), " +
 			"FOREIGN KEY (`type`) REFERENCES `Cardlisttype` (`name`) )";
 	
@@ -32,11 +32,11 @@ public class Db extends SQLiteOpenHelper {
 	private static final String CREATE_PLAYER_TABLE = 
 			"CREATE TABLE IF NOT EXISTS `Player` (" +
 			"`name` VARCHAR(45) NOT NULL," +
-			"`armor` INT," +
-			"`resources` INT," +
-			"`deckid` INT," +
-			"`handid` INT," +
-			"`id` INT," +
+			"`armor` INTEGER," +
+			"`resources` INTEGER," +
+			"`deckid` INTEGER," +
+			"`handid` INTEGER," +
+			"`id` INTEGER," +
 			"PRIMARY KEY (`id`)," +
 			"FOREIGN KEY (`deckid`) REFERENCES `Playercardlist` (`id`) , " +
 			"FOREIGN KEY (`handid`) REFERENCES `Playercardlist` (`id`) , " +
@@ -72,15 +72,15 @@ public class Db extends SQLiteOpenHelper {
 	
 	private static final String CREATE_CONNECTION_TABLE = 
 			"CREATE TABLE IF NOT EXISTS `Connection` (" +
-			"`id` INT," +
+			"`id` INTEGER," +
 			"`ip` VARCHAR(15)," +
 			"PRIMARY KEY (`id`) )";
 	
 	private static final String CREATE_PLAYERCARD_TABLE = 
 			"CREATE TABLE IF NOT EXISTS `Playercard` (" +
-			"`cardid` INT NOT NULL," +
-			"`sessioncardlistid` INT NOT NULL," +
-			"`position` INT NOT NULL," +
+			"`cardid` INTEGER NOT NULL," +
+			"`sessioncardlistid` INTEGER NOT NULL," +
+			"`position` INTEGER NOT NULL," +
 			"PRIMARY KEY (`cardid`, `sessioncardlistid`, `position`)," +
 			"FOREIGN KEY (`sessioncardlistid`) REFERENCES `Playercardlist` (`id`)," +
 			"FOREIGN KEY (`cardid`) REFERENCES `Card` (`id`) )";
@@ -108,9 +108,8 @@ public class Db extends SQLiteOpenHelper {
 	{
 		if(db == null)
 		{
-			db = new Db(ctx,name,null,1);
-			db.dropTables();
-			db.createTables();
+			db = new Db(ctx,name,null,2);
+				
 		}
 		
 		return db;
@@ -120,9 +119,8 @@ public class Db extends SQLiteOpenHelper {
 		super(context, name, factory, version);
 	}
 	
-	public void dropTables()
+	private void dropTables(SQLiteDatabase db)
 	{
-		SQLiteDatabase db = getWritableDatabase();
 		db.execSQL(DROP_PLAYERCARD_TABLE);
 		db.execSQL(DROP_CONNECTION_TABLE);
 		db.execSQL(DROP_EFFECT_TABLE);
@@ -137,14 +135,9 @@ public class Db extends SQLiteOpenHelper {
 	@Override
 	public void onCreate(SQLiteDatabase db) {
 		createTables(db);
-	}
-	
-	public void createTables()
-	{
-		SQLiteDatabase db = getWritableDatabase();
-		createTables(db);
 		insertCards(db);
 	}
+	
 	
 	/**
 	 * Create all the tables.
@@ -196,8 +189,10 @@ public class Db extends SQLiteOpenHelper {
 	}
 	
 	@Override
-	public void onUpgrade(SQLiteDatabase arg0, int arg1, int arg2) {
-		// TODO Auto-generated method stub
+	public void onUpgrade(SQLiteDatabase db, int arg1, int arg2) {
+		dropTables(db);
+		createTables(db);
+		insertCards(db);
 	}
 
 }

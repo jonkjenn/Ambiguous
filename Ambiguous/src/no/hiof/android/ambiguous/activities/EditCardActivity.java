@@ -4,7 +4,6 @@ import java.util.List;
 
 import no.hiof.android.ambiguous.Db;
 import no.hiof.android.ambiguous.R;
-import no.hiof.android.ambiguous.cardlistener.SaveCardOnClickListener;
 import no.hiof.android.ambiguous.datasource.CardDataSource;
 import no.hiof.android.ambiguous.model.Card;
 import no.hiof.android.ambiguous.model.Effect;
@@ -60,7 +59,13 @@ public class EditCardActivity extends Activity implements OnClickListener{
         
         loadCard(this.card);
         final Button save = (Button)findViewById(R.id.editcard_save);
-        save.setOnClickListener(new SaveCardOnClickListener(this));
+        save.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				EditCardActivity.this.saveCard();				
+			}
+		});
         final Button addEffect = (Button)findViewById(R.id.editcard_addeffect);
         addEffect.setOnClickListener(this);
 	}

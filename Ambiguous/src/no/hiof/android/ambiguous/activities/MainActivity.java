@@ -9,6 +9,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 
+/**
+ * The main menu that starts at startup of the app.
+ */
 public class MainActivity extends Activity {
 
     @Override
@@ -25,27 +28,32 @@ public class MainActivity extends Activity {
         return true;
     }
     
-    /* Called when the user clicks the Cards button */
+    /** Called when the user clicks the Cards button. Starts the "gallery" activity. **/
     public void goToDeckManager(View view){
-    	Intent intent = new Intent(this, DeckManagerActivity.class);
+    	Intent intent = new Intent(this, CardGalleryActivity.class);
     	startActivity(intent);
     }
     
-    /* Called when the user clicks the Game button */
+    /** Called when the user clicks the Game button, starts up a new game vs AI. **/
     public void goToGame(View view){
     	Intent intent = new Intent(this,no.hiof.android.ambiguous.activities.GameActivity.class);
     	startActivity(intent);
     }
     
-    /* Called when the user clicks the network action from the action bar */
+    /** Called when the user clicks the network action from the action bar **/
+    //TODO: Do something else with the actionbar.
     public void onActionNetworkClicked(MenuItem menuItem){
     	Intent intent = new Intent(this, NetworkActivity.class);
     	startActivity(intent);
     }
     
-    /*public void goToNetwork(View view)
+    /**
+     * Network button, starts a new network game.
+     * @param view
+     */
+    public void goToNetwork(View view)
     {
     	Intent intent = new Intent(this, NetworkActivity.class);
     	startActivity(intent);
-    }*/
+    }
 }

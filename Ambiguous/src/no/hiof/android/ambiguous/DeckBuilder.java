@@ -55,7 +55,7 @@ public class DeckBuilder {
                 deck.set(i, temp);
         }
         
-        deck.set(0,cardFromName("Test"));
+        deck.set(0,cardFromName("Minigame!"));
 
         return DeckBuilder.deck;
 	}

@@ -9,6 +9,9 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+/**
+ * For getting effects from and adding effects to the database.
+ */
 public class EffectDataSource {
 	private static final String SELECT_EFFECTS = "SELECT * FROM Effect WHERE card_id = ?";
 
@@ -19,6 +22,12 @@ public class EffectDataSource {
 		this.db = db;
 	}
 
+	/**
+	 * Convert effect to ContentValues.
+	 * @param e The effect to convert.
+	 * @param id The id of the card the effect is attached to.
+	 * @return
+	 */
 	public ContentValues getEffectContentValues(Effect e, long id)
 	{
 		ContentValues v = new ContentValues();
@@ -31,6 +40,10 @@ public class EffectDataSource {
         return v;
 	}
 
+	/**
+	 * @param card The card we want to find the effects for.
+	 * @return List of all the effects on a specific card.
+	 */
 	public List<Effect> getEffects(Card card)
 	{
 		List<Effect> effects = new ArrayList<Effect>();

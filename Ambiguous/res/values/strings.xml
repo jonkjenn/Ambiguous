@@ -20,5 +20,14 @@
     <string name="armor">Armor</string>
     <string name="health">Health</string>
     <string name="resource">Resource</string>
+    <string name="score">Score</string>
+    <string name="help">Help</string>
+    <string name="server_address_editor_title">Server address</string>
+    <string name="server_address_editor_message">Type server address</string>
+    <string name="connect">Connect</string>
+    <string name="disconnect">Disconnect</string>
+    <string name="abort">Abort</string>
+    <string name="network_client_start_toast">Starting client</string>
+    <string name="network_server_start_toast">Starting server</string>
 
 </resources>

@@ -129,11 +129,6 @@ public class Player implements Parcelable{
 		notifyStatsUpdateListeners();
 	}
 	
-	private String getStats()
-	{
-		return this.name + " Health: " + this.health + " Armor: " + this.armor + " Res: " + this.resources;
-	}
-	
 	public int getHealth()
 	{
 		return this.health;

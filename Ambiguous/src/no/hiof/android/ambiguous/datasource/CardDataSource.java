@@ -8,11 +8,13 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+/**
+ * For getting cards from and adding cards to the database.
+ */
 public class CardDataSource {
 
 	private static final String SELECT_CARDS = "SELECT * FROM Card";
 	private static final String SELECT_CARDS_ID = "SELECT * FROM Card WHERE id = ?";
-	//private static final String UPDATE_CARD = "UPDATE Card SET name = ?, description = ?, image = ? WHERE id = ?";
 
 	private EffectDataSource effectDs;
 	private SQLiteDatabase db;
@@ -37,6 +39,11 @@ public class CardDataSource {
 		}
 	}
 
+	/**
+	 * Convert Card to ContentValues.
+	 * @param c The Card to convert.
+	 * @return
+	 */
 	private ContentValues getCardContentValues(Card c)
 	{
 		ContentValues cv = new ContentValues();
@@ -48,11 +55,21 @@ public class CardDataSource {
 		return cv;
 	}
 
+	/**
+	 * For getting a list of each unique Card.
+	 * The getCards function takes -1 as a parameter to return all cards.
+	 * @return List of all the different cards.
+	 */
 	public List<Card> getCards()
 	{
 		return getCards(-1);
 	} 
 	
+	/**
+	 * 
+	 * @param id Id of the Card.
+	 * @return The Card with the specified id or null if does not exist.
+	 */
 	public Card getCard(int id)
 	{
 		try
@@ -71,7 +88,11 @@ public class CardDataSource {
 		db.update("Card", cv, "id = ?", new String[]{Integer.toString(card.getId())});
 	}
 	
-	//id<0 returns all cards
+	/**
+	 * 
+	 * @param id The id of a specific card, if id < 0 return all cards.
+	 * @return A list of a specific card or a list of all cards.
+	 */
 	private List<Card> getCards(int id)
 	{
 		List<Card> cards = new ArrayList<Card>();
@@ -103,6 +124,11 @@ public class CardDataSource {
 		return cards;
 	}
 	
+	/**
+	 * Builds a Card from a cursor.
+	 * @param c
+	 * @return
+	 */
 	private Card cardFromCursor(Cursor c)
 	{
 			return new Card(c.getString(1))

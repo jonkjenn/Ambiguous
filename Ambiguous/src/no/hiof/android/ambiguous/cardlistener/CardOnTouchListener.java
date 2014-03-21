@@ -25,8 +25,6 @@ public class CardOnTouchListener implements OnTouchListener{
 		//Empty shadow since we display our own manually to avoid the transparency.
         EmptyDragShadowBuilder shadow = new EmptyDragShadowBuilder(v);
 
-        //v.startDrag(null, shadow, new int[]{(int)me.getRawY(),position, v.getHeight(),(int)me.getX(),(int)me.getY()}, 0);
-
         //Start a drag event with the touched card.
         v.startDrag(null, shadow, new CardTouchData((int)me.getRawY(),position,v.getHeight(),(int)me.getX(),(int)me.getY()),0);
 		return false;

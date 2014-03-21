@@ -2,19 +2,18 @@ package no.hiof.android.ambiguous.activities;
 
 import no.hiof.android.ambiguous.Db;
 import no.hiof.android.ambiguous.R;
-import no.hiof.android.ambiguous.adapter.DeckmanagerAdapter;
+import no.hiof.android.ambiguous.adapter.GalleryAdapter;
 import android.app.Activity;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.Menu;
-import android.view.MotionEvent;
 import android.widget.GridView;
 
 //TODO: rename to gallery, fix which cards shown.
 /**
  * Card gallery, shows all the cards available in game.
  */
-public class DeckManagerActivity extends Activity {
+public class CardGalleryActivity extends Activity {
 	
 	private SQLiteDatabase db;
 
@@ -26,7 +25,7 @@ public class DeckManagerActivity extends Activity {
         this.db = Db.getDb(getApplicationContext()).getWritableDatabase();
         
         GridView deckmanager = (GridView)findViewById(R.id.deckmanager_grid);
-        DeckmanagerAdapter adapter = new DeckmanagerAdapter(db);
+        GalleryAdapter adapter = new GalleryAdapter(db);
         deckmanager.setAdapter(adapter);
         
     }

@@ -174,7 +174,7 @@ public class GameMachine implements OpponentListener {
 	
 	public void playerPlayCard(int card,int amount)
 	{
-		if (state != State.PLAYER_TURN) {
+		if (state != State.PLAYER_TURN || player.getResources() < player.GetCards()[card].getCost()) {
 			notifyCouldNotPlayCard(card);
 			return;
 		}

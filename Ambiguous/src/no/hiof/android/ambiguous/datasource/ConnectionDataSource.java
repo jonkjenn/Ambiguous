@@ -7,6 +7,10 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+/**
+ * For getting connections from and adding connections to the database.
+ * Connections meaning IP addresses to a server.
+ */
 public class ConnectionDataSource {
 	SQLiteDatabase db;
 
@@ -15,6 +19,10 @@ public class ConnectionDataSource {
 		this.db = db;		
 	}
 	
+	/**
+	 * Adds a new connection to the database. Checks for duplicates.
+	 * @param address
+	 */
 	public void AddConnection(String address)
 	{
 		List<String> existing = GetAddresses();
@@ -32,6 +40,10 @@ public class ConnectionDataSource {
 		this.db.insert("Connection",null,cv);
 	}
 	
+	/**
+	 * 
+	 * @return All the connections stored in the database.
+	 */
 	public List<String> GetAddresses()
 	{
 		List<String> address = new ArrayList<String>();

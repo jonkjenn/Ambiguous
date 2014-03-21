@@ -34,7 +34,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="no.hiof.android.ambiguous.activities.DeckManagerActivity"
+            android:name="no.hiof.android.ambiguous.activities.CardGalleryActivity"
             android:label="@string/title_activity_deckmanager" 
             android:parentActivityName="no.hiof.android.ambiguous.activities.MainActivity" >
             <meta-data 

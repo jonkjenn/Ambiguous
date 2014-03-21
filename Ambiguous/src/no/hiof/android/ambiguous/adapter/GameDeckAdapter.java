@@ -8,7 +8,9 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 
-
+/**
+ * Adapter for the view that shows the cards on the player's hand.
+ */
 public class GameDeckAdapter extends BaseAdapter {
         
 		Card[] cards;
@@ -36,17 +38,18 @@ public class GameDeckAdapter extends BaseAdapter {
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
                 Card card = getItem(position);
+                //Make sure the old card is the exact same if we want to reuse it.
                 if(convertView != null && convertView instanceof ImageView && convertView.getTag() == card.getImage() )
                 {
                         return convertView;
                 }
 
+                //Return a empty card.
                 if(card == null){
                 	return CardLayout.getCardLayout(null, parent);
                 };
 
                 View view = CardLayout.getCardLayout(card, parent);
-
                 view.setOnTouchListener(new CardOnTouchListener(position));
                 
                 return view;

@@ -24,14 +24,13 @@ import no.hiof.android.ambiguous.network.OpenSocketTask;
 import no.hiof.android.ambiguous.network.OpenSocketTask.OpenSocketListener;
 import android.app.ActionBar;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
-import android.content.DialogInterface;
-import android.content.DialogInterface.OnClickListener;
+import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.DragEvent;
@@ -62,21 +61,21 @@ public class GameActivity extends Activity implements OnDragListener,
 	private View useCardNotificationView;
 	private View discardCardNotificationView;
 
-	private TextView playerName ;
-	private TextView playerHealth ;
-	private TextView playerArmor ;
-	private TextView playerResource ;
-	private ViewGroup floatingHealthPlayer ;
-	private ViewGroup floatingArmorPlayer ;
-	private ViewGroup floatingResourcehPlayer ;
+	private TextView playerName;
+	private TextView playerHealth;
+	private TextView playerArmor;
+	private TextView playerResource;
+	private ViewGroup floatingHealthPlayer;
+	private ViewGroup floatingArmorPlayer;
+	private ViewGroup floatingResourcehPlayer;
 
-	private TextView opponentName ;
-	private TextView opponentHealth ;
-	private TextView opponentArmor ;
-	private TextView opponentResource ;
-	private ViewGroup floatingHealthOpponent ;
-	private ViewGroup floatingArmorOpponent ;
-	private ViewGroup floatingResourcehOpponent ;
+	private TextView opponentName;
+	private TextView opponentHealth;
+	private TextView opponentArmor;
+	private TextView opponentResource;
+	private ViewGroup floatingHealthOpponent;
+	private ViewGroup floatingArmorOpponent;
+	private ViewGroup floatingResourcehOpponent;
 
 	// TODO: Possibly recode so don't need these as fields.
 	private Player savedPlayer;
@@ -379,24 +378,16 @@ public class GameActivity extends Activity implements OnDragListener,
 			useCardNotificationView.setVisibility(View.INVISIBLE);
 			removeDrag();
 
-			// TODO: Fix this when minigame is working
-			// Start minigame
-			if (gameMachine.player.GetCard(touchData.position).getName().equals("Test")) {
-				FragmentManager manager = getFragmentManager();
-				FragmentTransaction transaction = manager.beginTransaction();
-
-				Effect e = gameMachine.player.GetCard(touchData.position).getEffects().get(0);
-				MinigameFragment minigame = new MinigameFragment();//e.getMinValue(),e.getMaxValue(), touchData.position);
-				minigame.setMinigameListener(this);
-				Bundle b = new Bundle();
-				b.putInt("min",e.getMinValue());
-				b.putInt("max",e.getMaxValue());
-				b.putInt("pos",touchData.position);
-				minigame.setArguments(b);
-
-				transaction.add(R.id.game_layout_container, minigame,"minigame");
-				transaction.addToBackStack(null);
-				transaction.commit();
+			// Checks for the minigame card. Check if the phone access to the
+			// gravity sensor which is needed for the minigame. If not the
+			// minigame card is played as a regular card with random damage in
+			// its defined range.
+			if (gameMachine.player.GetCard(touchData.position).getName()
+					.equals("Minigame!")
+					&& this.getPackageManager().hasSystemFeature(
+							PackageManager.FEATURE_SENSOR_ACCELEROMETER)
+					&& Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
+				startMinigame(touchData.position);
 			} else {
 				gameMachine.playerPlayCard(touchData.position);
 			}
@@ -411,6 +402,27 @@ public class GameActivity extends Activity implements OnDragListener,
 		{
 			stopDrag(touchData.position);
 		}
+	}
+
+	/**
+	 * Start the minigame fragment.
+	 * @param cardPosition The position of the card in the players hand.
+	 */
+	private void startMinigame(int cardPosition) {
+		FragmentManager manager = getFragmentManager();
+		FragmentTransaction transaction = manager.beginTransaction();
+
+		Effect e = gameMachine.player.GetCard(cardPosition).getEffects().get(0);
+		MinigameFragment minigame = new MinigameFragment();
+		minigame.setMinigameListener(this);
+		Bundle b = new Bundle();
+		b.putInt("min", e.getMinValue());
+		b.putInt("max", e.getMaxValue());
+		b.putInt("pos", cardPosition);
+		minigame.setArguments(b);
+
+		transaction.add(R.id.game_layout_container, minigame, "minigame");
+		transaction.commit();
 	}
 
 	@Override
@@ -688,12 +700,11 @@ public class GameActivity extends Activity implements OnDragListener,
 	}
 
 	@Override
-	public void onGameEnd(int amount,int position) {
-		gameMachine.playerPlayCard(position,amount);
-			FragmentTransaction tr = getFragmentManager().beginTransaction();
-			tr.remove(getFragmentManager().findFragmentByTag("minigame"));
-			tr.commit();
-			getFragmentManager().popBackStack();
+	public void onGameEnd(int amount, int position) {
+		gameMachine.playerPlayCard(position, amount);
+		FragmentTransaction tr = getFragmentManager().beginTransaction();
+		tr.remove(getFragmentManager().findFragmentByTag("minigame"));
+		tr.commit();
 	}
 
 }

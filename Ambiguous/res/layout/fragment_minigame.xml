@@ -15,7 +15,6 @@
          	    android:layout_width="30dp"
          	    android:id="@+id/minigame_target"
          	    android:background="#FF0000"
-         	    android:layout_centerInParent="true"
 
          	    ></View>
          	<View
@@ -27,7 +26,7 @@
      </RelativeLayout>
      <LinearLayout
          android:layout_height="wrap_content"
-         android:layout_width="wrap_content"
+         android:layout_width="200dp"
          android:orientation="horizontal"
          android:layout_above="@id/minigame_container"
          android:layout_alignLeft="@id/minigame_container"
@@ -41,7 +40,7 @@
          	    android:textColor="#FFFFFF"
          	    android:layout_marginLeft="10dp"
          	    android:id="@+id/minigame_score_label"
-         	    android:text="Score: "
+         	    android:text="@string/score"
          	    >
          	    
          	</TextView>
@@ -53,12 +52,11 @@
          	    android:textStyle="bold"
          	    android:textColor="#FFFFFF"
          	    android:layout_marginLeft="5dp"
-         	    android:text="0"
          	    />
          	<Button
          	    android:layout_height="wrap_content"
          	    android:layout_width="wrap_content"
-         	    android:text="Help"
+         	    android:text="@string/help"
          	    android:id="@+id/minigame_help"
          	    ></Button>
          	</LinearLayout>

@@ -15,7 +15,7 @@ public class CloseServerSocketTask extends AsyncTask<ServerSocket,Void,Void> {
                 params[0].close();
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			//If get an exception while closing, we assume that the connection is closed and do nothing.
 		}
 		return null;
 	}

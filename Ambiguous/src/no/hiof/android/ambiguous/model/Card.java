@@ -82,7 +82,6 @@ public class Card implements Parcelable{
 		dest.writeInt(cost);
 		dest.writeString(image);
 		dest.writeList(effects);
-		
 	}
 	
 	public static final Parcelable.Creator<Card> CREATOR = new Parcelable.Creator<Card>() {

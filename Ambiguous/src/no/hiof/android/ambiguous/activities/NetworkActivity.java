@@ -1,5 +1,6 @@
 package no.hiof.android.ambiguous.activities;
 
+import java.net.SocketException;
 import java.util.List;
 
 import no.hiof.android.ambiguous.Db;
@@ -9,10 +10,10 @@ import no.hiof.android.ambiguous.network.Utility;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.os.Handler;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -53,12 +54,9 @@ public class NetworkActivity extends Activity {
 	 * incoming network connections on.
 	 * 
 	 * @param isServer
+	 * @throws SocketException 
 	 */
-	private void startInterfacePicker(final boolean isServer) {
-		Runnable run = new Runnable() {
-
-			@Override
-			public void run() {
+	private void startInterfacePicker(final boolean isServer) throws SocketException {
 				final List<String[]> interfaces = Utility.getInterfaces();
 
 				// If not server, show the previous IPs stored in DB so you
@@ -106,15 +104,15 @@ public class NetworkActivity extends Activity {
 					}
 				});
 				menu.show();
-			}
-		};
-
-		new Handler().post(run);
 	}
 
 	//Start server button
 	public void startServer(View view) {
-		startInterfacePicker(true);
+		try {
+			startInterfacePicker(true);
+		} catch (SocketException e) {
+			showPickerException(e);
+		}
 	}
 
 	private void doStartServer(String address) {
@@ -181,11 +179,34 @@ public class NetworkActivity extends Activity {
 	 * @param view
 	 */
 	public void showClientAddressPicker(View view) {
-		startInterfacePicker(false);
+		try {
+			startInterfacePicker(false);
+		} catch (SocketException e) {
+			showPickerException(e);
+		}
+	}
+	
+	/**
+	 * Displays a dialog box with an error message for the network interface picker.
+	 * @param e
+	 */
+	private void showPickerException(SocketException e)
+	{
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setTitle(R.string.network_picker_exception_title)
+		.setMessage(e.getMessage())
+		.setPositiveButton(R.string.close, new OnClickListener() {
+			
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				dialog.cancel();
+			}
+		})
+		.show();
 	}
 
 	/**
-	 * Starts the gameactivity with the chosen network settings.
+	 * Starts GameActivity with the chosen network settings.
 	 */
 	private void startGame() {
 		Intent startGameIntent = new Intent(this, GameActivity.class);

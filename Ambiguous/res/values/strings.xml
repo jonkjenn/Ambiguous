@@ -27,7 +27,9 @@
     <string name="connect">Connect</string>
     <string name="disconnect">Disconnect</string>
     <string name="abort">Abort</string>
+    <string name="close">Close</string>
     <string name="network_client_start_toast">Starting client</string>
     <string name="network_server_start_toast">Starting server</string>
+    <string name="network_picker_exception_title">Error, problem getting network interfaces.</string>
 
 </resources>

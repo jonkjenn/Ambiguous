@@ -1,4 +1,4 @@
-package no.hiof.android.ambiguous;
+package no.hiof.android.ambiguous.ai;
 
 import java.util.List;
 
@@ -25,7 +25,7 @@ public class AI {
 		this.player = player;
 		this.computer = computer;
 
-		this.cards = computer.GetCards();
+		this.cards = computer.getHand();
 		
 		findUseableEffects();
 	}

@@ -5,6 +5,9 @@ import java.io.IOException;
 
 import android.os.AsyncTask;
 
+/**
+ * Writes bytes to a DataOutpuStream. 
+ */
 public class WriteBytesTask extends AsyncTask<byte[],Void,Void> {
 	
 	private DataOutputStream out;
@@ -20,7 +23,7 @@ public class WriteBytesTask extends AsyncTask<byte[],Void,Void> {
 		try {
 			out.write(params[0]);
 		} catch (IOException e) {
-			e.printStackTrace();
+			//TODO: Handle network error.
 		}
 		return null;
 	}

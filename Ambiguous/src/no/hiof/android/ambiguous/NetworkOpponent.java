@@ -25,11 +25,23 @@ public class NetworkOpponent implements GameMachineListener {
 	 * Enumeration of different packet types each with an unique id.
 	 */
 	public enum Packets {
-		PLAYER_STATS(100), PLAYER_PLAYED_CARD(101), PLAYER_DISCARD_CARD(102), PLAYER_AFK(
-				103), PLAYER_USED_EFFECT(104), PLAYER_TURN_DONE(105);
+		PLAYER_STATS(100), // Not implemented.
+		PLAYED_CARD(101), // Id of the Card the player played.
+		DISCARD_CARD(102), // Id of the Card the player discarded.
+		AFK(103), // Not implemented.
+		USED_EFFECT(104), // Which effect used, who is the target and what
+							// amount of effect.
+		TURN_DONE(105); // Player has completed his turn.
 
 		private int packetId;
 
+		/**
+		 * Constructor so that we can get an actual identifying int as a key for
+		 * each enum value.
+		 * 
+		 * @param packetId
+		 *            The id for the packet.
+		 */
 		private Packets(int packetId) {
 			this.packetId = packetId;
 		}
@@ -38,6 +50,13 @@ public class NetworkOpponent implements GameMachineListener {
 			return this.packetId;
 		}
 
+		/**
+		 * Find a specific packet enum value from a packet id.
+		 * 
+		 * @param packetId
+		 *            Id of the packet we want to find.
+		 * @return The enumeration value.
+		 */
 		public static Packets getPacket(int packetId) {
 			for (int i = 0; i < Packets.values().length; i++) {
 				if (Packets.values()[i].getPacketId() == packetId) {
@@ -46,6 +65,7 @@ public class NetworkOpponent implements GameMachineListener {
 			}
 			return null;
 		}
+
 	};
 
 	private OpponentController oc;
@@ -80,7 +100,7 @@ public class NetworkOpponent implements GameMachineListener {
 					byte[] buffer = new byte[100];
 
 					int r;
-					//Reads the currently available data into the buffer.
+					// Reads the currently available data into the buffer.
 					while ((r = in.read(buffer, 0, buffer.length)) > 0) {
 						for (int i = 0; i < r; i++) {
 							dataBuffer.add(buffer[i]);
@@ -90,7 +110,7 @@ public class NetworkOpponent implements GameMachineListener {
 					}
 
 				} catch (IOException e) {
-					//TODO: Do something about network errors
+					// TODO: Do something about network errors
 					closeSilently();
 				}
 			}
@@ -110,12 +130,13 @@ public class NetworkOpponent implements GameMachineListener {
 	}
 
 	/**
-	 * Extract all the packets currently in the data buffer and applies the data to the opponentcontroller.
+	 * Extract all the packets currently in the data buffer and applies the data
+	 * to the OpponentController.
 	 */
 	private void readPacketsFromBuffer() {
 		while (dataBuffer.size() >= 1) {
 			switch (Packets.getPacket(dataBuffer.peek())) {
-			case PLAYER_DISCARD_CARD:
+			case DISCARD_CARD:
 				dataBuffer.poll();
 				handler.post(new Runnable() {
 
@@ -125,7 +146,7 @@ public class NetworkOpponent implements GameMachineListener {
 					}
 				});
 				break;
-			case PLAYER_PLAYED_CARD:
+			case PLAYED_CARD:
 				dataBuffer.poll();
 				final int card = dataBuffer.poll();
 				handler.post(new Runnable() {
@@ -137,7 +158,7 @@ public class NetworkOpponent implements GameMachineListener {
 					}
 				});
 				break;
-			case PLAYER_USED_EFFECT:
+			case USED_EFFECT:
 				dataBuffer.poll();
 				final EffectType type = EffectType.values()[dataBuffer.poll()];
 				final Player target = (dataBuffer.poll() == 1 ? opponent
@@ -158,7 +179,7 @@ public class NetworkOpponent implements GameMachineListener {
 				}
 				dataBuffer.poll();
 				break;
-			case PLAYER_TURN_DONE:
+			case TURN_DONE:
 				dataBuffer.poll();
 				handler.post(new Runnable() {
 
@@ -179,13 +200,15 @@ public class NetworkOpponent implements GameMachineListener {
 
 	/**
 	 * Writes a packet for player using a card to the network.
-	 * @param card The id of the card the local player uses.
+	 * 
+	 * @param card
+	 *            The id of the card the local player uses.
 	 */
 	private void sendPlayedCard(int card) {
 		try {
 			ByteArrayOutputStream stream = new ByteArrayOutputStream(2);
 			DataOutputStream writer = new DataOutputStream(stream);
-			writer.writeByte(Packets.PLAYER_PLAYED_CARD.getPacketId());
+			writer.writeByte(Packets.PLAYED_CARD.getPacketId());
 			writer.writeByte(card);
 			new WriteBytesTask().Setup(out).execute(stream.toByteArray());
 		} catch (IOException e) {
@@ -195,13 +218,15 @@ public class NetworkOpponent implements GameMachineListener {
 
 	/**
 	 * Writes a packet for player discarding a card to the network.
-	 * @param card The id of the card the local player discards.
+	 * 
+	 * @param card
+	 *            The id of the card the local player discards.
 	 */
 	private void sendDiscardCard(int card) {
 		try {
 			ByteArrayOutputStream stream = new ByteArrayOutputStream(2);
 			DataOutputStream writer = new DataOutputStream(stream);
-			writer.writeByte(Packets.PLAYER_DISCARD_CARD.getPacketId());
+			writer.writeByte(Packets.DISCARD_CARD.getPacketId());
 			writer.writeByte(card);
 			new WriteBytesTask().Setup(out).execute(stream.toByteArray());
 		} catch (IOException e) {
@@ -210,7 +235,8 @@ public class NetworkOpponent implements GameMachineListener {
 	}
 
 	/**
-	 * Writes a packet for player using a specific effect amount on a specific target. 
+	 * Writes a packet for player using a specific effect amount on a specific
+	 * target.
 	 * 
 	 * @param type
 	 * @param target
@@ -220,7 +246,7 @@ public class NetworkOpponent implements GameMachineListener {
 		try {
 			ByteArrayOutputStream stream = new ByteArrayOutputStream(4);
 			DataOutputStream writer = new DataOutputStream(stream);
-			writer.writeByte(Packets.PLAYER_USED_EFFECT.getPacketId());
+			writer.writeByte(Packets.USED_EFFECT.getPacketId());
 			writer.writeByte(type.ordinal());
 			writer.writeByte((target == this.opponent ? 0 : 1));
 			writer.writeByte(amount);
@@ -235,7 +261,7 @@ public class NetworkOpponent implements GameMachineListener {
 	 */
 	private void sendOpponentTurn() {
 		new WriteBytesTask().Setup(out).execute(
-				new byte[] { (byte) Packets.PLAYER_TURN_DONE.getPacketId() });
+				new byte[] { (byte) Packets.TURN_DONE.getPacketId() });
 	}
 
 	@Override

@@ -1,8 +1,10 @@
-package no.hiof.android.ambiguous;
+package no.hiof.android.ambiguous.fragments;
 
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Random;
 
+import no.hiof.android.ambiguous.R;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Fragment;
@@ -17,6 +19,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -59,6 +62,8 @@ public class MinigameFragment extends Fragment implements SensorEventListener {
 	// Note the fragment can return values higher then max.
 	int min, max, cardPosition;
 
+	AlertDialog helpDialog;
+
 	private boolean stop = false;
 
 	@Override
@@ -67,6 +72,7 @@ public class MinigameFragment extends Fragment implements SensorEventListener {
 		this.min = getArguments().getInt("min");
 		this.max = getArguments().getInt("max");
 		this.cardPosition = getArguments().getInt("pos");
+		setRetainInstance(true);
 	}
 
 	@Override
@@ -103,9 +109,8 @@ public class MinigameFragment extends Fragment implements SensorEventListener {
 		position = this.width / 2 - player.getWidth() - 10;
 		params.leftMargin = position;
 		player.setLayoutParams(params);
-		//Position target view in the center
-		params = new LayoutParams(
-				target.getLayoutParams());
+		// Position target view in the center
+		params = new LayoutParams(target.getLayoutParams());
 		tPosition = this.width / 2 - target.getWidth() - 10;
 		params.leftMargin = tPosition;
 		target.setLayoutParams(params);
@@ -138,7 +143,7 @@ public class MinigameFragment extends Fragment implements SensorEventListener {
 		return s.getBoolean("hideHelp", false);
 	}
 
-	//We check for the API before we load this fragment.
+	// We check for the API before we load this fragment.
 	@SuppressLint("InlinedApi")
 	private void setupSensor() {
 		sensorManager = (SensorManager) getActivity().getSystemService(
@@ -225,26 +230,26 @@ public class MinigameFragment extends Fragment implements SensorEventListener {
 		speed = speedSensor;
 
 		// Prevent players view to move outside the game container.
-		if (position + player.getMeasuredWidth() >= this.width && speed > 0
+		if (position + player.getWidth() >= this.width && speed > 0
 				|| position <= 0 && speed < 0) {
 			speed = 0;
 		}
 
 		// If target is about to move outside the view we invert its direction.
-		if (tPosition + target.getMeasuredWidth() >= this.width && randomSpeedMod > 0
+		if (tPosition + target.getWidth() >= this.width && randomSpeedMod > 0
 				|| tPosition <= 0 && randomSpeedMod < 0) {
-			randomSpeedMod*=-1;			
+			randomSpeedMod *= -1;
 		}
 
 		// Move the players view
-		position += (speed * duration / loopDelay)*1.5;
+		position += (speed * duration / loopDelay) * 1.5;
 		params.leftMargin = position;
 		player.setLayoutParams(params);
-		
-		//Move the target view
+
+		// Move the target view
 		RelativeLayout.LayoutParams tParams = new LayoutParams(
 				target.getLayoutParams());
-		tPosition += (randomSpeedMod * duration / loopDelay)*1.5;
+		tPosition += (randomSpeedMod * duration / loopDelay) * 1.5;
 		tParams.leftMargin = tPosition;
 		target.setLayoutParams(tParams);
 
@@ -255,10 +260,9 @@ public class MinigameFragment extends Fragment implements SensorEventListener {
 	private int getRandomSpeed() {
 		int rnd;
 		// Avoid small speed values which are to easy for the player.
-		do
-		{
+		do {
 			rnd = randomSpeed.nextInt(5) - 2;
-		}while(Math.abs(rnd) <= 0);
+		} while (Math.abs(rnd) <= 0);
 		return rnd;
 	}
 
@@ -266,7 +270,11 @@ public class MinigameFragment extends Fragment implements SensorEventListener {
 	public void onPause() {
 		super.onPause();
 		stop = true;
-		sensorManager.unregisterListener(this);
+
+		helpDialog.cancel();
+		if (sensorManager != null) {
+			sensorManager.unregisterListener(this);
+		}
 	}
 
 	@Override
@@ -289,20 +297,15 @@ public class MinigameFragment extends Fragment implements SensorEventListener {
 
 	public void onSensorChanged(SensorEvent event) {
 
-		getResources().getConfiguration();
-
 		// TODO: Fix landscape mode, it might already work?
-		if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT || true) {
+		if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
 			speedSensor = -1
 					* (int) (event.values[0] * (1 + event.values[1] / 9.81));
+		} else {
+			Log.d("test", Arrays.toString(event.values));
+			speedSensor = -1
+					* (int) (event.values[1] * (1 + event.values[0] / 9.81));
 		}
-	}
-
-	// Listener that will get events from the minigame.
-	private MinigameListener listener;
-
-	public void setMinigameListener(MinigameListener listener) {
-		this.listener = listener;
 	}
 
 	/**
@@ -311,8 +314,10 @@ public class MinigameFragment extends Fragment implements SensorEventListener {
 	private void notifyGameComplete() {
 		sensorManager.unregisterListener(this);
 		int amount = (int) ((max - min) * (points / (maxPoints * 0.6)));
-		listener.onGameEnd(amount, cardPosition);
-		listener = null;
+		// TODO:Handle the exception possibility here. It should never happen
+		// unless we run this fragment from an activity that does not
+		// implement MinigameListener.
+		((MinigameListener) getActivity()).onGameEnd(amount, cardPosition);
 	}
 
 	public interface MinigameListener {
@@ -363,7 +368,7 @@ public class MinigameFragment extends Fragment implements SensorEventListener {
 					});
 		}
 
-		final AlertDialog d = builder.create();
-		d.show();
+		helpDialog = builder.create();
+		helpDialog.show();
 	}
 }

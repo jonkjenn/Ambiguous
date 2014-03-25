@@ -1,7 +1,10 @@
-package no.hiof.android.ambiguous;
+package no.hiof.android.ambiguous.ai;
 
 import java.util.Random;
 
+import no.hiof.android.ambiguous.GameMachine;
+import no.hiof.android.ambiguous.OpponentController;
+import no.hiof.android.ambiguous.GameMachine.TurnChangeListener;
 import no.hiof.android.ambiguous.model.Effect;
 import no.hiof.android.ambiguous.model.Player;
 
@@ -42,17 +45,17 @@ public class AIController implements GameMachine.TurnChangeListener{
 		if (pos < 0) {
 			// Find a card for discarding thats not a resource card.
 			do{
-                pos = computerRandom.nextInt(computer.GetCards().length - 1);
+                pos = computerRandom.nextInt(computer.getHand().length - 1);
 			}
-			while(computer.GetCard(pos).getEffects().get(0).getType()==Effect.EffectType.RESOURCE);
+			while(computer.getCard(pos).getEffects().get(0).getType()==Effect.EffectType.RESOURCE);
 
-			oc.DiscardCard(computer.GetCard(pos));
-			computer.CardUsed(pos);
+			oc.DiscardCard(computer.getCard(pos));
+			computer.cardUsed(pos);
 		} else {
-			oc.PlayCard(computer.GetCard(pos),true);
-			computer.CardUsed(pos);
+			oc.PlayCard(computer.getCard(pos),true);
+			computer.cardUsed(pos);
 		}
-		computer.ModResource(5);
+		computer.modResource(5);
 	}
 
 }

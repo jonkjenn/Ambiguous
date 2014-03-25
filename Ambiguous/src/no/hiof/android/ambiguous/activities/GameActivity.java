@@ -6,12 +6,12 @@ import java.net.Socket;
 import no.hiof.android.ambiguous.Db;
 import no.hiof.android.ambiguous.GameMachine;
 import no.hiof.android.ambiguous.GameMachine.State;
-import no.hiof.android.ambiguous.MinigameFragment;
-import no.hiof.android.ambiguous.MinigameFragment.MinigameListener;
 import no.hiof.android.ambiguous.OpponentController.OpponentListener;
 import no.hiof.android.ambiguous.R;
 import no.hiof.android.ambiguous.adapter.GameDeckAdapter;
 import no.hiof.android.ambiguous.cardlistener.CardOnTouchListener;
+import no.hiof.android.ambiguous.fragments.MinigameFragment;
+import no.hiof.android.ambiguous.fragments.MinigameFragment.MinigameListener;
 import no.hiof.android.ambiguous.layouts.CardLayout;
 import no.hiof.android.ambiguous.model.Card;
 import no.hiof.android.ambiguous.model.Effect;
@@ -24,8 +24,15 @@ import no.hiof.android.ambiguous.network.OpenSocketTask;
 import no.hiof.android.ambiguous.network.OpenSocketTask.OpenSocketListener;
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.AlarmManager;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.TaskStackBuilder;
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
@@ -33,6 +40,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.app.NotificationCompat;
 import android.view.DragEvent;
 import android.view.Menu;
 import android.view.View;
@@ -69,6 +77,14 @@ public class GameActivity extends Activity implements OnDragListener,
 	private ViewGroup floatingArmorPlayer;
 	private ViewGroup floatingResourcehPlayer;
 
+	private ImageView opponentCard;
+	private ViewGroup opponentCardParent;
+
+	// We keep track of current Card the opponent has played so we can restore
+	// the view on orientation changes and pauses.
+	private Card currentOpponentCard;
+	private boolean opponentCardIsDiscarded = false;
+
 	private TextView opponentName;
 	private TextView opponentHealth;
 	private TextView opponentArmor;
@@ -88,12 +104,13 @@ public class GameActivity extends Activity implements OnDragListener,
 
 	// Network settings
 	private boolean isNetwork;
-	private boolean stopNetwork;
 	private String address;
 	private int port;
 	private boolean isServer;
 	private Socket socket;
 	private ServerSocket server;
+
+	private OpenSocketTask openSocketTask;
 
 	/*
 	 * private static final String KEY_TEXT_PLAYER_VALUE = "playerTextValue";
@@ -110,6 +127,8 @@ public class GameActivity extends Activity implements OnDragListener,
 		playerStatus = (TextView) findViewById(R.id.stats_player);
 		deckView = (GridView) findViewById(R.id.game_grid);
 		layoutContainer.setOnDragListener(this);
+
+		opponentCard = (ImageView) findViewById(R.id.opponent_card);
 
 		// TODO: What?
 		playerStatus.setText(" ");
@@ -160,6 +179,7 @@ public class GameActivity extends Activity implements OnDragListener,
 		if (!getIntent().hasExtra("address") || !getIntent().hasExtra("port")
 				|| !getIntent().hasExtra("isServer")) {
 			return false;
+
 		}
 		this.address = getIntent().getStringExtra("address");
 		this.port = getIntent().getIntExtra("port", 19999);
@@ -171,9 +191,9 @@ public class GameActivity extends Activity implements OnDragListener,
 	 * Launches the network connection to opponent.
 	 */
 	private void startNetwork() {
-		new OpenSocketTask().setup(GameActivity.this.address,
-				GameActivity.this.port, GameActivity.this.isServer).execute(
-				GameActivity.this);
+		openSocketTask = new OpenSocketTask().setup(GameActivity.this.address,
+				GameActivity.this.port, GameActivity.this.isServer);
+		openSocketTask.execute(GameActivity.this);
 	}
 
 	/**
@@ -193,6 +213,17 @@ public class GameActivity extends Activity implements OnDragListener,
 		savedOpponent = savedInstanceState.getParcelable("Opponent");
 		savedState = GameMachine.State.values()[savedInstanceState
 				.getInt("State")];
+		currentOpponentCard = savedInstanceState.getParcelable("OpponentCard");
+		opponentCardIsDiscarded = savedInstanceState.getBoolean(
+				"OpponentCardDiscarded", false);
+		//Restore the last Card the opponent played.
+		if (currentOpponentCard != null) {
+			if (opponentCardIsDiscarded) {
+				opponentDiscardCard(currentOpponentCard);
+			} else {
+				opponentPlayCard(currentOpponentCard);
+			}
+		}
 	}
 
 	/**
@@ -224,6 +255,8 @@ public class GameActivity extends Activity implements OnDragListener,
 		outState.putParcelable("Player", gameMachine.player);
 		outState.putParcelable("Opponent", gameMachine.opponent);
 		outState.putInt("State", gameMachine.state.ordinal());
+		outState.putParcelable("OpponentCard", currentOpponentCard);
+		outState.putBoolean("OpponentCardDiscarded", opponentCardIsDiscarded);
 		// TODO: Implementing storing state to database so can resume even if
 		// app is destroyed.
 	}
@@ -234,9 +267,10 @@ public class GameActivity extends Activity implements OnDragListener,
 	 * @param card
 	 */
 	private void opponentPlayCard(Card card) {
-		ImageView parent = (ImageView) findViewById(R.id.opponent_card);
-		parent.setImageBitmap(CardLayout.getCardBitmap(card,
-				(ViewGroup) findViewById(R.id.game_layout_container)));
+		currentOpponentCard = card;
+		opponentCardIsDiscarded = false;
+		opponentCard.setImageBitmap(CardLayout.getCardBitmap(card,
+				layoutContainer));
 		// Hide the discard graphic since we're not discarding.
 		findViewById(R.id.discard).setVisibility(View.INVISIBLE);
 	}
@@ -247,9 +281,10 @@ public class GameActivity extends Activity implements OnDragListener,
 	 * @param card
 	 */
 	private void opponentDiscardCard(Card card) {
-		ImageView parent = (ImageView) findViewById(R.id.opponent_card);
-		parent.setImageBitmap(CardLayout.getCardBitmap(card,
-				(ViewGroup) findViewById(R.id.game_layout_container)));
+		currentOpponentCard = card;
+		opponentCardIsDiscarded = true;
+		opponentCard.setImageBitmap(CardLayout.getCardBitmap(card,
+				layoutContainer));
 		// Show the discard graphic since we're discarding.
 		findViewById(R.id.discard).setVisibility(View.VISIBLE);
 	}
@@ -382,7 +417,7 @@ public class GameActivity extends Activity implements OnDragListener,
 			// gravity sensor which is needed for the minigame. If not the
 			// minigame card is played as a regular card with random damage in
 			// its defined range.
-			if (gameMachine.player.GetCard(touchData.position).getName()
+			if (gameMachine.player.getCard(touchData.position).getName()
 					.equals("Minigame!")
 					&& this.getPackageManager().hasSystemFeature(
 							PackageManager.FEATURE_SENSOR_ACCELEROMETER)
@@ -406,15 +441,21 @@ public class GameActivity extends Activity implements OnDragListener,
 
 	/**
 	 * Start the minigame fragment.
-	 * @param cardPosition The position of the card in the players hand.
+	 * 
+	 * @param cardPosition
+	 *            The position of the card in the players hand.
 	 */
 	private void startMinigame(int cardPosition) {
+		// The minigame can only be played in portrait mode.
+		// TODO: Implement locking according to the current screen rotation, the
+		// important part is that orientation does not change during the
+		// minigame.
+		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 		FragmentManager manager = getFragmentManager();
 		FragmentTransaction transaction = manager.beginTransaction();
 
-		Effect e = gameMachine.player.GetCard(cardPosition).getEffects().get(0);
+		Effect e = gameMachine.player.getCard(cardPosition).getEffects().get(0);
 		MinigameFragment minigame = new MinigameFragment();
-		minigame.setMinigameListener(this);
 		Bundle b = new Bundle();
 		b.putInt("min", e.getMinValue());
 		b.putInt("max", e.getMaxValue());
@@ -538,7 +579,6 @@ public class GameActivity extends Activity implements OnDragListener,
 			playerResource.setText(String.valueOf(player.getResources()));
 
 		} else if (player == gameMachine.opponent) {
-			// opponentstats.setText(str);
 			opponentName.setText(player.getName());
 			opponentHealth.setText(String.valueOf(player.getHealth()));
 			opponentArmor.setText(String.valueOf(player.getArmor()));
@@ -621,12 +661,6 @@ public class GameActivity extends Activity implements OnDragListener,
 	}
 
 	@Override
-	public void onArmorUpdateListener(Player player, int armor) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
 	public void onOpponentUsedEffect(EffectType type, Player target, int amount) {
 		// TODO Auto-generated method stub
 
@@ -656,29 +690,18 @@ public class GameActivity extends Activity implements OnDragListener,
 			this.socket = socket;
 			setupGameMachine();
 		}
-
-		// Network client will try to reconnect after timeouts
-		if (exception != null && !isServer && !stopNetwork) {
-			final OpenSocketTask task = new OpenSocketTask().setup(
-					this.address, this.port, this.isServer);
-			new Handler().postDelayed(new Runnable() {
-
-				@Override
-				public void run() {
-					if (!GameActivity.this.stopNetwork) {
-						task.execute(GameActivity.this);
-					}
-				}
-			}, 1000);
-		}
 	}
 
 	@Override
 	protected void onPause() {
 		super.onPause();
 
+		/*
+		 * if (!gameMachine.player.isAlive() || !gameMachine.opponent.isAlive())
+		 * { sendAnnoyingNotification(); }
+		 */
+
 		if (isNetwork) {
-			stopNetwork = true;
 			closeSockets();
 		}
 
@@ -690,7 +713,14 @@ public class GameActivity extends Activity implements OnDragListener,
 		// TODO: Network reconnect?
 	}
 
+	/**
+	 * Close the network sockets.
+	 */
 	private void closeSockets() {
+		if (openSocketTask != null) {
+			openSocketTask.cancel(true);
+		}
+
 		if (socket != null) {
 			new CloseSocketTask().execute(this.socket);
 		}
@@ -704,7 +734,49 @@ public class GameActivity extends Activity implements OnDragListener,
 		gameMachine.playerPlayCard(position, amount);
 		FragmentTransaction tr = getFragmentManager().beginTransaction();
 		tr.remove(getFragmentManager().findFragmentByTag("minigame"));
-		tr.commit();
+		tr.commitAllowingStateLoss();
+		// Let the screen orientation be handled by the senor again.
+		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
 	}
 
+	// TODO:This obviously does not work, implement with alarm manager.
+	private void sendAnnoyingNotification() {
+		AlarmManager a = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
+		
+		Intent i = new Intent(this,GameActivity.class);
+		
+		PendingIntent p =PendingIntent.getActivity(this,0,i,PendingIntent.FLAG_CANCEL_CURRENT);
+		
+		a.set(AlarmManager.ELAPSED_REALTIME,60000,p);
+		
+		Handler h = new Handler();
+		h.postDelayed((new Runnable() {
+
+			@Override
+			public void run() {
+				NotificationCompat.Builder b = new NotificationCompat.Builder(
+						GameActivity.this)
+						.setSmallIcon(R.drawable.ic_launcher)
+						.setContentTitle("Ambiguous")
+						.setContentText(
+								"You have a uncompleted game running. Click to resume game!");
+
+				Intent target = new Intent(GameActivity.this,
+						GameActivity.class);
+
+				NotificationManager m = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+				TaskStackBuilder stack = TaskStackBuilder
+						.create(GameActivity.this);
+				stack.addParentStack(GameActivity.class);
+				stack.addNextIntent(target);
+
+				PendingIntent p = stack.getPendingIntent(0,
+						PendingIntent.FLAG_UPDATE_CURRENT);
+
+				b.setContentIntent(p);
+				m.notify(0, b.build());
+			}
+		}), 60000);
+	}
 }

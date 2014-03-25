@@ -9,36 +9,42 @@ import java.util.Enumeration;
 import java.util.List;
 
 public class Utility {
-	public static List<String[]> getInterfaces() {
+	/**
+	 * Gets a list of IPv4 addresses of the network interfaces on the computer.
+	 * @return A list of network interfaces.
+	 * @throws SocketException
+	 */
+	public static List<String[]> getInterfaces() throws SocketException {
 		List<String[]> interfaces = new ArrayList<String[]>();
-		try {
 			Enumeration<NetworkInterface> nets = NetworkInterface
 					.getNetworkInterfaces();
 			for (NetworkInterface i : Collections.list(nets)) {
-				String[] str = getInterfaceInformation(i);
+				String[] str = getInterfaceAddress(i);
 				if (str != null) {
 					interfaces.add(str);
 				}
 			}
-		} catch (SocketException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 		return interfaces;
 	}
 
-	public static String[] getInterfaceInformation(NetworkInterface netint)
+	/**
+	 * Tries to get the IPv4 address of a network interface.
+	 * @param netint The id of the network interface.
+	 * @return A string array containing maximum one IP address. Null if none found.
+	 * @throws SocketException
+	 */
+	public static String[] getInterfaceAddress(NetworkInterface netint)
 			throws SocketException {
-		// Log.d("Display name: ", netint.getDisplayName());
-		// Log.d("Name: ", netint.getName());
 		Enumeration<InetAddress> inetAddresses = netint.getInetAddresses();
 		for (InetAddress inetAddress : Collections.list(inetAddresses)) {
-			// Log.d("InetAddress: ", inetAddress.toString());
+			//Assume is IPV4 if contains ".".
 			if (inetAddress.toString().contains(String.valueOf('.'))) {
+				//Clean up the address before returning it.
 				return new String[] { netint.getDisplayName(),
 						inetAddress.toString().replaceAll("/", "") };
 			}
 		}
+		//No interface found.
 		return null;
 	}
 

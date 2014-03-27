@@ -31,7 +31,7 @@ import android.widget.TextView;
  */
 public class MinigameFragment extends Fragment implements SensorEventListener {
 
-	// The view the player controlls
+	// The view the player controls
 	View player;
 	View target;
 	TextView score;

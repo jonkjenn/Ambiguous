@@ -106,6 +106,7 @@ public class GameActivity extends Activity implements OnDragListener,
 
 	// During minigame we lock the rotation, store the previous rotation in this
 	// so we can reset it after minigame.
+	//TODO: Store this during pause. Both in bundle and in database.
 	private int previousRotation;
 
 	// Network settings

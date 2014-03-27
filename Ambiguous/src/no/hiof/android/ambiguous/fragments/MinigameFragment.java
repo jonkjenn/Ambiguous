@@ -1,6 +1,5 @@
 package no.hiof.android.ambiguous.fragments;
 
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Random;
 
@@ -19,7 +18,6 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -213,8 +211,8 @@ public class MinigameFragment extends Fragment implements SensorEventListener {
 
 		// Checks if players view is inside the target view, and awards points.
 		if (player.getLeft() >= target.getLeft()
-				&& player.getLeft() + player.getWidth() <= target.getLeft()
-						+ target.getWidth()) {
+				&& (player.getLeft() + player.getWidth()) <= (target.getLeft() + target
+						.getWidth())) {
 			points += duration / loopDelay;
 			int estScore = (int) ((max - min) * (points / (estimateMaxPoints * 0.6)));
 			score.setText(Integer.toString(estScore));
@@ -271,7 +269,10 @@ public class MinigameFragment extends Fragment implements SensorEventListener {
 		super.onPause();
 		stop = true;
 
-		helpDialog.cancel();
+		// Close the helpDialog if we pause.
+		if (helpDialog != null) {
+			helpDialog.cancel();
+		}
 		if (sensorManager != null) {
 			sensorManager.unregisterListener(this);
 		}
@@ -280,13 +281,16 @@ public class MinigameFragment extends Fragment implements SensorEventListener {
 	@Override
 	public void onResume() {
 		super.onResume();
-		stop = false;
 
 		// If showing the opening help screen, the game will be started when
 		// player exit the help dialog.
 		if (showingHelp) {
+			stop = false;
 			return;
-		} else {
+		} else if (stop) {// To prevent starting multiple loops. OnResume seems
+							// to be called when fragment is first started which
+							// leads to multiple loops without this check.
+			stop = false;
 			startLoop();
 		}
 	}
@@ -297,14 +301,20 @@ public class MinigameFragment extends Fragment implements SensorEventListener {
 
 	public void onSensorChanged(SensorEvent event) {
 
-		// TODO: Fix landscape mode, it might already work?
+		// Adapt the sensor we track depending on screen rotation.
 		if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+			// TODO: Adapting speed when tilt in multiple directions could be
+			// improved.
+
+			// Use the X axis for tilting speed. We increase the influence of X
+			// axis as Y axis get more gravity to compensate for loss in X axis gravity.
 			speedSensor = -1
-					* (int) (event.values[0] * (1 + event.values[1] / 9.81));
+					* (int) (event.values[0] * (1 + Math.abs(event.values[1]) / 9.81));
 		} else {
-			Log.d("test", Arrays.toString(event.values));
+			// Use the Y axis for tilting speed. We increase the influence of Y
+			// axis as X axis get more gravity to compensate for loss in Y axis gravity.
 			speedSensor = -1
-					* (int) (event.values[1] * (1 + event.values[0] / 9.81));
+					* (int) (event.values[1] * (1 + Math.abs(event.values[0]) / 9.81));
 		}
 	}
 

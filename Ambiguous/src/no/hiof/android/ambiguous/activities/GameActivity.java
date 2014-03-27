@@ -22,6 +22,7 @@ import no.hiof.android.ambiguous.network.CloseServerSocketTask;
 import no.hiof.android.ambiguous.network.CloseSocketTask;
 import no.hiof.android.ambiguous.network.OpenSocketTask;
 import no.hiof.android.ambiguous.network.OpenSocketTask.OpenSocketListener;
+import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlarmManager;
@@ -34,6 +35,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
@@ -43,6 +45,7 @@ import android.os.Handler;
 import android.support.v4.app.NotificationCompat;
 import android.view.DragEvent;
 import android.view.Menu;
+import android.view.Surface;
 import android.view.View;
 import android.view.View.OnDragListener;
 import android.view.ViewGroup;
@@ -78,7 +81,6 @@ public class GameActivity extends Activity implements OnDragListener,
 	private ViewGroup floatingResourcehPlayer;
 
 	private ImageView opponentCard;
-	private ViewGroup opponentCardParent;
 
 	// We keep track of current Card the opponent has played so we can restore
 	// the view on orientation changes and pauses.
@@ -101,6 +103,10 @@ public class GameActivity extends Activity implements OnDragListener,
 	// TODO: playerStatus currently used for status messages, opponentStatus
 	// indicates turns. Should rename!
 	TextView playerStatus;
+
+	// During minigame we lock the rotation, store the previous rotation in this
+	// so we can reset it after minigame.
+	private int previousRotation;
 
 	// Network settings
 	private boolean isNetwork;
@@ -183,7 +189,7 @@ public class GameActivity extends Activity implements OnDragListener,
 		}
 		this.address = getIntent().getStringExtra("address");
 		this.port = getIntent().getIntExtra("port", 19999);
-		this.isServer = getIntent().getBooleanExtra("isServer{", false);
+		this.isServer = getIntent().getBooleanExtra("isServer", false);
 		return true;
 	}
 
@@ -216,7 +222,7 @@ public class GameActivity extends Activity implements OnDragListener,
 		currentOpponentCard = savedInstanceState.getParcelable("OpponentCard");
 		opponentCardIsDiscarded = savedInstanceState.getBoolean(
 				"OpponentCardDiscarded", false);
-		//Restore the last Card the opponent played.
+		// Restore the last Card the opponent played.
 		if (currentOpponentCard != null) {
 			if (opponentCardIsDiscarded) {
 				opponentDiscardCard(currentOpponentCard);
@@ -445,12 +451,35 @@ public class GameActivity extends Activity implements OnDragListener,
 	 * @param cardPosition
 	 *            The position of the card in the players hand.
 	 */
+	@SuppressLint("InlinedApi")
 	private void startMinigame(int cardPosition) {
 		// The minigame can only be played in portrait mode.
 		// TODO: Implement locking according to the current screen rotation, the
 		// important part is that orientation does not change during the
 		// minigame.
-		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+		previousRotation = getRequestedOrientation();
+
+		int rotation = getWindowManager().getDefaultDisplay().getRotation();
+
+		// API8 version is missing the constants for reverse screen layouts.
+		int SCREEN_ORIENTATION_REVERSE_LANDSCAPE = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD ? ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE
+				: 8);
+		int SCREEN_ORIENTATION_REVERSE_PORTRAIT = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD ? ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT
+				: 9);
+
+		// We try to lock the screen into its current rotation to prevent screen
+		// rotations happening during the minigame.
+		switch (getResources().getConfiguration().orientation) {
+		case Configuration.ORIENTATION_LANDSCAPE:
+			setRequestedOrientation(rotation == Surface.ROTATION_90 ? ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+					: SCREEN_ORIENTATION_REVERSE_LANDSCAPE);
+			break;
+		case Configuration.ORIENTATION_PORTRAIT:
+			setRequestedOrientation(rotation == Surface.ROTATION_0 ? ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+					: SCREEN_ORIENTATION_REVERSE_PORTRAIT);
+			break;
+		}
+
 		FragmentManager manager = getFragmentManager();
 		FragmentTransaction transaction = manager.beginTransaction();
 
@@ -735,20 +764,21 @@ public class GameActivity extends Activity implements OnDragListener,
 		FragmentTransaction tr = getFragmentManager().beginTransaction();
 		tr.remove(getFragmentManager().findFragmentByTag("minigame"));
 		tr.commitAllowingStateLoss();
-		// Let the screen orientation be handled by the senor again.
-		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
+		// Set the requested orientation back to what it was before minigame.
+		setRequestedOrientation(previousRotation);
 	}
 
 	// TODO:This obviously does not work, implement with alarm manager.
 	private void sendAnnoyingNotification() {
-		AlarmManager a = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
-		
-		Intent i = new Intent(this,GameActivity.class);
-		
-		PendingIntent p =PendingIntent.getActivity(this,0,i,PendingIntent.FLAG_CANCEL_CURRENT);
-		
-		a.set(AlarmManager.ELAPSED_REALTIME,60000,p);
-		
+		AlarmManager a = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+
+		Intent i = new Intent(this, GameActivity.class);
+
+		PendingIntent p = PendingIntent.getActivity(this, 0, i,
+				PendingIntent.FLAG_CANCEL_CURRENT);
+
+		a.set(AlarmManager.ELAPSED_REALTIME, 60000, p);
+
 		Handler h = new Handler();
 		h.postDelayed((new Runnable() {
 

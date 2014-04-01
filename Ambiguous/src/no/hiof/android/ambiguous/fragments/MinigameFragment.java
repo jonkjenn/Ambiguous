@@ -2,9 +2,9 @@ package no.hiof.android.ambiguous.fragments;
 
 import java.util.Calendar;
 import java.util.Random;
-
 import no.hiof.android.ambiguous.R;
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.Context;
@@ -16,6 +16,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.LayoutInflater;
@@ -29,6 +30,7 @@ import android.widget.TextView;
 /**
  * Minigame that affects the amount of effect a card does.
  */
+@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 public class MinigameFragment extends Fragment implements SensorEventListener {
 
 	// The view the player controls
@@ -81,10 +83,10 @@ public class MinigameFragment extends Fragment implements SensorEventListener {
 
 		return layout;
 	}
-
+	
 	@Override
-	public void onViewCreated(View view, Bundle savedInstanceState) {
-		super.onViewCreated(view, savedInstanceState);
+	public void onStart() {
+		super.onStart();
 		this.width = getActivity().findViewById(R.id.minigame_container)
 				.getLayoutParams().width;
 
@@ -307,12 +309,14 @@ public class MinigameFragment extends Fragment implements SensorEventListener {
 			// improved.
 
 			// Use the X axis for tilting speed. We increase the influence of X
-			// axis as Y axis get more gravity to compensate for loss in X axis gravity.
+			// axis as Y axis get more gravity to compensate for loss in X axis
+			// gravity.
 			speedSensor = -1
 					* (int) (event.values[0] * (1 + Math.abs(event.values[1]) / 9.81));
 		} else {
 			// Use the Y axis for tilting speed. We increase the influence of Y
-			// axis as X axis get more gravity to compensate for loss in Y axis gravity.
+			// axis as X axis get more gravity to compensate for loss in Y axis
+			// gravity.
 			speedSensor = -1
 					* (int) (event.values[1] * (1 + Math.abs(event.values[0]) / 9.81));
 		}

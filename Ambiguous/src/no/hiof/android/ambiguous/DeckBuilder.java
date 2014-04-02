@@ -69,7 +69,7 @@ public class DeckBuilder {
 	{
 		Card card = cardFromName(name);
 		if(card == null){return;}
-		for(int i=0;i<count;i++)
+		for(int i=0;i<count*0.1;i++)
 		{
 			deck.add(card);
 		}

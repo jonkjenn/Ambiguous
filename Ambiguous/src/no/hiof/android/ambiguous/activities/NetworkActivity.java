@@ -129,6 +129,8 @@ public class NetworkActivity extends Activity {
 	 */
 	private void doStartClient(final String address, boolean useAddress) {
 
+		this.isServer = false;
+
 		if (useAddress) {
 			this.address = address;
 			startGame();

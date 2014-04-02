@@ -2,9 +2,9 @@ package no.hiof.android.ambiguous.activities;
 
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Calendar;
 
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarActivity;
+import no.hiof.android.ambiguous.AlarmReceiver;
 import no.hiof.android.ambiguous.Db;
 import no.hiof.android.ambiguous.GameMachine;
 import no.hiof.android.ambiguous.GameMachine.State;
@@ -27,12 +27,13 @@ import no.hiof.android.ambiguous.network.OpenSocketTask.OpenSocketListener;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.AlarmManager;
+import android.app.AlertDialog;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.app.TaskStackBuilder;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
@@ -42,7 +43,8 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v4.app.NotificationCompat;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarActivity;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;
@@ -55,6 +57,7 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  * Initializes games and shows/handles the game UI.
@@ -120,6 +123,8 @@ public class GameActivity extends ActionBarActivity implements
 	private ServerSocket server;
 
 	private OpenSocketTask openSocketTask;
+
+	private AlertDialog waitingForNetwork;
 
 	/*
 	 * private static final String KEY_TEXT_PLAYER_VALUE = "playerTextValue";
@@ -204,6 +209,28 @@ public class GameActivity extends ActionBarActivity implements
 		openSocketTask = new OpenSocketTask().setup(GameActivity.this.address,
 				GameActivity.this.port, GameActivity.this.isServer);
 		openSocketTask.execute(GameActivity.this);
+
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		String connectMsg = String
+				.format(getResources()
+						.getString(
+								(GameActivity.this.isServer ? R.string.network_server_listening_text
+										: R.string.network_client_connecting_text),
+								GameActivity.this.address,
+								GameActivity.this.port));
+		builder.setTitle(R.string.connect).setMessage(connectMsg)
+				.setNegativeButton(R.string.abort, new OnClickListener() {
+
+					// Close the activity.
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						dialog.cancel();
+						finish();
+					}
+				});
+
+		waitingForNetwork = builder.create();
+		waitingForNetwork.show();
 	}
 
 	/**
@@ -317,11 +344,17 @@ public class GameActivity extends ActionBarActivity implements
 		return true;
 	}
 
+	/**
+	 * Player plays a card.
+	 * 
+	 * Checks for the minigame card. Check if the phone access to the gravity
+	 * sensor which is needed for the minigame. If not the minigame card is
+	 * played as a regular card with random damage in its defined range.
+	 * 
+	 * @param position
+	 *            The position of the card in the players hand.
+	 */
 	public void playCard(int position) {
-		// Checks for the minigame card. Check if the phone access to the
-		// gravity sensor which is needed for the minigame. If not the
-		// minigame card is played as a regular card with random damage in
-		// its defined range.
 		if (gameMachine.player.getCard(position).getName().equals("Minigame!")
 				&& getPackageManager().hasSystemFeature(
 						PackageManager.FEATURE_SENSOR_ACCELEROMETER)
@@ -341,6 +374,7 @@ public class GameActivity extends ActionBarActivity implements
 		getMenuInflater().inflate(R.menu.click_card_on_hand, menu);
 	}
 
+	// When a player selects a card to use.
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
 
@@ -428,9 +462,7 @@ public class GameActivity extends ActionBarActivity implements
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB
 				&& handDragListener != null) {
 			layoutContainer.setOnDragListener(handDragListener);
-		}
-		else
-		{
+		} else {
 			registerForContextMenu(handView);
 		}
 		playerName.setBackgroundColor(Color.RED);
@@ -469,9 +501,7 @@ public class GameActivity extends ActionBarActivity implements
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB
 				&& handDragListener != null) {
 			handDragListener.removeDrag();
-		}
-		else
-		{
+		} else {
 			unregisterForContextMenu(handView);
 		}
 	}
@@ -614,6 +644,12 @@ public class GameActivity extends ActionBarActivity implements
 			this.server = server;
 		}
 		if (socket != null) {
+			// Hide the waiting for network dialog and show message that we're
+			// connected.
+			waitingForNetwork.cancel();
+			Toast t = Toast.makeText(this, R.string.connected,
+					Toast.LENGTH_LONG);
+			t.show();
 			// When start as a network game, the game will wait for this until
 			// it start.
 			this.socket = socket;
@@ -625,10 +661,9 @@ public class GameActivity extends ActionBarActivity implements
 	protected void onPause() {
 		super.onPause();
 
-		/*
-		 * if (!gameMachine.player.isAlive() || !gameMachine.opponent.isAlive())
-		 * { sendAnnoyingNotification(); }
-		 */
+		if (gameMachine.player.isAlive() && gameMachine.opponent.isAlive()) {
+			sendAnnoyingNotification();
+		}
 
 		if (isNetwork) {
 			closeSockets();
@@ -673,47 +708,17 @@ public class GameActivity extends ActionBarActivity implements
 		setRequestedOrientation(previousRotation);
 	}
 
-	// TODO:This obviously does not work, implement with alarm manager.
 	@SuppressLint("NewApi")
+	/**
+	 * If the player closes the game during a match we notify our AlarmReceiver so that we can notify the player that he has a game running.
+	 * This is mostly implemented to show-case use of AlarmManager and Notification.
+	 */
 	private void sendAnnoyingNotification() {
 		AlarmManager a = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
 
-		Intent i = new Intent(this, GameActivity.class);
+		PendingIntent alarm = PendingIntent.getBroadcast(this, 0, new Intent(this,AlarmReceiver.class), 0);
 
-		PendingIntent p = PendingIntent.getActivity(this, 0, i,
-				PendingIntent.FLAG_CANCEL_CURRENT);
-
-		a.set(AlarmManager.ELAPSED_REALTIME, 60000, p);
-
-		Handler h = new Handler();
-		h.postDelayed((new Runnable() {
-
-			@Override
-			public void run() {
-				NotificationCompat.Builder b = new NotificationCompat.Builder(
-						GameActivity.this)
-						.setSmallIcon(R.drawable.ic_launcher)
-						.setContentTitle("Ambiguous")
-						.setContentText(
-								"You have a uncompleted game running. Click to resume game!");
-
-				Intent target = new Intent(GameActivity.this,
-						GameActivity.class);
-
-				NotificationManager m = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
-				TaskStackBuilder stack = TaskStackBuilder
-						.create(GameActivity.this);
-				stack.addParentStack(GameActivity.class);
-				stack.addNextIntent(target);
-
-				PendingIntent p = stack.getPendingIntent(0,
-						PendingIntent.FLAG_UPDATE_CURRENT);
-
-				b.setContentIntent(p);
-				m.notify(0, b.build());
-			}
-		}), 60000);
+		a.set(AlarmManager.RTC, Calendar.getInstance().getTimeInMillis() + 600000, alarm);
 	}
 
 	// Version checked in code.
@@ -724,6 +729,8 @@ public class GameActivity extends ActionBarActivity implements
 
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
 			layoutContainer.setOnDragListener(null);
+		} else {
+			unregisterForContextMenu(handView);
 		}
 	}
 }

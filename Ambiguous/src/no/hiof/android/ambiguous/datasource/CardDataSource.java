@@ -21,7 +21,7 @@ public class CardDataSource {
 
 	public CardDataSource(SQLiteDatabase db)
 	{
-		this.db =db;
+		this.db = db;
 		this.effectDs = new EffectDataSource(db);
 	}
 	

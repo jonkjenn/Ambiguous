@@ -67,6 +67,7 @@ public class DeckBuilder {
 	 */
 	private static void addCard(String name, int count)
 	{
+		count /= 10;
 		Card card = cardFromName(name);
 		if(card == null){return;}
 		for(int i=0;i<count*0.1;i++)

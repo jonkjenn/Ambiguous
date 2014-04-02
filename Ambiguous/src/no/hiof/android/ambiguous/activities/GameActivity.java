@@ -10,6 +10,7 @@ import no.hiof.android.ambiguous.OpponentController.OpponentListener;
 import no.hiof.android.ambiguous.R;
 import no.hiof.android.ambiguous.adapter.GameDeckAdapter;
 import no.hiof.android.ambiguous.cardlistener.CardOnTouchListener;
+import no.hiof.android.ambiguous.datasource.SessionDataSource;
 import no.hiof.android.ambiguous.fragments.MinigameFragment;
 import no.hiof.android.ambiguous.fragments.MinigameFragment.MinigameListener;
 import no.hiof.android.ambiguous.layouts.CardLayout;
@@ -730,6 +731,9 @@ public class GameActivity extends Activity implements OnDragListener,
 		 * if (!gameMachine.player.isAlive() || !gameMachine.opponent.isAlive())
 		 * { sendAnnoyingNotification(); }
 		 */
+		SessionDataSource sds = new SessionDataSource(db);
+		sds.saveSession(gameMachine.state.ordinal(), gameMachine.player, gameMachine.opponent,
+				(currentOpponentCard != null ?currentOpponentCard.getId() : -1), opponentCardIsDiscarded);
 
 		if (isNetwork) {
 			closeSockets();

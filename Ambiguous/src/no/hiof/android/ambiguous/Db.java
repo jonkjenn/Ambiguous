@@ -1,6 +1,7 @@
 package no.hiof.android.ambiguous;
 
 import no.hiof.android.ambiguous.datasource.CardDataSource;
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabase.CursorFactory;
@@ -11,18 +12,22 @@ import android.database.sqlite.SQLiteOpenHelper;
  */
 public class Db extends SQLiteOpenHelper {
 	
+	public static final String TABLE_NAME_CARDLISTTYPE = "Cardlisttype";
+	public static final String CARDLISTTYPE_DECK = "deck";
+	public static final String CARDLISTTYPE_HAND = "hand";
+	
 	private static final String CREATE_CARDLISTTYPE_TABLE = 
-			"CREATE TABLE IF NOT EXISTS `Cardlisttype` (" +
+			"CREATE TABLE IF NOT EXISTS `"+TABLE_NAME_CARDLISTTYPE+"` (" +
 			"`name` VARCHAR(45)," +
 			"PRIMARY KEY (`name`))";
 	
 	private static final String CREATE_PLAYERCARDLIST_TABLE = 
 			"CREATE TABLE IF NOT EXISTS `Playercardlist` (" +
-			"`id` INTEGER NOT NULL, " +
+//			"`id` INTEGER NOT NULL, " +
 			"`type` VARCHAR(45) NOT NULL, " +
 			"`player` INTEGER NOT NULL, " +
 			"PRIMARY KEY (`type`, `player`), " +
-			"FOREIGN KEY (`type`) REFERENCES `Cardlisttype` (`name`) )";
+			"FOREIGN KEY (`type`) REFERENCES `"+TABLE_NAME_CARDLISTTYPE+"` (`name`) )";
 	
 	private static final String CREATE_PLAYERPROFILE_TABLE = 
 			"CREATE TABLE IF NOT EXISTS `PlayerProfile` (" +
@@ -46,10 +51,13 @@ public class Db extends SQLiteOpenHelper {
 			"CREATE TABLE IF NOT EXISTS `Session` (" +
 			"`id` INTEGER PRIMARY KEY," +
 			"`player` INTEGER," +
-			"`computer` INTEGER," +
+			"`opponent` INTEGER," +
 			"`turn` INTEGER NOT NULL," +
+			"`opponentCard` INTEGER," +
+			"`opponentDiscard` BOOLEAN," +
 			"FOREIGN KEY (`player`) REFERENCES `Player` (`id`)," +
-			"FOREIGN KEY (`computer`) REFERENCES `Player` (`id`) )";
+			"FOREIGN KEY (`opponent`) REFERENCES `Player` (`id`)," +
+			"FOREIGN KEY (`opponentCard`) REFERENCES `Card` (`id`) )";
 	
 	private static final String CREATE_CARD_TABLE = 
 			"CREATE TABLE IF NOT EXISTS `Card` (" +
@@ -87,7 +95,7 @@ public class Db extends SQLiteOpenHelper {
 	
 	private static final String name = "db";
 	
-	private static final String DROP_CARDLISTTYPE_TABLE = "DROP TABLE IF EXISTS Cardlisttype";
+	private static final String DROP_CARDLISTTYPE_TABLE = "DROP TABLE IF EXISTS "+TABLE_NAME_CARDLISTTYPE;
 	private static final String DROP_PLAYERCARDLIST_TABLE = "DROP TABLE IF EXISTS Playercardlist";
 	private static final String DROP_PLAYERPROFILE_TABLE = "DROP TABLE IF EXISTS PlayerProfile";
 	private static final String DROP_PLAYER_TABLE = "DROP TABLE IF EXISTS Player";
@@ -108,7 +116,7 @@ public class Db extends SQLiteOpenHelper {
 	{
 		if(db == null)
 		{
-			db = new Db(ctx,name,null,4);
+			db = new Db(ctx,name,null,3);
 				
 		}
 		
@@ -135,7 +143,7 @@ public class Db extends SQLiteOpenHelper {
 	@Override
 	public void onCreate(SQLiteDatabase db) {
 		createTables(db);
-		insertCards(db);
+		insertData(db);
 	}
 	
 	
@@ -160,8 +168,11 @@ public class Db extends SQLiteOpenHelper {
 	 * Insert all the different cards available in the game.
 	 * @param db
 	 */
-	private void insertCards(SQLiteDatabase db)
+	private void insertData(SQLiteDatabase db)
 	{
+		//ContentValues contentValues = new ContentValues();
+		db.execSQL("INSERT INTO "+TABLE_NAME_CARDLISTTYPE+" (name) VALUES('"+CARDLISTTYPE_DECK+"')");
+		db.execSQL("INSERT INTO "+TABLE_NAME_CARDLISTTYPE+" (name) VALUES('"+CARDLISTTYPE_HAND+"')");
 		CardDataSource cs = new CardDataSource(db);
 
 		cs.addCard(CardBuilder.DamageOponent("Pistol","","pistol1",4,5,10,5));
@@ -192,7 +203,7 @@ public class Db extends SQLiteOpenHelper {
 	public void onUpgrade(SQLiteDatabase db, int arg1, int arg2) {
 		dropTables(db);
 		createTables(db);
-		insertCards(db);
+		insertData(db);
 	}
 
 }

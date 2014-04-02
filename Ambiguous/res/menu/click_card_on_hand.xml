@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+    <item
+        android:title="Use card"
+        android:id="@+id/card_context_use"
+        ></item>
+    <item android:title="Discard card" android:id="@+id/card_context_discard"/>
+    <item android:title="Cancel" android:id="@+id/card_context_cancel"/>
+</menu>

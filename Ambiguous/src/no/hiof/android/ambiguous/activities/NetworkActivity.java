@@ -14,12 +14,12 @@ import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.support.v7.widget.PopupMenu;
+import android.support.v7.widget.PopupMenu.OnMenuItemClickListener;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.PopupMenu;
-import android.widget.PopupMenu.OnMenuItemClickListener;
 import android.widget.Toast;
 
 /**
@@ -80,7 +80,7 @@ public class NetworkActivity extends Activity {
 						serverButton);
 				Menu m = menu.getMenu();
 				for (int i = 0; i < interfaces.size(); i++) {
-					m.add(Menu.NONE, i, i, interfaces.get(i)[0] + " "
+					m.add(Menu.NONE, i, i, interfaces.get(i)[0] + " "	
 							+ interfaces.get(i)[1]);
 				}
 

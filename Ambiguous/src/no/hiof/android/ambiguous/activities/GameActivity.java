@@ -3,9 +3,12 @@ package no.hiof.android.ambiguous.activities;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarActivity;
 import no.hiof.android.ambiguous.Db;
 import no.hiof.android.ambiguous.GameMachine;
 import no.hiof.android.ambiguous.GameMachine.State;
+import no.hiof.android.ambiguous.HandDragListener;
 import no.hiof.android.ambiguous.OpponentController.OpponentListener;
 import no.hiof.android.ambiguous.R;
 import no.hiof.android.ambiguous.adapter.GameDeckAdapter;
@@ -24,8 +27,7 @@ import no.hiof.android.ambiguous.network.CloseSocketTask;
 import no.hiof.android.ambiguous.network.OpenSocketTask;
 import no.hiof.android.ambiguous.network.OpenSocketTask.OpenSocketListener;
 import android.annotation.SuppressLint;
-import android.app.ActionBar;
-import android.app.Activity;
+import android.annotation.TargetApi;
 import android.app.AlarmManager;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
@@ -39,17 +41,18 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.NotificationCompat;
-import android.view.DragEvent;
+import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.Surface;
 import android.view.View;
-import android.view.View.OnDragListener;
 import android.view.ViewGroup;
+import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -58,20 +61,17 @@ import android.widget.TextView;
 /**
  * Initializes games and shows/handles the game UI.
  */
-public class GameActivity extends Activity implements OnDragListener,
+public class GameActivity extends ActionBarActivity implements
 		GameMachine.GameMachineListener, OpponentListener,
 		PlayerUpdateListener, OpenSocketListener, MinigameListener {
 	private SQLiteDatabase db;
 
 	// Shows the cards on players "hand"
-	private GridView deckView;
+	private GridView handView;
 
 	// The outer layout around the whole game view.
 	private RelativeLayout layoutContainer;
 	private GameMachine gameMachine;
-
-	private View useCardNotificationView;
-	private View discardCardNotificationView;
 
 	private TextView playerName;
 	private TextView playerHealth;
@@ -96,10 +96,13 @@ public class GameActivity extends Activity implements OnDragListener,
 	private ViewGroup floatingArmorOpponent;
 	private ViewGroup floatingResourcehOpponent;
 
-	// TODO: Possibly recode so don't need these as fields.
+	// TODO: Possibly recode so don't need these as
+	// fields.http://stackoverflow.com/questions/5088856/how-to-detect-landscape-left-normal-vs-landscape-right-reverse-with-support?rq=1
 	private Player savedPlayer;
 	private Player savedOpponent;
 	private State savedState;
+
+	private HandDragListener handDragListener;
 
 	// TODO: playerStatus currently used for status messages, opponentStatus
 	// indicates turns. Should rename!
@@ -107,7 +110,7 @@ public class GameActivity extends Activity implements OnDragListener,
 
 	// During minigame we lock the rotation, store the previous rotation in this
 	// so we can reset it after minigame.
-	//TODO: Store this during pause. Both in bundle and in database.
+	// TODO: Store this during pause. Both in bundle and in database.
 	private int previousRotation;
 
 	// Network settings
@@ -126,6 +129,8 @@ public class GameActivity extends Activity implements OnDragListener,
 	 * "opponentTextValue";
 	 */
 
+	// We check API level in code
+	@SuppressLint("NewApi")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -133,8 +138,7 @@ public class GameActivity extends Activity implements OnDragListener,
 
 		layoutContainer = (RelativeLayout) findViewById(R.id.game_layout_container);
 		playerStatus = (TextView) findViewById(R.id.stats_player);
-		deckView = (GridView) findViewById(R.id.game_grid);
-		layoutContainer.setOnDragListener(this);
+		handView = (GridView) findViewById(R.id.game_grid);
 
 		opponentCard = (ImageView) findViewById(R.id.opponent_card);
 
@@ -144,8 +148,8 @@ public class GameActivity extends Activity implements OnDragListener,
 		if (savedInstanceState != null) {
 			loadSavedData(savedInstanceState);
 		}
-		useCardNotificationView = findViewById(R.id.gameview_use);
-		discardCardNotificationView = findViewById(R.id.gameview_discard);
+
+		// Find all views so we only have to find them once.
 
 		playerName = (TextView) findViewById(R.id.stat_player_name);
 		playerHealth = (TextView) findViewById(R.id.stat_player_health);
@@ -163,7 +167,7 @@ public class GameActivity extends Activity implements OnDragListener,
 		floatingArmorOpponent = (ViewGroup) findViewById(R.id.floating_armor_opponent);
 		floatingResourcehOpponent = (ViewGroup) findViewById(R.id.floating_resource_opponent);
 
-		ActionBar actionBar = getActionBar();
+		ActionBar actionBar = getSupportActionBar();
 		actionBar.hide();
 
 		// Gets the db that will be reused throughout the game.
@@ -237,6 +241,8 @@ public class GameActivity extends Activity implements OnDragListener,
 	/**
 	 * Sets up the game machine that "drives" the game.
 	 */
+	@SuppressLint("NewApi")
+	// Version is checked in code
 	private void setupGameMachine() {
 		// Resume gamemachine with previous player states.
 		if (savedPlayer != null && savedOpponent != null) {
@@ -254,6 +260,16 @@ public class GameActivity extends Activity implements OnDragListener,
 		// UI.
 		gameMachine.player.setPlayerUpdateListeners(this);
 		gameMachine.opponent.setPlayerUpdateListeners(this);
+
+		// If high enough API level we use drag drop on cards, with lower
+		// versions we use a long click context menu.
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+
+			handDragListener = new HandDragListener(gameMachine, this);
+			layoutContainer.setOnDragListener(handDragListener);
+		} else {
+			registerForContextMenu(handView);
+		}
 	}
 
 	@Override
@@ -303,148 +319,47 @@ public class GameActivity extends Activity implements OnDragListener,
 		return true;
 	}
 
-	/**
-	 * Moves the card we're dragging around the screen to a new position.
-	 * 
-	 * @param card
-	 *            The position of the card in the players hand.
-	 * @param x
-	 *            The X coordinate of where we are touching/clicking the screen.
-	 * @param y
-	 *            The Y coordinate of where we are touching/clicking the screen.
-	 * @param insideX
-	 *            The X coordinate of where we're pushing on the card to drag
-	 *            it.
-	 * @param insideY
-	 *            The Y coordinate of where we're pushing on the card to drag
-	 *            it.
-	 */
-	private void drag(int card, int x, int y, int insideX, int insideY) {
-		// Hide the original card on players deck.
-		deckView.getChildAt(card).setVisibility(View.INVISIBLE);
-		// Set the view we actually drag around the screen visible.
-		ImageView parent = (ImageView) findViewById(R.id.drag_card);
-		parent.setVisibility(ImageView.VISIBLE);
-
-		RelativeLayout.LayoutParams par = new RelativeLayout.LayoutParams(
-				parent.getLayoutParams());
-		// So we dont move the card outside the game view.
-		if ((par.leftMargin + par.width) > deckView.getWidth()) {
-			return;
-		}
-
-		// Move the card by changing the left and top margins
-		par.setMargins(x - insideX, y - insideY, 0, 0);
-		parent.setLayoutParams(par);
-	}
-
-	/**
-	 * We drag cards by creating a copy of the image used on the card and move
-	 * this around while the stationary actual card is hidden.
-	 * 
-	 * @param card
-	 *            The position of the card in the players hand.
-	 */
-	private void startDrag(int card) {
-		ImageView layout = (ImageView) findViewById(R.id.drag_card);
-		ImageView i = (ImageView) deckView.getChildAt(card);
-		// Get the bitmap used on the stationary card and use this as bitmap on
-		// our "drag card".
-		layout.setImageBitmap(((BitmapDrawable) i.getDrawable()).getBitmap());
-
-		layout.setVisibility(ImageView.GONE);
-	}
-
-	/**
-	 * Reshow the stationary card we have previously dragged, typically used
-	 * when change our mind on wich card to use.
-	 * 
-	 * @param card
-	 */
-	private void stopDrag(int card) {
-		deckView.getChildAt(card).setVisibility(View.VISIBLE);
-		removeDrag();
-	}
-
-	/**
-	 * Hide only the card we drag around, typically called when we have used or
-	 * discarded a card.
-	 */
-	private void removeDrag() {
-		findViewById(R.id.drag_card).setVisibility(View.INVISIBLE);
-	}
-
-	/**
-	 * Handles when a drag action moves and generate new coordinates.
-	 * 
-	 * @param touchData
-	 *            The state we pass with the event.
-	 * @param eventX
-	 * @param eventY
-	 */
-	private void handleDragToLocation(
-			CardOnTouchListener.CardTouchData touchData, int eventX, int eventY) {
-		// For updating the card we drag around.
-		drag(touchData.position, eventX, eventY, touchData.localX,
-				touchData.localY);
-
-		// If have moved the card upwards enough we display the top bar that
-		// tells the user he can now drop the card to use it.
-		if (touchData.viewHeight / 2 + eventY < touchData.screenY - 100) {
-			useCardNotificationView.setVisibility(View.VISIBLE);
+	public void playCard(int position) {
+		// Checks for the minigame card. Check if the phone access to the
+		// gravity sensor which is needed for the minigame. If not the
+		// minigame card is played as a regular card with random damage in
+		// its defined range.
+		if (gameMachine.player.getCard(position).getName().equals("Minigame!")
+				&& getPackageManager().hasSystemFeature(
+						PackageManager.FEATURE_SENSOR_ACCELEROMETER)
+				&& Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+			startMinigame(position);
 		} else {
-			useCardNotificationView.setVisibility(View.INVISIBLE);
-		}
-
-		// If have moved the card downwards enough we display the bottom bar
-		// that tells the user he can now drop the card to discard it.
-		if (touchData.viewHeight / 2 + eventY > this.layoutContainer
-				.getHeight()) {
-			discardCardNotificationView.setVisibility(View.VISIBLE);
-		} else {
-			discardCardNotificationView.setVisibility(View.INVISIBLE);
+			gameMachine.playerPlayCard(position);
 		}
 	}
 
-	/**
-	 * Handles the drop of a card dragdrop.
-	 * 
-	 * @param touchData
-	 * @param eventX
-	 * @param eventY
-	 */
-	private void handleDropEvent(CardOnTouchListener.CardTouchData touchData,
-			int eventX, int eventY) {
+	// Should only be called on lower API versions, since we use drag and drop
+	// otherwise.
+	@Override
+	public void onCreateContextMenu(ContextMenu menu, View v,
+			ContextMenuInfo menuInfo) {
+		super.onCreateContextMenu(menu, v, menuInfo);
+		getMenuInflater().inflate(R.menu.click_card_on_hand, menu);
+	}
 
-		// If moved the card "enough" upwards use the card.
-		if (touchData.viewHeight / 2 + eventY < touchData.screenY - 100) {
-			useCardNotificationView.setVisibility(View.INVISIBLE);
-			removeDrag();
+	@Override
+	public boolean onContextItemSelected(MenuItem item) {
 
-			// Checks for the minigame card. Check if the phone access to the
-			// gravity sensor which is needed for the minigame. If not the
-			// minigame card is played as a regular card with random damage in
-			// its defined range.
-			if (gameMachine.player.getCard(touchData.position).getName()
-					.equals("Minigame!")
-					&& this.getPackageManager().hasSystemFeature(
-							PackageManager.FEATURE_SENSOR_ACCELEROMETER)
-					&& Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
-				startMinigame(touchData.position);
-			} else {
-				gameMachine.playerPlayCard(touchData.position);
-			}
-		}// If moved the card enough downwards discard the card.
-		else if (touchData.viewHeight / 2 + eventY > this.layoutContainer
-				.getHeight()) {
-			findViewById(R.id.gameview_discard).setVisibility(
-					TextView.INVISIBLE);
-			removeDrag();
-			gameMachine.playerDiscardCard(touchData.position);
-		} else // Cancel the dragdrop so that user can pick a different card.
-		{
-			stopDrag(touchData.position);
+		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item
+				.getMenuInfo();
+
+		switch (item.getItemId()) {
+		case R.id.card_context_use:
+			playCard(info.position);
+			return true;
+		case R.id.card_context_discard:
+			gameMachine.playerDiscardCard(info.position);
+			return true;
+		default:
+			return super.onContextItemSelected(item);
 		}
+
 	}
 
 	/**
@@ -453,8 +368,9 @@ public class GameActivity extends Activity implements OnDragListener,
 	 * @param cardPosition
 	 *            The position of the card in the players hand.
 	 */
-	@SuppressLint("InlinedApi")
-	private void startMinigame(int cardPosition) {
+	// With lower API versions we just randomize damage instead of use minigame
+	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
+	public void startMinigame(int cardPosition) {
 		// The minigame can only be played in portrait mode.
 		// TODO: Implement locking according to the current screen rotation, the
 		// important part is that orientation does not change during the
@@ -497,64 +413,39 @@ public class GameActivity extends Activity implements OnDragListener,
 		transaction.commit();
 	}
 
-	@Override
-	public boolean onDrag(View v, DragEvent event) {
-		// Can only drag on players turn.
-		if (!gameMachine.isPlayersTurn()) {
-			return false;
-		}
-
-		// Data passed from the touch even that starts the drag.
-		CardOnTouchListener.CardTouchData cardTouchData;
-
-		// Convert the object passed from card touch
-		if (event.getLocalState() != null
-				&& event.getLocalState() instanceof CardOnTouchListener.CardTouchData) {
-			cardTouchData = (CardOnTouchListener.CardTouchData) event
-					.getLocalState();
-
-			switch (event.getAction()) {
-			case DragEvent.ACTION_DRAG_STARTED:
-				if (event.getLocalState() != null) {
-					startDrag(cardTouchData.position);
-				}
-				return true;
-
-			case DragEvent.ACTION_DRAG_LOCATION:
-				if (event.getLocalState() != null) {
-					handleDragToLocation(cardTouchData, (int) event.getX(),
-							(int) event.getY());
-				}
-				break;
-
-			case DragEvent.ACTION_DROP:
-				if (event.getLocalState() != null) {
-					handleDropEvent(cardTouchData, (int) event.getX(),
-							(int) event.getY());
-				}
-				return true;
-			}
-		}
-		return false;
-	}
-
 	// If try to use a card we dont have enough resources for etc.
 	@Override
 	public void onCouldNotPlayCardListener(int position) {
-		stopDrag(position);
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB
+				&& handDragListener != null) {
+			handDragListener.stopDrag(position);
+		}
 	}
 
 	// Background behind player's name turns red on their turn.
+	// Version is checked in code.
+	@SuppressLint("NewApi")
 	@Override
 	public void onPlayerTurnListener() {
-		layoutContainer.setOnDragListener(this);
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB
+				&& handDragListener != null) {
+			layoutContainer.setOnDragListener(handDragListener);
+		}
+		else
+		{
+			registerForContextMenu(handView);
+		}
 		playerName.setBackgroundColor(Color.RED);
 		opponentName.setBackgroundColor(Color.TRANSPARENT);
 	}
 
+	@SuppressLint("NewApi")
+	// We check in code
 	@Override
 	public void onPlayerDoneListener() {
-		this.layoutContainer.setOnDragListener(null);
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+			layoutContainer.setOnDragListener(null);
+		}
 		playerName.setBackgroundColor(Color.TRANSPARENT);
 		opponentName.setBackgroundColor(Color.RED);
 	}
@@ -573,9 +464,18 @@ public class GameActivity extends Activity implements OnDragListener,
 		playerStatus.setText("Opponent dead");
 	}
 
+	// We check in code
+	@SuppressLint("NewApi")
 	@Override
 	public void onPlayerPlayedCard(Card card) {
-		removeDrag();
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB
+				&& handDragListener != null) {
+			handDragListener.removeDrag();
+		}
+		else
+		{
+			unregisterForContextMenu(handView);
+		}
 	}
 
 	@Override
@@ -597,7 +497,7 @@ public class GameActivity extends Activity implements OnDragListener,
 		// Update the cards on the screen if the player's cards change.
 		if (player == gameMachine.player) {
 			GameDeckAdapter adapter = new GameDeckAdapter(cards);
-			deckView.setAdapter(adapter);
+			handView.setAdapter(adapter);
 		}
 	}
 
@@ -763,17 +663,23 @@ public class GameActivity extends Activity implements OnDragListener,
 		}
 	}
 
+	// We check in code
+	@SuppressLint("NewApi")
 	@Override
 	public void onGameEnd(int amount, int position) {
 		gameMachine.playerPlayCard(position, amount);
-		FragmentTransaction tr = getFragmentManager().beginTransaction();
-		tr.remove(getFragmentManager().findFragmentByTag("minigame"));
-		tr.commitAllowingStateLoss();
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+			FragmentTransaction tr = getFragmentManager().beginTransaction();
+			tr.remove(getFragmentManager().findFragmentByTag("minigame"));
+			tr.commitAllowingStateLoss();
+		}
 		// Set the requested orientation back to what it was before minigame.
 		setRequestedOrientation(previousRotation);
 	}
 
 	// TODO:This obviously does not work, implement with alarm manager.
+	@SuppressLint("NewApi")
 	private void sendAnnoyingNotification() {
 		AlarmManager a = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
 
@@ -813,5 +719,16 @@ public class GameActivity extends Activity implements OnDragListener,
 				m.notify(0, b.build());
 			}
 		}), 60000);
+	}
+
+	// Version checked in code.
+	@SuppressLint("NewApi")
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+			layoutContainer.setOnDragListener(null);
+		}
 	}
 }

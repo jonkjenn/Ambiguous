@@ -33,9 +33,9 @@ public class SessionDataSource {
 		cv.put("opponentCard", opponentCardId);
 		cv.put("opponentDiscard", cardWasDiscarded);
 		
-		db.insert("Session", null, cv);
+		int workedFine = (int)db.insert("Session", null, cv);
 		
-		return true;
+		return (workedFine == -1 ? false : true);
 	}
 	
 	private int savePlayer(Player player){

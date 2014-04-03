@@ -2,7 +2,9 @@ package no.hiof.android.ambiguous.activities;
 
 import no.hiof.android.ambiguous.R;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -18,6 +20,10 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        
+        SharedPreferences sp = getSharedPreferences("no.hiof.android.ambiguous.preferences", Context.MODE_PRIVATE);
+        String name = sp.getString("name", "JonAndOrAdrian");
+        
     }
 
     @Override

@@ -12,7 +12,6 @@ import no.hiof.android.ambiguous.HandDragListener;
 import no.hiof.android.ambiguous.OpponentController.OpponentListener;
 import no.hiof.android.ambiguous.R;
 import no.hiof.android.ambiguous.adapter.GameDeckAdapter;
-import no.hiof.android.ambiguous.cardlistener.CardOnTouchListener;
 import no.hiof.android.ambiguous.datasource.SessionDataSource;
 import no.hiof.android.ambiguous.fragments.MinigameFragment;
 import no.hiof.android.ambiguous.fragments.MinigameFragment.MinigameListener;
@@ -37,6 +36,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
@@ -45,6 +45,7 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.view.ContextMenu;
@@ -149,7 +150,8 @@ public class GameActivity extends ActionBarActivity implements
 
 		// TODO: What?
 		playerStatus.setText(" ");
-
+		setBackground(PreferenceManager.getDefaultSharedPreferences(this));
+		
 		if (savedInstanceState != null) {
 			loadSavedData(savedInstanceState);
 		}
@@ -184,6 +186,30 @@ public class GameActivity extends ActionBarActivity implements
 		} else {
 			setupGameMachine();
 		}
+	}
+
+	private void setBackground(SharedPreferences sp) {
+		final int MOSS = 1;
+		final int SCARLET = 2;
+		final int AMBER = 3;
+		final int SAPPHIRE = 4;
+		
+		int color = Integer.parseInt(sp.getString(SettingsActivity.KEY_PREF_BGColor, "1"));
+		switch (color){
+		case MOSS: layoutContainer.setBackgroundColor(0xFF0F7F0F);
+			break;
+		case SCARLET: layoutContainer.setBackgroundColor(0xFFFF2400);
+			break;
+		case AMBER: layoutContainer.setBackgroundColor(0xFFFFC200);
+			break;
+		case SAPPHIRE: layoutContainer.setBackgroundColor(0xFF0F52BA);
+			break;
+		default: layoutContainer.setBackgroundColor(0xFF0F7F0F);
+		}
+		
+		
+		//layoutContainer.setBackgroundColor(0xFFACACAC);
+		
 	}
 
 	// TODO: Could be better type testing.
@@ -534,7 +560,10 @@ public class GameActivity extends ActionBarActivity implements
 	@Override
 	public void onStatsUpdateListener(Player player) {
 		if (player == gameMachine.player) {
-			playerName.setText(player.getName());
+			//playerName.setText(player.getName());
+			SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+			playerName.setText(sp.getString(SettingsActivity.KEY_PREF_USER, ""));
+			
 			playerHealth.setText(String.valueOf(player.getHealth()));
 			playerArmor.setText(String.valueOf(player.getArmor()));
 			playerResource.setText(String.valueOf(player.getResources()));

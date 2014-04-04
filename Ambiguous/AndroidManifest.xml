@@ -61,6 +61,11 @@
         <activity 
             android:name="no.hiof.android.ambiguous.activities.NotifyGameRunningActivity"></activity>
         <receiver android:process=":remote" android:name="AlarmReceiver"></receiver>
+        <activity
+            android:name="no.hiof.android.ambiguous.activities.SettingsActivity"
+            android:label="settings">
+            
+        </activity>
     </application>
 
 </manifest>

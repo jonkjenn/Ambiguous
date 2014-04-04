@@ -1,11 +1,13 @@
 package no.hiof.android.ambiguous.activities;
 
 import no.hiof.android.ambiguous.R;
+import no.hiof.android.ambiguous.fragments.SettingsFragment;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -21,8 +23,10 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         
-        SharedPreferences sp = getSharedPreferences("no.hiof.android.ambiguous.preferences", Context.MODE_PRIVATE);
-        String name = sp.getString("name", "JonAndOrAdrian");
+     // Ensure application is properly initialized with default settings
+        PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
+
+
         
     }
 
@@ -36,7 +40,7 @@ public class MainActivity extends Activity {
     
     /** Called when the user clicks the Cards button. Starts the "gallery" activity. **/
     public void goToDeckManager(View view){
-    	Intent intent = new Intent(this, CardGalleryActivity.class);
+    	Intent intent = new Intent(this, SettingsActivity.class);
     	startActivity(intent);
     }
     
@@ -50,6 +54,11 @@ public class MainActivity extends Activity {
     //TODO: Do something else with the actionbar.
     public void onActionNetworkClicked(MenuItem menuItem){
     	Intent intent = new Intent(this, NetworkActivity.class);
+    	startActivity(intent);
+    }
+    
+    public void onSettingsClicked(MenuItem menuItem){
+    	Intent intent = new Intent(this, SettingsActivity.class);
     	startActivity(intent);
     }
     

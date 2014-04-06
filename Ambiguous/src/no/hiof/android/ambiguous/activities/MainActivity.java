@@ -40,7 +40,7 @@ public class MainActivity extends Activity {
     
     /** Called when the user clicks the Cards button. Starts the "gallery" activity. **/
     public void goToDeckManager(View view){
-    	Intent intent = new Intent(this, SettingsActivity.class);
+    	Intent intent = new Intent(this, CardGalleryActivity.class);
     	startActivity(intent);
     }
     

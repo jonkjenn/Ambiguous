@@ -125,6 +125,7 @@ public class SettingsActivity extends PreferenceActivity implements
 
 	
 
+	// Never called in SettingsActivity, only in SettingsFragment. Need to work out compatibility for < HONEYCOMB
 	@Override
 	public void onSharedPreferenceChanged(SharedPreferences arg0, String arg1) {
 		System.out.println();

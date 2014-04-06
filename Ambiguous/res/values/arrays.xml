@@ -5,12 +5,14 @@
         <item>Scarlet</item>
         <item>Amber</item>
         <item>Sapphire</item>
+        <item>Onyx</item>
     </string-array>
     
     <string-array name="entryvalues_bgcolor_preference">
-        <item>1</item>
-        <item>2</item>
-        <item>3</item>
-        <item>4</item>
+        <item>#0F7F0F</item>
+        <item>#c90000</item>
+        <item>#FF9900</item>
+        <item>#0F52BA</item>
+        <item>#FF262626</item>
      </string-array>
 </resources>

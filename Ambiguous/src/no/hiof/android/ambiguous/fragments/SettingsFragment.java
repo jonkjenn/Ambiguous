@@ -64,45 +64,6 @@ public class SettingsFragment extends PreferenceFragment implements
 			ListPreference listPref = (ListPreference) pref;
 			pref.setSummary(listPref.getEntry());
 		}
-		// if (key.equals(KEY_PREF_USER)) {
-		// String username = sharedPreferences.getString(key, "");
-		//
-		// // Set summary to be the user-description for the selected value
-		// EditTextPreference editTextPref = (EditTextPreference)
-		// settingsFragment
-		// .findPreference(key);
-		// editTextPref.setSummary(username);
-		// //getFragmentManager().beginTransaction()
-		// //.replace(android.R.id.content, new SettingsFragment()).commit();
-		//
-		//
-		// } else if (key.equals(KEY_PREF_BGColor)) {
-		// // Preference backgroundColor = findPreference(key);
-		// // // Set summary to be the user-description for the selected value
-		// // backgroundColor.setSummary(sharedPreferences.getString(key, ""));
-		// }
 
 	}
-
-	// @Override
-	// public void onResume() {
-	// super.onResume();
-	// /*if(getPreferenceScreen() != null)
-	// if(((BaseAdapter)getPreferenceScreen().getRootAdapter() != null)){
-	// ((BaseAdapter)getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
-	// }*/
-	// //getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(listener);
-	// //getPreferenceManager().getSharedPreferences().registerOnSharedPreferenceChangeListener(
-	// // (OnSharedPreferenceChangeListener) this);
-	//
-	// }
-	//
-	// @Override
-	// public void onPause() {
-	// super.onPause();
-	// //getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(listener);
-	//
-	// //getPreferenceManager().getSharedPreferences().unregisterOnSharedPreferenceChangeListener((OnSharedPreferenceChangeListener)
-	// this);
-	// }
 }

@@ -188,27 +188,11 @@ public class GameActivity extends ActionBarActivity implements
 		}
 	}
 
+	// Used three lines rather than a switch, all values are safe to parse
 	private void setBackground(SharedPreferences sp) {
-		final int MOSS = 1;
-		final int SCARLET = 2;
-		final int AMBER = 3;
-		final int SAPPHIRE = 4;
-		
-		int color = Integer.parseInt(sp.getString(SettingsActivity.KEY_PREF_BGColor, "1"));
-		switch (color){
-		case MOSS: layoutContainer.setBackgroundColor(0xFF0F7F0F);
-			break;
-		case SCARLET: layoutContainer.setBackgroundColor(0xFFFF2400);
-			break;
-		case AMBER: layoutContainer.setBackgroundColor(0xFFFFC200);
-			break;
-		case SAPPHIRE: layoutContainer.setBackgroundColor(0xFF0F52BA);
-			break;
-		default: layoutContainer.setBackgroundColor(0xFF0F7F0F);
-		}
-		
-		
-		//layoutContainer.setBackgroundColor(0xFFACACAC);
+		String string = sp.getString(SettingsActivity.KEY_PREF_BGColor, "#FFFFFFFF");
+		int color = Color.parseColor(string);
+		layoutContainer.setBackgroundColor(color);
 		
 	}
 

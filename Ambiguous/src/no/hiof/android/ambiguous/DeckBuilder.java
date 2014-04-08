@@ -13,6 +13,13 @@ public class DeckBuilder {
 	private static List<Card> cards;
 	private static List<Card> deck;
 	
+	
+	public static List<Card> StandardDeck(){
+		if(cards == null){
+			return null;
+		}
+		return StandardDeck(cards);
+	}
 	/**
 	 * Builds and returns a randomized deck.
 	 * @param cards
@@ -24,27 +31,27 @@ public class DeckBuilder {
         DeckBuilder.deck = new ArrayList<Card>();
 
         Random rand = new Random();
-        addCard("Pistol",100);
-        addCard("Pistol2",50);
-        addCard("Pistol3",20);
-        addCard("Rifle",30);
-        addCard("Rifle2",30);
-        addCard("Shotgun",70);
-        addCard("Shotgun2",60);
-        addCard("Shotgun3",40);
-        addCard("Shotgun4",30);
-        addCard("Sword",70);
-        addCard("Heal1",70);
-        addCard("Heal2",50);
-        addCard("Heal3",30);
-        addCard("Heal4",20);
-        addCard("Armor",70);
-        addCard("Armo2",60);
-        addCard("Armor3",30);
-        addCard("Armor4",10);
+        addCard("Pistol",10);
+        addCard("Pistol2",5);
+        addCard("Pistol3",2);
+        addCard("Rifle",3);
+        addCard("Rifle2",3);
+        addCard("Shotgun",7);
+        addCard("Shotgun2",6);
+        addCard("Shotgun3",4);
+        addCard("Shotgun4",3);
+        addCard("Sword",7);
+        addCard("Heal1",7);
+        addCard("Heal2",5);
+        addCard("Heal3",3);
+        addCard("Heal4",2);
+        addCard("Armor",7);
+        addCard("Armo2",6);
+        addCard("Armor3",3);
+        addCard("Armor4",1);
 
-        addCard("Resource1",100);
-        addCard("Resource2",50);
+        addCard("Resource1",10);
+        addCard("Resource2",5);
         
         Card temp;
         for(int i=0;i<deck.size();i++)
@@ -67,10 +74,9 @@ public class DeckBuilder {
 	 */
 	private static void addCard(String name, int count)
 	{
-		count /= 10;
 		Card card = cardFromName(name);
 		if(card == null){return;}
-		for(int i=0;i<count*0.1;i++)
+		for(int i=0;i<count;i++)
 		{
 			deck.add(card);
 		}

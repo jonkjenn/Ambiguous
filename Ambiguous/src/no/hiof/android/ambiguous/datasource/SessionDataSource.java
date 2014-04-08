@@ -12,9 +12,23 @@ import android.database.sqlite.SQLiteDatabase;
 public class SessionDataSource {
 
 	private SQLiteDatabase db;
+	private int sessionId = -1;
 	
 	public SessionDataSource(SQLiteDatabase db){
 		this.db = db;
+	}
+	
+	/**
+	 * Get the id for the current session
+	 * @return
+	 */
+	public int getSessionId() {
+		return sessionId;
+	}
+
+	// This might not be necessary
+	public void setSessionId(int sessionId) {
+		this.sessionId = sessionId;
 	}
 	
 	public boolean saveSession(int turn, Player player, Player opponent, int opponentCardId, boolean cardWasDiscarded){
@@ -33,9 +47,17 @@ public class SessionDataSource {
 		cv.put("opponentCard", opponentCardId);
 		cv.put("opponentDiscard", cardWasDiscarded);
 		
-		db.insert("Session", null, cv);
-		
-		return true;
+		// if sessionId is -1 a new session should be created, otherwise update the given session
+		int workedFine;
+		if(sessionId == -1)
+			workedFine = (int)db.insert("Session", null, cv);
+		else{
+			cv.put("id", sessionId);
+			db.replace("Session", null, cv);
+			workedFine = sessionId;
+		}
+			
+		return (workedFine == -1 ? false : true);
 	}
 	
 	private int savePlayer(Player player){
@@ -123,4 +145,5 @@ public class SessionDataSource {
 		c.close();
 		return true;
 	}
+
 }

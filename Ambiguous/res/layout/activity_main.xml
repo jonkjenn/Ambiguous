@@ -16,12 +16,20 @@
         android:orientation="vertical" >
 
         <Button
-        android:id="@+id/game_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/menu_button_game"
-        android:onClick="goToGame" />
-        
+            android:id="@+id/resume_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="goToResumeGame"
+            android:text="@string/menu_button_resume"
+            android:enabled="false" />
+
+        <Button
+            android:id="@+id/game_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="goToGame"
+            android:text="@string/menu_button_game" />
+
         <Button
             android:id="@+id/cards_button"
             android:layout_width="wrap_content"
@@ -29,7 +37,7 @@
             android:onClick="goToDeckManager"
             android:text="@string/menu_button_cards" />
 
-         <Button
+        <Button
             android:id="@+id/network_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

@@ -6,6 +6,7 @@ import java.util.List;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import no.hiof.android.ambiguous.DeckBuilder;
 import no.hiof.android.ambiguous.model.Effect.EffectType;
 
 /**
@@ -33,7 +34,10 @@ public class Player implements Parcelable {
 	 */
 	public void pullCards() {
 		if (deck.size() == 0) {
-			return;
+			deck = DeckBuilder.StandardDeck();
+			if(deck == null){
+				// Do something to handle exception
+			}
 		}
 		for (int i = 0; i < hand.length; i++) {
 			if (hand[i] == null) {

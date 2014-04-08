@@ -12,7 +12,6 @@ import no.hiof.android.ambiguous.HandDragListener;
 import no.hiof.android.ambiguous.OpponentController.OpponentListener;
 import no.hiof.android.ambiguous.R;
 import no.hiof.android.ambiguous.adapter.GameDeckAdapter;
-import no.hiof.android.ambiguous.cardlistener.CardOnTouchListener;
 import no.hiof.android.ambiguous.datasource.SessionDataSource;
 import no.hiof.android.ambiguous.fragments.MinigameFragment;
 import no.hiof.android.ambiguous.fragments.MinigameFragment.MinigameListener;
@@ -663,15 +662,12 @@ public class GameActivity extends ActionBarActivity implements
 	protected void onPause() {
 		super.onPause();
 
-<<<<<<< HEAD
 		if (gameMachine.player.isAlive() && gameMachine.opponent.isAlive()) {
 			sendAnnoyingNotification();
 		}
-=======
 		SessionDataSource sds = new SessionDataSource(db);
 		sds.saveSession(gameMachine.state.ordinal(), gameMachine.player, gameMachine.opponent,
 				(currentOpponentCard != null ?currentOpponentCard.getId() : -1), opponentCardIsDiscarded);
->>>>>>> 0fb2e5ba5a89ae22ef5eb7a33ff4aea878cc0c13
 
 		if (isNetwork) {
 			closeSockets();

@@ -79,6 +79,7 @@ public class MainActivity extends Activity {
 						"SessionOpponentDiscard",
 						(c.getInt(c.getColumnIndexOrThrow("opponentDiscard")) != 0 ? true : false));
 
+		c.close();
 		startActivity(intent);
 	}
 

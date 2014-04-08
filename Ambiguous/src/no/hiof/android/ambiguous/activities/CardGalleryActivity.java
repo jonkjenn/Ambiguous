@@ -38,9 +38,14 @@ public class CardGalleryActivity extends Activity {
     }
     
     private void setBackground(SharedPreferences sp, GridView deckmanager) {
-        String string = sp.getString(SettingsActivity.KEY_PREF_BGColor, "#FFFFFFFF");
-		int color = Color.parseColor(string);
-		deckmanager.setBackgroundColor(color);
+        String string = sp.getString(SettingsActivity.KEY_PREF_BGColor, "none");
+        if(!string.equals("none")){
+        	int color = Color.parseColor(string);
+			deckmanager.setBackgroundColor(color);
+        }
+        else{
+        	deckmanager.setBackground(null);
+        }
 	}
 
 	@Override

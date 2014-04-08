@@ -105,6 +105,7 @@ public class GameActivity extends ActionBarActivity implements
 	private Player savedPlayer;
 	private Player savedOpponent;
 	private State savedState;
+	private int savedSessionId = -1;
 
 	private HandDragListener handDragListener;
 
@@ -190,9 +191,14 @@ public class GameActivity extends ActionBarActivity implements
 
 	// Used three lines rather than a switch, all values are safe to parse
 	private void setBackground(SharedPreferences sp) {
-		String string = sp.getString(SettingsActivity.KEY_PREF_BGColor, "#FFFFFFFF");
+		String string = sp.getString(SettingsActivity.KEY_PREF_BGColor, "none");
+		if(!string.equals("none")){
 		int color = Color.parseColor(string);
 		layoutContainer.setBackgroundColor(color);
+		}
+		else{
+			layoutContainer.setBackground(null);
+		}
 		
 	}
 
@@ -273,6 +279,7 @@ public class GameActivity extends ActionBarActivity implements
 				opponentPlayCard(currentOpponentCard);
 			}
 		}
+		savedSessionId = savedInstanceState.getInt("Session");
 	}
 
 	/**
@@ -318,8 +325,10 @@ public class GameActivity extends ActionBarActivity implements
 		outState.putInt("State", gameMachine.state.ordinal());
 		outState.putParcelable("OpponentCard", currentOpponentCard);
 		outState.putBoolean("OpponentCardDiscarded", opponentCardIsDiscarded);
+		outState.putInt("Session", savedSessionId);
 		// TODO: Implementing storing state to database so can resume even if
 		// app is destroyed.
+		// save sessionid?
 	}
 
 	/**
@@ -679,7 +688,11 @@ public class GameActivity extends ActionBarActivity implements
 		if (gameMachine.player.isAlive() && gameMachine.opponent.isAlive()) {
 			sendAnnoyingNotification();
 		}
+		// Move sessionDataSource out to be a global field
 		SessionDataSource sds = new SessionDataSource(db);
+		if(savedSessionId != -1){
+			sds.setSessionId(savedSessionId);
+		}
 		sds.saveSession(gameMachine.state.ordinal(), gameMachine.player, gameMachine.opponent,
 				(currentOpponentCard != null ?currentOpponentCard.getId() : -1), opponentCardIsDiscarded);
 

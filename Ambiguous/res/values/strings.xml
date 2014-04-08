@@ -35,5 +35,6 @@
     <string name="pref_user_default">You</string>
     <string name="pref_bgcolor">background color</string>
     <string name="pref_bgcolor_default">Amber</string>
+    <string name="menu_button_resume">Resume</string>
 
 </resources>

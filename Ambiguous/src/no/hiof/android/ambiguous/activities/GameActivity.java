@@ -15,6 +15,7 @@ import no.hiof.android.ambiguous.adapter.GameDeckAdapter;
 import no.hiof.android.ambiguous.datasource.SessionDataSource;
 import no.hiof.android.ambiguous.fragments.MinigameFragment;
 import no.hiof.android.ambiguous.fragments.MinigameFragment.MinigameListener;
+import no.hiof.android.ambiguous.fragments.TutorialFragment;
 import no.hiof.android.ambiguous.layouts.CardLayout;
 import no.hiof.android.ambiguous.model.Card;
 import no.hiof.android.ambiguous.model.Effect;
@@ -29,8 +30,6 @@ import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -46,6 +45,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.view.ContextMenu;
@@ -143,6 +144,8 @@ public class GameActivity extends ActionBarActivity implements
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_game);
 
+		cancelAnnoyingNotification();
+
 		layoutContainer = (RelativeLayout) findViewById(R.id.game_layout_container);
 		playerStatus = (TextView) findViewById(R.id.stats_player);
 		handView = (GridView) findViewById(R.id.game_grid);
@@ -152,7 +155,7 @@ public class GameActivity extends ActionBarActivity implements
 		// TODO: What?
 		playerStatus.setText(" ");
 		setBackground(PreferenceManager.getDefaultSharedPreferences(this));
-		
+
 		if (savedInstanceState != null) {
 			loadSavedData(savedInstanceState);
 		}
@@ -187,19 +190,90 @@ public class GameActivity extends ActionBarActivity implements
 		} else {
 			setupGameMachine();
 		}
+
+		if (!hideTutorial()) {
+			showTutorialFragment(false);
+		}
+	}
+
+	/**
+	 * If the player has told us we should hide the startup tutorial.
+	 * 
+	 * @return Should we hide the tutorial?
+	 */
+	private boolean hideTutorial() {
+		SharedPreferences s = getPreferences(Context.MODE_PRIVATE);
+		return s.getBoolean("hideTutorial", false);
+	}
+	
+	public void showTutorialButton(View view)
+	{
+		showTutorialFragment(true);
+	}
+
+	/**
+	 * Displays the tutorial
+	 */
+	private void showTutorialFragment(boolean hideNeverButton) {
+		final FragmentManager manager = getSupportFragmentManager();
+
+		final TutorialFragment tutorial = new TutorialFragment();
+		if(hideNeverButton)
+		{
+			Bundle b = new Bundle();
+			b.putBoolean("hideNeverShow", true);
+			tutorial.setArguments(b);
+		}
+		FragmentTransaction transaction = manager.beginTransaction();
+		transaction.add(R.id.game_layout_container, tutorial, "tutorial");
+		transaction.commit();
+	}
+
+	public void closeAndNeverShowTutorialButton(View view) {
+		disableTutorial();
+		closeTutorial();
+	}
+
+	public void closeTutorialButton(View view) {
+		closeTutorial();
+	}
+
+	/**
+	 * Closes the tutorial fragment.
+	 */
+	private void closeTutorial() {
+		FragmentManager manager = getSupportFragmentManager();
+		FragmentTransaction t = manager.beginTransaction();
+		t.remove(manager.findFragmentByTag("tutorial"));
+		t.commitAllowingStateLoss();// Since its only a
+									// tutorial.
+	}
+
+	/**
+	 * Disables the tutorial from showing up on startup.
+	 */
+	public void disableTutorial() {
+		SharedPreferences sp = getPreferences(Context.MODE_PRIVATE);
+		SharedPreferences.Editor editor = sp.edit();
+		editor.putBoolean("hideTutorial", true);
+		editor.commit();
 	}
 
 	// Used three lines rather than a switch, all values are safe to parse
 	private void setBackground(SharedPreferences sp) {
 		String string = sp.getString(SettingsActivity.KEY_PREF_BGColor, "none");
-		if(!string.equals("none")){
-		int color = Color.parseColor(string);
-		layoutContainer.setBackgroundColor(color);
+		if (!string.equals("none")) {
+			try {
+				int color = Color.parseColor(string);
+				layoutContainer.setBackgroundColor(color);
+			} catch (IllegalArgumentException e) {
+				layoutContainer.setBackgroundColor(0);
+			}
+
+		} else {
+			layoutContainer.setBackgroundColor(0);
 		}
-		else{
-			layoutContainer.setBackground(null);
-		}
-		
+
 	}
 
 	// TODO: Could be better type testing.
@@ -233,9 +307,8 @@ public class GameActivity extends ActionBarActivity implements
 				.format(getResources()
 						.getString(
 								(GameActivity.this.isServer ? R.string.network_server_listening_text
-										: R.string.network_client_connecting_text),
-								GameActivity.this.address,
-								GameActivity.this.port));
+										: R.string.network_client_connecting_text)),
+						GameActivity.this.address, GameActivity.this.port);
 		builder.setTitle(R.string.connect).setMessage(connectMsg)
 				.setNegativeButton(R.string.abort, new OnClickListener() {
 
@@ -451,7 +524,7 @@ public class GameActivity extends ActionBarActivity implements
 			break;
 		}
 
-		FragmentManager manager = getFragmentManager();
+		FragmentManager manager = getSupportFragmentManager();
 		FragmentTransaction transaction = manager.beginTransaction();
 
 		Effect e = gameMachine.player.getCard(cardPosition).getEffects().get(0);
@@ -553,10 +626,12 @@ public class GameActivity extends ActionBarActivity implements
 	@Override
 	public void onStatsUpdateListener(Player player) {
 		if (player == gameMachine.player) {
-			//playerName.setText(player.getName());
-			SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
-			playerName.setText(sp.getString(SettingsActivity.KEY_PREF_USER, ""));
-			
+			// playerName.setText(player.getName());
+			SharedPreferences sp = PreferenceManager
+					.getDefaultSharedPreferences(this);
+			playerName
+					.setText(sp.getString(SettingsActivity.KEY_PREF_USER, ""));
+
 			playerHealth.setText(String.valueOf(player.getHealth()));
 			playerArmor.setText(String.valueOf(player.getArmor()));
 			playerResource.setText(String.valueOf(player.getResources()));
@@ -685,16 +760,23 @@ public class GameActivity extends ActionBarActivity implements
 	protected void onPause() {
 		super.onPause();
 
-		if (gameMachine.player.isAlive() && gameMachine.opponent.isAlive()) {
+		if (gameMachine == null
+				|| (gameMachine.player.isAlive() && gameMachine.opponent
+						.isAlive())) {
 			sendAnnoyingNotification();
 		}
+
 		// Move sessionDataSource out to be a global field
 		SessionDataSource sds = new SessionDataSource(db);
-		if(savedSessionId != -1){
+		if (savedSessionId != -1) {
 			sds.setSessionId(savedSessionId);
 		}
-		sds.saveSession(gameMachine.state.ordinal(), gameMachine.player, gameMachine.opponent,
-				(currentOpponentCard != null ?currentOpponentCard.getId() : -1), opponentCardIsDiscarded);
+		if (gameMachine != null) {
+			sds.saveSession(gameMachine.state.ordinal(), gameMachine.player,
+					gameMachine.opponent,
+					(currentOpponentCard != null ? currentOpponentCard.getId()
+							: -1), opponentCardIsDiscarded);
+		}
 
 		if (isNetwork) {
 			closeSockets();
@@ -706,6 +788,7 @@ public class GameActivity extends ActionBarActivity implements
 	protected void onResume() {
 		super.onResume();
 		// TODO: Network reconnect?
+		cancelAnnoyingNotification();
 	}
 
 	/**
@@ -731,8 +814,9 @@ public class GameActivity extends ActionBarActivity implements
 		gameMachine.playerPlayCard(position, amount);
 
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-			FragmentTransaction tr = getFragmentManager().beginTransaction();
-			tr.remove(getFragmentManager().findFragmentByTag("minigame"));
+			FragmentTransaction tr = getSupportFragmentManager()
+					.beginTransaction();
+			tr.remove(getSupportFragmentManager().findFragmentByTag("minigame"));
 			tr.commitAllowingStateLoss();
 		}
 		// Set the requested orientation back to what it was before minigame.
@@ -747,9 +831,22 @@ public class GameActivity extends ActionBarActivity implements
 	private void sendAnnoyingNotification() {
 		AlarmManager a = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
 
-		PendingIntent alarm = PendingIntent.getBroadcast(this, 0, new Intent(this,AlarmReceiver.class), 0);
+		PendingIntent alarm = PendingIntent.getBroadcast(this, 0, new Intent(
+				this, AlarmReceiver.class), 0);
 
-		a.set(AlarmManager.RTC, Calendar.getInstance().getTimeInMillis() + 600000, alarm);
+		a.set(AlarmManager.RTC,
+				Calendar.getInstance().getTimeInMillis() + 600000, alarm);
+	}
+
+	/**
+	 * Cancels a previously set alarm
+	 */
+	private void cancelAnnoyingNotification() {
+		AlarmManager a = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+
+		PendingIntent alarm = PendingIntent.getBroadcast(this, 0, new Intent(
+				this, AlarmReceiver.class), 0);
+		a.cancel(alarm);
 	}
 
 	// Version checked in code.
@@ -764,4 +861,5 @@ public class GameActivity extends ActionBarActivity implements
 			unregisterForContextMenu(handView);
 		}
 	}
+
 }

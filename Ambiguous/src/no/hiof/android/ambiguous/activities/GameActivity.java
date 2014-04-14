@@ -10,7 +10,6 @@ import no.hiof.android.ambiguous.Db;
 import no.hiof.android.ambiguous.DeckBuilder;
 import no.hiof.android.ambiguous.GameMachine;
 import no.hiof.android.ambiguous.GameMachine.State;
-import no.hiof.android.ambiguous.GooglePlayGameHandler;
 import no.hiof.android.ambiguous.HandDragListener;
 import no.hiof.android.ambiguous.NetworkOpponent;
 import no.hiof.android.ambiguous.OpponentController;
@@ -20,6 +19,7 @@ import no.hiof.android.ambiguous.adapter.GameDeckAdapter;
 import no.hiof.android.ambiguous.ai.AIController;
 import no.hiof.android.ambiguous.datasource.CardDataSource;
 import no.hiof.android.ambiguous.datasource.SessionDataSource;
+import no.hiof.android.ambiguous.fragments.GooglePlayGameFragment;
 import no.hiof.android.ambiguous.fragments.MinigameFragment;
 import no.hiof.android.ambiguous.fragments.MinigameFragment.MinigameListener;
 import no.hiof.android.ambiguous.fragments.TutorialFragment;
@@ -53,6 +53,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
@@ -132,7 +133,7 @@ public class GameActivity extends ActionBarActivity implements
 
 	// Google Play Game Service
 	private boolean useGPGS = false;
-	private GooglePlayGameHandler gPGHandler;
+	private GooglePlayGameFragment gPGHandler;
 
 	public Player player;
 	public Player opponent;
@@ -197,14 +198,14 @@ public class GameActivity extends ActionBarActivity implements
 				GooglePlayServicesUtil.getErrorDialog(e, this, 0).show();
 			}
 
-			this.gPGHandler = new GooglePlayGameHandler(this);
-
 		} else {
 			setupGameMachine(null);
 		}
 
 		if (!hideTutorial()) {
 			showTutorialFragment(false);
+		} else if (useGPGS) {
+			showGooglePlayGameFragment();
 		}
 	}
 
@@ -255,6 +256,10 @@ public class GameActivity extends ActionBarActivity implements
 	@SuppressLint("NewApi")
 	// Version is checked in code
 	public void setupGameMachine(GameMachine.State state) {
+		
+		hideGooglePlayGameFragment();
+		
+		resetLayout();
 
 		setupPlayers();
 
@@ -355,6 +360,8 @@ public class GameActivity extends ActionBarActivity implements
 	 * Displays the tutorial
 	 */
 	private void showTutorialFragment(boolean hideNeverButton) {
+		//hideGooglePlayGameFragment();
+
 		final FragmentManager manager = getSupportFragmentManager();
 
 		final TutorialFragment tutorial = new TutorialFragment();
@@ -364,7 +371,7 @@ public class GameActivity extends ActionBarActivity implements
 			tutorial.setArguments(b);
 		}
 		FragmentTransaction transaction = manager.beginTransaction();
-		transaction.add(R.id.game_layout_container, tutorial, "tutorial");
+		transaction.add(R.id.game_layout_container, tutorial, "tutorial").addToBackStack("showTutorial");
 		transaction.commit();
 	}
 
@@ -386,6 +393,49 @@ public class GameActivity extends ActionBarActivity implements
 		t.remove(manager.findFragmentByTag("tutorial"));
 		t.commitAllowingStateLoss();// Since its only a
 									// tutorial.
+
+		if (useGPGS) {
+			showGooglePlayGameFragment();
+		}
+	}
+
+	/**
+	 * Make the fragment visible or create a new if does not exist.
+	 */
+	void showGooglePlayGameFragment() {
+		FragmentManager manager = getSupportFragmentManager();
+		gPGHandler =(GooglePlayGameFragment) manager.findFragmentByTag("gpg");
+		FragmentTransaction transaction = manager.beginTransaction();
+		if (gPGHandler == null) {
+			gPGHandler = new GooglePlayGameFragment();
+			transaction.add(R.id.game_layout_container, gPGHandler, "gpg");
+		} else {
+			transaction.show(manager.findFragmentByTag("gpg"));
+		}
+		transaction.commit();
+	}
+
+	/**
+	 * Temporarily hide the fragment
+	 */
+	void hideGooglePlayGameFragment() {
+		FragmentManager manager = getSupportFragmentManager();
+		FragmentTransaction t = manager.beginTransaction();
+		Fragment f = manager.findFragmentByTag("gpg");
+		if (f != null) {
+			t.hide(f).addToBackStack(null);
+			t.commit();
+		}
+	}
+
+	/**
+	 * Close the fragment for good.
+	 */
+	void closeGooglePlayGameFragment() {
+		FragmentManager manager = getSupportFragmentManager();
+		FragmentTransaction t = manager.beginTransaction();
+		t.remove(manager.findFragmentByTag("gpg"));
+		t.commit();
 	}
 
 	/**
@@ -684,12 +734,11 @@ public class GameActivity extends ActionBarActivity implements
 		playerName.setBackgroundColor(Color.TRANSPARENT);
 		opponentName.setBackgroundColor(Color.RED);
 	}
-	
+
 	/**
 	 * Resets the layout.
 	 */
-	public void resetLayout()
-	{
+	public void resetLayout() {
 		playerName.setBackgroundColor(Color.TRANSPARENT);
 		opponentName.setBackgroundColor(Color.TRANSPARENT);
 		currentOpponentCard = null;
@@ -988,32 +1037,15 @@ public class GameActivity extends ActionBarActivity implements
 		}
 	}
 
-	@Override
-	protected void onStart() {
-		super.onStart();
-		// TODO: implement this a better way,with events perhaps
-		if (gPGHandler != null) {
-			gPGHandler.onStart();
-		}
-	}
-
-	@Override
-	protected void onStop() {
-		super.onStop();
-		// TODO: implement this a better way,with events perhaps
-		if (gPGHandler != null) {
-			gPGHandler.onStop();
-		}
-	}
-
-	public void showGenericDialog(String title, String message) {
-		Builder b = new Builder(this);
+	public static void showGenericDialog(Context context, String title,
+			String message) {
+		Builder b = new Builder(context);
 		b.setCancelable(false).setPositiveButton("OK", null).setTitle(title)
 				.setMessage(message).show();
 	}
-
+	
 	@Override
-	protected void onActivityResult(int request, int response, Intent intent) {
-		gPGHandler.onActivityResult(request, response, intent);
+	protected void onActivityResult(int arg0, int arg1, Intent arg2) {
+		super.onActivityResult(arg0, arg1, arg2);
 	}
 }

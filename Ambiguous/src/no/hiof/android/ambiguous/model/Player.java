@@ -178,16 +178,19 @@ public class Player implements Parcelable {
 	
 	public void setHealth(int health){
 		this.health = health;
+		notifyStatsUpdateListeners();
 	}
 	
 	public void setArmor(int armor)
 	{
 		this.armor = armor;
+		notifyStatsUpdateListeners();
 	}
 	
 	public void setResources(int resources)
 	{
 		this.resources = resources;
+		notifyStatsUpdateListeners();
 	}
 
 	public int getArmor() {

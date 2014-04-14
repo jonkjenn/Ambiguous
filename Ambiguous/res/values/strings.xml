@@ -65,5 +65,8 @@
       
       <string name="show_active_games">Show active games</string>
       <string name="find_opponent">Find new opponent</string>
+      
+      <string name="activeGamesText">%1$d games waiting for your turn \n%2$d waiting game invites</string>
+      <string name="gpg_header">Pick an option to continue:</string>
 
 </resources>

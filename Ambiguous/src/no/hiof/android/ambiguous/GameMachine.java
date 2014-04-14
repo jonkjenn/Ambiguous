@@ -24,7 +24,6 @@ public class GameMachine implements OpponentListener {
 	public Player opponent;
 
 	private int delay;
-	private boolean startRandom = false;
 
 	public enum State {
 		PLAYER_TURN, PLAYER_DONE, OPPONENT_TURN, GAME_OVER
@@ -191,9 +190,9 @@ public class GameMachine implements OpponentListener {
 		if (state != State.PLAYER_TURN) {
 			return;
 		}
+		notifyPlayerDiscardCard(player.getCard(position));
 		player.cardUsed(position);
 		state = State.PLAYER_DONE;
-		notifyPlayerDiscardCard(player.getCard(position));
 		doChangeState();
 	}
 

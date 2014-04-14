@@ -63,23 +63,30 @@ public class MainActivity extends Activity {
 						"SELECT id,player,opponent,turn,opponentCard,opponentDiscard FROM Session WHERE id = (SELECT max(id) FROM Session) LIMIT 1",
 						null);
 		c.moveToFirst();
+		int playerId = c.getInt(c.getColumnIndexOrThrow("player"));
+		int opponentId = c.getInt(c.getColumnIndexOrThrow("opponent"));
+		int opponentCardId = c.getInt(c.getColumnIndexOrThrow("opponentCard"));
 		Intent intent = new Intent(this,
 				no.hiof.android.ambiguous.activities.GameActivity.class)
 				.putExtra("SessionId", 
 						c.getInt(c.getColumnIndexOrThrow("id")))
-				.putExtra("SessionPlayer", 
-						c.getInt(c.getColumnIndexOrThrow("player")))
-				.putExtra("SessionOpponent",
-						c.getInt(c.getColumnIndexOrThrow("opponent")))
+				.putExtra("SessionPlayer", playerId)
+				.putExtra("SessionOpponent",opponentId)
 				.putExtra("SessionTurn", 
 						c.getInt(c.getColumnIndexOrThrow("turn")))
-				.putExtra("SessionOpponentCard",
-						c.getInt(c.getColumnIndexOrThrow("opponentCard")))
+				.putExtra("SessionOpponentCard", opponentCardId)
 				.putExtra(
 						"SessionOpponentDiscard",
 						(c.getInt(c.getColumnIndexOrThrow("opponentDiscard")) != 0 ? true : false));
 
 		c.close();
+		c = db.rawQuery("SELECT name,armor,resources,deckid,handid FROM Player WHERE id = ?", new String[]{String.valueOf(playerId)});
+		c.moveToFirst();
+//		Player player = new Player(c.getString(c.getColumnIndexOrThrow("name")),
+//									c.getInt(c.getColumnIndexOrThrow("armor")),
+//									c.getInt(c.getColumnIndexOrThrow("resources")));
+//		
+		
 		startActivity(intent);
 	}
 

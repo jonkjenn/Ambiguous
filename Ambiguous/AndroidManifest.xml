@@ -58,14 +58,12 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <activity 
-            android:name="no.hiof.android.ambiguous.activities.NotifyGameRunningActivity"></activity>
-        <receiver android:process=":remote" android:name="AlarmReceiver"></receiver>
         <activity
             android:name="no.hiof.android.ambiguous.activities.SettingsActivity"
             android:label="settings">
             
         </activity>
+        <service android:name="no.hiof.android.ambiguous.DataService"></service>
     </application>
 
 </manifest>

@@ -2,11 +2,11 @@ package no.hiof.android.ambiguous.fragments;
 
 import java.util.Calendar;
 import java.util.Random;
+
 import no.hiof.android.ambiguous.R;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
-import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
@@ -19,6 +19,7 @@ import android.hardware.SensorManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -78,10 +79,8 @@ public class MinigameFragment extends Fragment implements SensorEventListener {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
-		View layout = inflater.inflate(R.layout.fragment_minigame, container,
+		return inflater.inflate(R.layout.fragment_minigame, container,
 				false);
-
-		return layout;
 	}
 	
 	@Override
@@ -297,10 +296,6 @@ public class MinigameFragment extends Fragment implements SensorEventListener {
 		}
 	}
 
-	@Override
-	public void onAccuracyChanged(Sensor sensor, int accuracy) {
-	}
-
 	public void onSensorChanged(SensorEvent event) {
 
 		// Adapt the sensor we track depending on screen rotation.
@@ -384,5 +379,10 @@ public class MinigameFragment extends Fragment implements SensorEventListener {
 
 		helpDialog = builder.create();
 		helpDialog.show();
+	}
+
+	@Override
+	public void onAccuracyChanged(Sensor arg0, int arg1) {
+		//Not being used
 	}
 }

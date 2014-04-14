@@ -17,41 +17,44 @@ import android.widget.GridView;
  * Card gallery, shows all the cards available in game.
  */
 public class CardGalleryActivity extends Activity {
-	
+
 	private SQLiteDatabase db;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_deckmanager);
-        
-        this.db = Db.getDb(getApplicationContext()).getWritableDatabase();
-        
-        GridView deckmanager = (GridView)findViewById(R.id.deckmanager_grid);
-        GalleryAdapter adapter = new GalleryAdapter(db);
-        deckmanager.setAdapter(adapter);
-        
-        // Set the background color using the same setting as gameactivity
-        setBackground(PreferenceManager.getDefaultSharedPreferences(this), deckmanager);
-        
-        
-    }
-    
-    private void setBackground(SharedPreferences sp, GridView deckmanager) {
-        String string = sp.getString(SettingsActivity.KEY_PREF_BGColor, "none");
-        if(!string.equals("none")){
-        	int color = Color.parseColor(string);
-			deckmanager.setBackgroundColor(color);
-        }
-        else{
-        	deckmanager.setBackground(null);
-        }
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_deckmanager);
+
+		this.db = Db.getDb(getApplicationContext()).getWritableDatabase();
+
+		GridView deckmanager = (GridView) findViewById(R.id.deckmanager_grid);
+		GalleryAdapter adapter = new GalleryAdapter(db);
+		deckmanager.setAdapter(adapter);
+
+		// Set the background color using the same setting as gameactivity
+		setBackground(PreferenceManager.getDefaultSharedPreferences(this),
+				deckmanager);
+
+	}
+
+	private void setBackground(SharedPreferences sp, GridView deckmanager) {
+		String string = sp.getString(SettingsActivity.KEY_PREF_BGColor, "none");
+		if (!string.equals("none")) {
+			try {
+				int color = Color.parseColor(string);
+				deckmanager.setBackgroundColor(color);
+			} catch (IllegalArgumentException e) {
+				deckmanager.setBackgroundColor(0);
+			}
+		} else {
+			deckmanager.setBackgroundColor(0);
+		}
 	}
 
 	@Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.deck_manager, menu);
-        return true;
-    }
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// Inflate the menu; this adds items to the action bar if it is present.
+		getMenuInflater().inflate(R.menu.deck_manager, menu);
+		return true;
+	}
 }

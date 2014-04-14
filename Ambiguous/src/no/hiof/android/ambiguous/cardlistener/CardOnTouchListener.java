@@ -26,6 +26,8 @@ public class CardOnTouchListener implements OnTouchListener {
 		this.position = position;
 	}
 
+	//This is never called in older APIs
+	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 	public boolean onTouch(View v, MotionEvent me) {
 		// Empty shadow since we display our own manually to avoid the
 		// transparency.

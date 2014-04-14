@@ -1,12 +1,8 @@
 package no.hiof.android.ambiguous.activities;
 
-import java.io.ObjectOutputStream.PutField;
-
 import no.hiof.android.ambiguous.Db;
 import no.hiof.android.ambiguous.R;
-import no.hiof.android.ambiguous.model.Player;
 import android.app.Activity;
-import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -38,10 +34,12 @@ public class MainActivity extends Activity {
 				null);
 		savedSessionExists = (c.getCount() <= 0 ? false : true);
 		c.close();
-		
+
 		if (savedSessionExists) {
 			Button resumeButton = (Button) findViewById(R.id.resume_button);
-			resumeButton.setEnabled(true);
+			if (resumeButton != null) {
+				resumeButton.setEnabled(true);
+			}
 		}
 	}
 
@@ -51,6 +49,19 @@ public class MainActivity extends Activity {
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.main, menu);
 		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case R.id.action_settings:
+			Intent intent = new Intent(this, SettingsActivity.class);
+			startActivity(intent);
+			return true;
+		default:
+			return super.onOptionsItemSelected(item);
+
+		}
 	}
 
 	/**
@@ -68,16 +79,18 @@ public class MainActivity extends Activity {
 		int opponentCardId = c.getInt(c.getColumnIndexOrThrow("opponentCard"));
 		Intent intent = new Intent(this,
 				no.hiof.android.ambiguous.activities.GameActivity.class)
-				.putExtra("SessionId", 
-						c.getInt(c.getColumnIndexOrThrow("id")))
-				.putExtra("SessionPlayer", playerId)
-				.putExtra("SessionOpponent",opponentId)
-				.putExtra("SessionTurn", 
+				.putExtra("SessionId", c.getInt(c.getColumnIndexOrThrow("id")))
+				.putExtra("SessionPlayer",
+						c.getInt(c.getColumnIndexOrThrow("player")))
+				.putExtra("SessionOpponent",
+						c.getInt(c.getColumnIndexOrThrow("opponent")))
+				.putExtra("SessionTurn",
 						c.getInt(c.getColumnIndexOrThrow("turn")))
 				.putExtra("SessionOpponentCard", opponentCardId)
 				.putExtra(
 						"SessionOpponentDiscard",
-						(c.getInt(c.getColumnIndexOrThrow("opponentDiscard")) != 0 ? true : false));
+						(c.getInt(c.getColumnIndexOrThrow("opponentDiscard")) != 0 ? true
+								: false));
 
 		c.close();
 		c = db.rawQuery("SELECT name,armor,resources,deckid,handid FROM Player WHERE id = ?", new String[]{String.valueOf(playerId)});
@@ -134,13 +147,12 @@ public class MainActivity extends Activity {
 	@Override
 	protected void onResume() {
 		super.onResume();
-		if(this.db != null){
-			Cursor c = db.rawQuery("SELECT max(id) FROM " + "Session" + " Limit 1",
-					null);
+		if (this.db != null) {
+			Cursor c = db.rawQuery("SELECT max(id) FROM " + "Session"
+					+ " Limit 1", null);
 			savedSessionExists = (c.getCount() <= 0 ? false : true);
 			c.close();
 		}
 	}
-	
-	
+
 }

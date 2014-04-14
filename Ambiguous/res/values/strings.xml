@@ -36,5 +36,19 @@
     <string name="pref_bgcolor">background color</string>
     <string name="pref_bgcolor_default">Amber</string>
     <string name="menu_button_resume">Resume</string>
+    <string name="tutorial_usecard">Drag cards up to use</string>
+    <string name="tutorial_discard">Drag cards down to discard</string>
+    <string name="tutorial_stats">Shows your Health, Armor and Resources. 
+        Armor works like extra health. You need resources to use cards.</string>
+    <string name="tutorial_cards">The number at the top of the card is the amount of resource neded to use this card.\n\n
+        The numbers at the bottom of the card is the amount of effect the card will do.
+        The numbers are either Minimum - Maximum(Critical hit) or a single flat number. 
+        </string>
+      <string name="tutorial_neverShowTutorialButton">Close and never show tutorial again</string>
+      <string name="tutorial_header">Tutorial</string>
+      <string name="tutorial_image_stats_description">Image of players stats</string>
+      <string name="tutorial_image_cards_description">Image of a card</string>
+      <string name="tutorial_button_show">Tutorial</string>
+      <string name="opponents_actions">Opponent`s actions:</string>
 
 </resources>

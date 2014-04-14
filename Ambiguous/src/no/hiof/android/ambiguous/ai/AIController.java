@@ -4,7 +4,6 @@ import java.util.Random;
 
 import no.hiof.android.ambiguous.GameMachine;
 import no.hiof.android.ambiguous.OpponentController;
-import no.hiof.android.ambiguous.GameMachine.TurnChangeListener;
 import no.hiof.android.ambiguous.model.Effect;
 import no.hiof.android.ambiguous.model.Player;
 

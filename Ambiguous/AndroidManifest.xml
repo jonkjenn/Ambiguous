@@ -15,38 +15,53 @@
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/Theme.AppCompat" >
+        <meta-data
+            android:name="com.google.android.gms.games.APP_ID"
+            android:value="@string/app_id" />
+          <meta-data android:name="com.google.android.gms.appstate.APP_ID"
+    android:value="@string/app_id" />
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+
         <activity
             android:name="no.hiof.android.ambiguous.activities.MainActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
             android:name="no.hiof.android.ambiguous.activities.GameActivity"
-            android:theme="@style/Theme.AppCompat"
-            android:label="@string/app_name" >
+            android:label="@string/app_name"
+            android:theme="@style/Theme.AppCompat" >
             <intent-filter>
                 <action android:name="no.hiof.android.ambiguous.activities.GameActivity" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
-<!-- Network invite by email.            <intent-filter >
+            <!--
+     Network invite by email.            <intent-filter >
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
                 <data android:scheme="http" android:host="ambiguous.stud.hiof.no"/>
-            </intent-filter>-->
+            </intent-filter>
+            -->
         </activity>
         <activity
             android:name="no.hiof.android.ambiguous.activities.CardGalleryActivity"
-            android:label="@string/title_activity_deckmanager" 
+            android:label="@string/title_activity_deckmanager"
             android:parentActivityName="no.hiof.android.ambiguous.activities.MainActivity" >
-            <meta-data 
+            <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="no.hiof.android.ambiguous.activities.MainActivity" />
+
             <intent-filter>
                 <action android:name="no.hiof.android.ambiguous.activities.DeckManagerActivity" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
@@ -55,15 +70,17 @@
             android:label="@string/title_activity_network" >
             <intent-filter>
                 <action android:name="no.hiof.android.ambiguous.activities.NetworkActivity" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
         <activity
             android:name="no.hiof.android.ambiguous.activities.SettingsActivity"
-            android:label="settings">
-            
+            android:label="settings" >
         </activity>
-        <service android:name="no.hiof.android.ambiguous.DataService"></service>
+
+        <service android:name="no.hiof.android.ambiguous.DataService" >
+        </service>
     </application>
 
 </manifest>

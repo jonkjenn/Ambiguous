@@ -131,6 +131,13 @@ public class MainActivity extends Activity {
 		Intent intent = new Intent(this, NetworkActivity.class);
 		startActivity(intent);
 	}
+	
+	public void goToGoogle(View view)
+	{
+		Intent intent = new Intent(this, GameActivity.class);
+		intent.putExtra("useGPGS",true);
+		startActivity(intent);
+	}
 
 	/**
 	 * 

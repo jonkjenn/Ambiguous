@@ -21,7 +21,7 @@ public class Player implements Parcelable {
 	private int health = maxHealth;
 	private int armor = 0;
 	private int resources = 10;
-	private static final int NUMBER_OF_CARDS = 8;
+	public static final int NUMBER_OF_CARDS = 8;
 	private boolean alive = true;
 
 	public Player(String name) {
@@ -35,7 +35,7 @@ public class Player implements Parcelable {
 	public void pullCards() {
 		if (deck.size() == 0) {
 			deck = DeckBuilder.StandardDeck();
-			if(deck == null){
+			if (deck == null) {
 				// Do something to handle exception
 			}
 		}
@@ -61,6 +61,12 @@ public class Player implements Parcelable {
 		this.deck = deck;
 		this.pullCards();
 		return this;
+	}
+
+	//Replaces the whole hand
+	public void setHand(Card[] hand) {
+		this.hand = hand;
+		notifyCardsUpdateListeners();
 	}
 
 	public List<Card> getDeck() {
@@ -133,11 +139,14 @@ public class Player implements Parcelable {
 	public boolean isAlive() {
 		return this.alive;
 	}
-	
+
 	/**
 	 * Removes resources from the player.
-	 * @param amount How many resources to remove.
-	 * @return True if player has enough resources, false if player has less resources then amount.
+	 * 
+	 * @param amount
+	 *            How many resources to remove.
+	 * @return True if player has enough resources, false if player has less
+	 *         resources then amount.
 	 */
 	public boolean useResources(int amount) {
 		if (amount > this.resources) {
@@ -151,10 +160,12 @@ public class Player implements Parcelable {
 	/**
 	 * Modifies the amount of resources the player has.
 	 * 
-	 * @param amount The amount of resources. Can be negative.
+	 * @param amount
+	 *            The amount of resources. Can be negative.
 	 */
 	public void modResource(int amount) {
-		//If the resource change will put resources below 0, we do not apply the amount.
+		// If the resource change will put resources below 0, we do not apply
+		// the amount.
 		this.resources = (this.resources + amount < 0 ? this.resources + amount
 				: this.resources + amount);
 		notifyStatChange(amount, EffectType.RESOURCE);
@@ -163,6 +174,20 @@ public class Player implements Parcelable {
 
 	public int getHealth() {
 		return this.health;
+	}
+	
+	public void setHealth(int health){
+		this.health = health;
+	}
+	
+	public void setArmor(int armor)
+	{
+		this.armor = armor;
+	}
+	
+	public void setResources(int resources)
+	{
+		this.resources = resources;
 	}
 
 	public int getArmor() {
@@ -181,9 +206,10 @@ public class Player implements Parcelable {
 
 	public interface PlayerUpdateListener {
 		void onCardsUpdateListener(Player player, Card[] cards);
-		
-		//Is a lot of overlap between these 2.
+
+		// Is a lot of overlap between these 2.
 		void onStatsUpdateListener(Player player);
+
 		void onStatChange(Player player, int amount, Effect.EffectType type);
 	}
 
@@ -193,7 +219,7 @@ public class Player implements Parcelable {
 		}
 	}
 
-	/** For notifying about changes on player's hand.*/
+	/** For notifying about changes on player's hand. */
 	public void notifyCardsUpdateListeners() {
 		for (PlayerUpdateListener listener : listeners) {
 			listener.onCardsUpdateListener(this, this.hand);
@@ -201,7 +227,9 @@ public class Player implements Parcelable {
 	}
 
 	/**
-	 * Adds a listener that will receive updates about changes in player's statistics and cards.
+	 * Adds a listener that will receive updates about changes in player's
+	 * statistics and cards.
+	 * 
 	 * @param listener
 	 */
 	public void setPlayerUpdateListeners(PlayerUpdateListener listener) {
@@ -219,14 +247,13 @@ public class Player implements Parcelable {
 		}
 	}
 
-	//Required by parcelable
+	// Required by parcelable
 	@Override
 	public int describeContents() {
 		return 0;
 	}
 
-	
-	//Converts player to parcel.
+	// Converts player to parcel.
 	@Override
 	public void writeToParcel(Parcel out, int flags) {
 		out.writeString(name);
@@ -249,6 +276,7 @@ public class Player implements Parcelable {
 
 	/**
 	 * Recreate player from Parcel.
+	 * 
 	 * @param in
 	 */
 	public Player(Parcel in) {

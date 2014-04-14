@@ -1,7 +1,9 @@
 package no.hiof.android.ambiguous.datasource;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import no.hiof.android.ambiguous.model.Card;
 import android.content.ContentValues;
@@ -18,11 +20,23 @@ public class CardDataSource {
 
 	private EffectDataSource effectDs;
 	private SQLiteDatabase db;
+	
+	private static List<Card> cards;
+	private static Map<Integer,Card> cardMap;
 
 	public CardDataSource(SQLiteDatabase db)
 	{
 		this.db = db;
 		this.effectDs = new EffectDataSource(db);
+		cards = getCards();
+		
+		cardMap = new HashMap<Integer, Card>();
+		
+		for(int i=0;i<cards.size();i++)
+		{
+			cardMap.put(cards.get(i).getId(), cards.get(i));
+		}
+		
 	}
 	
 	public void addCard(Card card)
@@ -70,15 +84,9 @@ public class CardDataSource {
 	 * @param id Id of the Card.
 	 * @return The Card with the specified id or null if does not exist.
 	 */
-	public Card getCard(int id)
+	public static Card getCard(int id)
 	{
-		try
-		{
-		return getCards(id).get(0);
-		}catch(IndexOutOfBoundsException e)
-		{
-			return null;
-		}
+		return cardMap.get(id);
 	}
 	
 	public void updateCard(Card card)

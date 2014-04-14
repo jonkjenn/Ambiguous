@@ -6,12 +6,35 @@
     android:background="#0F7F0F" >
 
     <Button
+        android:id="@+id/showTutorialButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:onClick="showTutorialButton"
         android:padding="0dp"
         android:text="@string/tutorial_button_show"
         android:textSize="12sp" />
+    <!-- <com.google.android.gms.common.SignInButton
+         android:id="@+id/sign_in_button"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content" />
+        />-->
+        <Button
+            android:id="@+id/findOpponentButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/find_opponent"
+        android:textSize="12sp"
+        android:layout_below="@id/showTutorialButton"
+        android:visibility="gone"/>
+        <Button 
+            android:id="@+id/showActiveGamesButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/show_active_games"
+        android:textSize="12sp"
+        android:layout_below="@id/findOpponentButton"
+        android:visibility="gone"
+            />
 
     <TextView
         android:id="@+id/gameview_use"

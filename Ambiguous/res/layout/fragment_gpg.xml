@@ -1,56 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/gpg_fragment_container"
-        android:layout_gravity="center"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-        android:background="@drawable/layout_bg">
+    android:layout_gravity="center"
+    android:background="#00000000" >
 
+    <RelativeLayout
+        android:id="@+id/gpg_inner_wrapper"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:background="@drawable/layout_bg2" >
 
-        <ImageView
-            android:id="@+id/logon_icon"
+        <TextView
+            android:id="@+id/result_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentTop="true"
-            android:padding="10dp"
-            android:src="@android:drawable/presence_offline" />
+            android:layout_centerHorizontal="true"
+            android:includeFontPadding="false"
+            android:textColor="#00FF00"
+            android:textSize="60sp"
+            android:textStyle="bold" />
 
         <TextView
             android:id="@+id/gpg_header"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
-            android:layout_below="@id/logon_icon"
+            android:layout_below="@+id/result_text"
+            android:layout_marginLeft="10dp"
             android:text="@string/gpg_header"
             android:textSize="20sp" />
-
-        <!-- sign-in button -->
-
-        <com.google.android.gms.common.SignInButton
-            android:id="@+id/sign_in_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentTop="true" />
-
-        <!-- sign-out button -->
-
-        <Button
-            android:id="@+id/sign_out_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentTop="true"
-            android:text="Sign Out"
-            android:textSize="12sp"
-            android:visibility="gone" />
 
         <Button
             android:id="@+id/findOpponentButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@id/gpg_header"
+            android:layout_marginLeft="10dp"
             android:text="@string/find_opponent"
             android:textSize="12sp" >
         </Button>
@@ -61,7 +49,42 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/findOpponentButton"
             android:text="@string/show_active_games"
+            android:layout_alignStart="@id/findOpponentButton"
+            android:layout_alignRight="@id/findOpponentButton"
             android:textSize="12sp" />
+
+        <ImageView
+            android:id="@+id/logon_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/showActiveGamesButton"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="10dp"
+            android:layout_marginTop="15dp"
+            android:src="@android:drawable/presence_offline" />
+
+        <!-- sign-in button -->
+
+        <com.google.android.gms.common.SignInButton
+            android:id="@+id/sign_in_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/showActiveGamesButton"
+            android:layout_marginBottom="10dp"
+            android:layout_toLeftOf="@id/logon_icon" />
+
+        <!-- sign-out button -->
+        <Button
+            android:id="@+id/sign_out_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/showActiveGamesButton"
+            android:layout_marginBottom="10dp"
+            android:layout_toLeftOf="@id/logon_icon"
+            android:text="Sign Out"
+            android:textSize="12sp"
+            android:visibility="gone" />
+
 
         <ProgressBar
             android:id="@+id/activeGamesSpinner"
@@ -78,5 +101,6 @@
             android:layout_alignTop="@id/showActiveGamesButton"
             android:layout_toRightOf="@id/showActiveGamesButton"
             android:visibility="gone" />
+    </RelativeLayout>
 
 </RelativeLayout>

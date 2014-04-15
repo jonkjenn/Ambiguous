@@ -9,6 +9,7 @@ import no.hiof.android.ambiguous.AlarmReceiver;
 import no.hiof.android.ambiguous.Db;
 import no.hiof.android.ambiguous.DeckBuilder;
 import no.hiof.android.ambiguous.GameMachine;
+import no.hiof.android.ambiguous.LayoutHelper;
 import no.hiof.android.ambiguous.GameMachine.State;
 import no.hiof.android.ambiguous.HandDragListener;
 import no.hiof.android.ambiguous.NetworkOpponent;
@@ -98,6 +99,8 @@ public class GameActivity extends ActionBarActivity implements
 	private ViewGroup floatingArmorPlayer;
 	private ViewGroup floatingResourcehPlayer;
 
+	private TextView resultTextView;
+
 	private ImageView opponentCard;
 
 	// We keep track of current Card the opponent has played so we can restore
@@ -134,6 +137,7 @@ public class GameActivity extends ActionBarActivity implements
 	// Google Play Game Service
 	private boolean useGPGS = false;
 	private GooglePlayGameFragment gPGHandler;
+	boolean gPGSVisible = false;
 
 	public Player player;
 	public Player opponent;
@@ -205,7 +209,15 @@ public class GameActivity extends ActionBarActivity implements
 		if (!hideTutorial()) {
 			showTutorialFragment(false);
 		} else if (useGPGS) {
-			showGooglePlayGameFragment();
+			gPGHandler = (GooglePlayGameFragment) getSupportFragmentManager()
+					.findFragmentByTag("gpg");
+			if (gPGHandler == null) {
+				showGooglePlayGameFragment();
+			}else if(!gPGSVisible)
+			{
+				hideGooglePlayGameFragment();
+			}
+			
 		}
 	}
 
@@ -231,6 +243,8 @@ public class GameActivity extends ActionBarActivity implements
 		floatingHealthOpponent = (ViewGroup) findViewById(R.id.floating_health_opponent);
 		floatingArmorOpponent = (ViewGroup) findViewById(R.id.floating_armor_opponent);
 		floatingResourcehOpponent = (ViewGroup) findViewById(R.id.floating_resource_opponent);
+		resultTextView = (TextView) layoutContainer
+				.findViewById(R.id.result_text);
 	}
 
 	/**
@@ -256,9 +270,9 @@ public class GameActivity extends ActionBarActivity implements
 	@SuppressLint("NewApi")
 	// Version is checked in code
 	public void setupGameMachine(GameMachine.State state) {
-		
+
 		hideGooglePlayGameFragment();
-		
+
 		resetLayout();
 
 		setupPlayers();
@@ -360,7 +374,7 @@ public class GameActivity extends ActionBarActivity implements
 	 * Displays the tutorial
 	 */
 	private void showTutorialFragment(boolean hideNeverButton) {
-		//hideGooglePlayGameFragment();
+		// hideGooglePlayGameFragment();
 
 		final FragmentManager manager = getSupportFragmentManager();
 
@@ -371,7 +385,8 @@ public class GameActivity extends ActionBarActivity implements
 			tutorial.setArguments(b);
 		}
 		FragmentTransaction transaction = manager.beginTransaction();
-		transaction.add(R.id.game_layout_container, tutorial, "tutorial").addToBackStack("showTutorial");
+		transaction.add(R.id.game_layout_container, tutorial, "tutorial")
+				.addToBackStack("showTutorial");
 		transaction.commit();
 	}
 
@@ -403,8 +418,9 @@ public class GameActivity extends ActionBarActivity implements
 	 * Make the fragment visible or create a new if does not exist.
 	 */
 	void showGooglePlayGameFragment() {
+		gPGSVisible =true;
 		FragmentManager manager = getSupportFragmentManager();
-		gPGHandler =(GooglePlayGameFragment) manager.findFragmentByTag("gpg");
+		gPGHandler = (GooglePlayGameFragment) manager.findFragmentByTag("gpg");
 		FragmentTransaction transaction = manager.beginTransaction();
 		if (gPGHandler == null) {
 			gPGHandler = new GooglePlayGameFragment();
@@ -419,6 +435,7 @@ public class GameActivity extends ActionBarActivity implements
 	 * Temporarily hide the fragment
 	 */
 	void hideGooglePlayGameFragment() {
+		gPGSVisible = true;
 		FragmentManager manager = getSupportFragmentManager();
 		FragmentTransaction t = manager.beginTransaction();
 		Fragment f = manager.findFragmentByTag("gpg");
@@ -432,10 +449,12 @@ public class GameActivity extends ActionBarActivity implements
 	 * Close the fragment for good.
 	 */
 	void closeGooglePlayGameFragment() {
+		gPGSVisible = false;
 		FragmentManager manager = getSupportFragmentManager();
 		FragmentTransaction t = manager.beginTransaction();
 		t.remove(manager.findFragmentByTag("gpg"));
 		t.commit();
+		gPGHandler = null;
 	}
 
 	/**
@@ -739,6 +758,7 @@ public class GameActivity extends ActionBarActivity implements
 	 * Resets the layout.
 	 */
 	public void resetLayout() {
+		LayoutHelper.hideResult(resultTextView);
 		playerName.setBackgroundColor(Color.TRANSPARENT);
 		opponentName.setBackgroundColor(Color.TRANSPARENT);
 		currentOpponentCard = null;
@@ -755,12 +775,12 @@ public class GameActivity extends ActionBarActivity implements
 
 	@Override
 	public void onPlayerDeadListener(Player player) {
-		playerStatus.setText("Player dead");
+		LayoutHelper.showResult(resultTextView, false);
 	}
 
 	@Override
 	public void onOpponentDeadListener(Player opponent) {
-		playerStatus.setText("Opponent dead");
+		LayoutHelper.showResult(resultTextView, true);
 	}
 
 	// We check in code
@@ -894,9 +914,12 @@ public class GameActivity extends ActionBarActivity implements
 	}
 
 	@Override
-	public void onOpponentUsedEffect(EffectType type, Player target, int amount) {
-		// TODO Auto-generated method stub
-
+	public void onOpponentUsedEffect(EffectType type, Player target,
+			int amount, boolean onlyDisplay) {
+		if (!onlyDisplay) {
+			return;
+		}
+		onStatChange(target, amount, type);
 	}
 
 	@Override
@@ -936,8 +959,8 @@ public class GameActivity extends ActionBarActivity implements
 		super.onPause();
 
 		if (gameMachine == null
-				|| (gameMachine.player.alive && gameMachine.opponent
-						.alive)) {
+				|| (gameMachine.player.isAlive() && gameMachine.opponent
+						.isAlive())) {
 			sendAnnoyingNotification();
 		}
 
@@ -947,10 +970,12 @@ public class GameActivity extends ActionBarActivity implements
 			sds.setSessionId(savedSessionId);
 		}
 		if (gameMachine != null && !useGPGS) {
-			sds.saveSession(gameMachine.state.ordinal(), gameMachine.player,
+			sds.saveSession(
+					gameMachine.state.ordinal(),
+					gameMachine.player,
 					gameMachine.opponent,
-					(currentOpponentCard != null ? currentOpponentCard.id
-							: -1), opponentCardIsDiscarded);
+					(currentOpponentCard != null ? currentOpponentCard.id : -1),
+					opponentCardIsDiscarded);
 		}
 
 		if (isNetwork) {
@@ -1043,7 +1068,7 @@ public class GameActivity extends ActionBarActivity implements
 		b.setCancelable(false).setPositiveButton("OK", null).setTitle(title)
 				.setMessage(message).show();
 	}
-	
+
 	@Override
 	protected void onActivityResult(int arg0, int arg1, Intent arg2) {
 		super.onActivityResult(arg0, arg1, arg2);

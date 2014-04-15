@@ -11,6 +11,7 @@ import no.hiof.android.ambiguous.BuildConfig;
 import no.hiof.android.ambiguous.GameMachine;
 import no.hiof.android.ambiguous.GameMachine.GameMachineListener;
 import no.hiof.android.ambiguous.GameMachine.State;
+import no.hiof.android.ambiguous.LayoutHelper;
 import no.hiof.android.ambiguous.OpponentController;
 import no.hiof.android.ambiguous.R;
 import no.hiof.android.ambiguous.activities.GameActivity;
@@ -71,6 +72,8 @@ public class GooglePlayGameFragment extends Fragment implements
 	final static int RC_INVITATION_BOX = 10001;
 	final static int RC_RESOLVE = 9001;
 
+	TextView resultTextView;
+
 	boolean explicitSignOut = false;
 	boolean inSignInFlow = false;
 	boolean expectingResult = false;
@@ -93,6 +96,13 @@ public class GooglePlayGameFragment extends Fragment implements
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+	}
+
+	@Override
+	public void onViewCreated(View view, Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		super.onViewCreated(view, savedInstanceState);
+
 		// Google created helper class for helping with signing into the Google
 		// service etc
 		gameHelper = new GameHelper(getActivity(), GameHelper.CLIENT_ALL);
@@ -102,12 +112,8 @@ public class GooglePlayGameFragment extends Fragment implements
 		}
 
 		gameHelper.setup(this);
-	}
 
-	@Override
-	public void onViewCreated(View view, Bundle savedInstanceState) {
-		// TODO Auto-generated method stub
-		super.onViewCreated(view, savedInstanceState);
+		resultTextView = (TextView) getView().findViewById(R.id.result_text);
 
 		// The button that display a list of active games and game invites. Game
 		// inbox.
@@ -324,19 +330,25 @@ public class GooglePlayGameFragment extends Fragment implements
 	 */
 	void startGame(TurnBasedMatch match) {
 
+		LayoutHelper.hideResult(resultTextView);
+
 		State state;
 		// Find out if its our turn or opponents turn.
 		if (match.getTurnStatus() == TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN) {
 
-			//Sort of a hack to correctly apply opponents actions before we change to players turn.
+			// Sort of a hack to correctly apply opponents actions before we
+			// change to players turn.
 			state = State.OPPONENT_TURN;
 			((GameActivity) getActivity()).setupGameMachine(state);
 			readGameState(match);// Loads the data from the bytes passed in
 									// the intent/match into our actual game
 									// objects in game.
-			gameMachine.startGame();//First start the game with opponent having turn.
+			gameMachine.startGame();// First start the game with opponent having
+									// turn.
 
-			gameMachine.state = State.PLAYER_TURN;//Game will now later be started again as player's turn
+			gameMachine.state = State.PLAYER_TURN;// Game will now later be
+													// started again as player's
+													// turn
 		} else {
 			state = State.OPPONENT_TURN;
 			((GameActivity) getActivity()).setupGameMachine(state);
@@ -350,6 +362,7 @@ public class GooglePlayGameFragment extends Fragment implements
 			handleActiveMatch(match);
 			break;
 		case TurnBasedMatch.MATCH_STATUS_COMPLETE:
+			gameMachine.startGame();
 			break;
 		}
 	}
@@ -469,7 +482,7 @@ public class GooglePlayGameFragment extends Fragment implements
 				// 3. Read effects, id, which player and amount 3 ints
 				oc.UseEffect(Effect.EffectType.values()[r.readInt()], (r
 						.readInt() == 1 ? gameMachine.opponent
-						: gameMachine.player), r.readInt());
+						: gameMachine.player), r.readInt(), true);
 			}
 
 			Card[] hand = new Card[8];
@@ -494,6 +507,7 @@ public class GooglePlayGameFragment extends Fragment implements
 
 			Player creator;
 			Player other;
+
 			if (isCreator) {
 				gameMachine.player.setHand(hand);
 				creator = gameMachine.opponent;
@@ -738,10 +752,12 @@ public class GooglePlayGameFragment extends Fragment implements
 		int playerResult = ParticipantResult.MATCH_RESULT_NONE;
 		int opponentResult = ParticipantResult.MATCH_RESULT_NONE;
 
-		if (!gameMachine.player.alive) {
+		if (!gameMachine.player.isAlive()) {
+			LayoutHelper.showResult(resultTextView, false);
 			playerResult = ParticipantResult.MATCH_RESULT_LOSS;
 			opponentResult = ParticipantResult.MATCH_RESULT_WIN;
-		} else if (!gameMachine.opponent.alive) {
+		} else if (!gameMachine.opponent.isAlive()) {
+			LayoutHelper.showResult(resultTextView, true);
 			playerResult = ParticipantResult.MATCH_RESULT_WIN;
 			opponentResult = ParticipantResult.MATCH_RESULT_LOSS;
 		}
@@ -758,8 +774,8 @@ public class GooglePlayGameFragment extends Fragment implements
 			Games.TurnBasedMultiplayer.finishMatch(gameHelper.getApiClient(),
 					match.getMatchId(), writeGameState(match), results);
 		} else if (match.getStatus() == TurnBasedMatch.MATCH_STATUS_COMPLETE) {
-			//Games.TurnBasedMultiplayer.finishMatch(gameHelper.getApiClient(),
-					//match.getMatchId());
+			// Games.TurnBasedMultiplayer.finishMatch(gameHelper.getApiClient(),
+			// match.getMatchId());
 		}
 	}
 
@@ -790,6 +806,7 @@ public class GooglePlayGameFragment extends Fragment implements
 	@Override
 	public void onPlayerDeadListener(Player player) {
 		finishMatch();
+
 	}
 
 	@Override
@@ -827,10 +844,10 @@ public class GooglePlayGameFragment extends Fragment implements
 	@Override
 	public void onSignInSucceeded() {
 		showConnected();
-		View signin = (View) getActivity().findViewById(R.id.sign_in_button);
+		View signin = (View) getView().findViewById(R.id.sign_in_button);
 		signin.setOnClickListener(this);
 
-		View signout = (View) getActivity().findViewById(R.id.sign_out_button);
+		View signout = (View) getView().findViewById(R.id.sign_out_button);
 		signout.setOnClickListener(this);
 
 		// Update the text field that shows how many actions are waiting for
@@ -883,5 +900,4 @@ public class GooglePlayGameFragment extends Fragment implements
 		Log.d("test", "Log in fail");
 		showDisconnected();
 	}
-
 }

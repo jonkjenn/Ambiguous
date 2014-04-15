@@ -168,7 +168,7 @@ public class NetworkOpponent implements GameMachineListener {
 
 					@Override
 					public void run() {
-						oc.UseEffect(type, target, amount);
+						oc.UseEffect(type, target, amount, false);
 					}
 				});
 				break;

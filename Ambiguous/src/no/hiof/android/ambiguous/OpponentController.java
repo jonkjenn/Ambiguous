@@ -22,10 +22,10 @@ public class OpponentController {
 		PlayCard(CardDataSource.getCard(card), generateDamage);
 	}
 
-	public void UseEffect(EffectType type, Player target, int amount) {
-		notifyUsedEffect(type, target, amount);
+	public void UseEffect(EffectType type, Player target, int amount, boolean onlyDisplay) {
+		notifyUsedEffect(type, target, amount, onlyDisplay);
 	}
-
+	
 	public void PlayCard(Card card, boolean generateDamage) {
 		notifyPlayCard(card, generateDamage);
 	}
@@ -48,9 +48,9 @@ public class OpponentController {
 		}
 	}
 
-	private void notifyUsedEffect(EffectType type, Player target, int amount) {
+	private void notifyUsedEffect(EffectType type, Player target, int amount, boolean onlyDisplay) {
 		for (OpponentListener listener : listeners) {
-			listener.onOpponentUsedEffect(type, target, amount);
+			listener.onOpponentUsedEffect(type, target, amount, onlyDisplay);
 		}
 	}
 
@@ -75,7 +75,7 @@ public class OpponentController {
 	public interface OpponentListener {
 		void onOpponentPlayCard(Card card, boolean generateDamage);
 
-		void onOpponentUsedEffect(EffectType type, Player target, int amount);
+		void onOpponentUsedEffect(EffectType type, Player target, int amount, boolean onlyDisplay);
 
 		void onOpponentDiscardCard(Card card);
 

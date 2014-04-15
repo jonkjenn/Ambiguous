@@ -171,11 +171,11 @@ public class GameMachine implements OpponentListener {
 	 * Checks if player or opponent is dead and changes state if so.
 	 */
 	private void checkDead() {
-		if (!player.alive) {
+		if (!player.isAlive()) {
 			notifyPlayerDead();
 			state = State.GAME_OVER;
 		}
-		if (!opponent.alive) {
+		if (!opponent.isAlive()) {
 			notifyOpponentDead();
 			state = State.GAME_OVER;
 		}
@@ -456,7 +456,11 @@ public class GameMachine implements OpponentListener {
 	/**
 	 * Applies effect directly on target.
 	 */
-	public void onOpponentUsedEffect(EffectType type, Player target, int amount) {
+	public void onOpponentUsedEffect(EffectType type, Player target,
+			int amount, boolean onlyDisplay) {
+		if (onlyDisplay) {
+			return;
+		}
 		switch (type) {
 		case ARMOR:
 			target.modArmor(amount);

@@ -22,7 +22,7 @@ public class Player implements Parcelable {
 	public int armor = 0;
 	public int resources = 10;
 	public static final int NUMBER_OF_CARDS = 8;
-	public boolean alive = true;
+	private boolean alive = true;
 
 	public Player(String name) {
 		this.name = name;
@@ -81,6 +81,11 @@ public class Player implements Parcelable {
 	 */
 	public Card getCard(int position) {
 		return hand[position];
+	}
+	
+	public boolean isAlive()
+	{
+		return health>0;
 	}
 
 	public Card[] getHand() {

@@ -68,5 +68,7 @@
       
       <string name="activeGamesText">%1$d games waiting for your turn \n%2$d waiting game invites</string>
       <string name="gpg_header">Pick an option to continue:</string>
+      <string name="victory">Victory!</string>
+      <string name="defeat">Defeat!</string>
 
 </resources>

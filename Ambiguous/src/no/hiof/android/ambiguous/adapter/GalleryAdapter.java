@@ -33,7 +33,7 @@ public class GalleryAdapter extends BaseAdapter {
 
         @Override
         public long getItemId(int position) {
-                return cards.get(position).getId();
+                return cards.get(position).id;
         }
 
         @Override

@@ -32,7 +32,7 @@ public class GameDeckAdapter extends BaseAdapter {
 
 	@Override
 	public long getItemId(int position) {
-		return cards[position].getId();
+		return cards[position].id;
 	}
 
 	@Override
@@ -40,7 +40,7 @@ public class GameDeckAdapter extends BaseAdapter {
 		Card card = getItem(position);
 		// Make sure the old card is the exact same if we want to reuse it.
 		if (convertView != null && convertView instanceof ImageView
-				&& convertView.getTag() == card.getImage()) {
+				&& convertView.getTag() == card.image) {
 			return convertView;
 		}
 

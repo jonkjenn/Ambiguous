@@ -8,9 +8,10 @@
     <string name="menu_button_game">Game</string>
     <string name="title_activity_deckmanager">Deck Manager</string>
     <string name="title_activity_network">Network</string>
-    <string name="menu_button_network">Network</string>
+    <string name="menu_button_network">LAN Network game</string>
     <string name="menu_button_server">Server</string>
     <string name="menu_button_client">Client</string>
+    <string name="menu_button_google">Play online with google+</string>
     <string name="activity_main_usecard">Use card</string>
     <string name="activity_main_discard">Discard card</string>
     <string name="armor">Armor</string>
@@ -50,5 +51,22 @@
       <string name="tutorial_image_cards_description">Image of a card</string>
       <string name="tutorial_button_show">Tutorial</string>
       <string name="opponents_actions">Opponent`s actions:</string>
+      
+      <string name="status_multiplayer_error_not_trusted_tester">Only players added as testers in google developer console can use the app while its in test mode.</string>
+      <string name="match_error_already_rematched">Already rematched</string>
+      <string name="network_error_operation_failed">The network operation failed.</string>
+      <string name="client_reconnect_required">Client have to reconnect.</string>
+      <string name="internal_error">Internal error.</string>
+      <string name="match_error_inactive_match">The match is inactive</string>
+      <string name="match_error_locally_modified">The game has been modified locally</string>
+      <string name="match_error_invalid_participant_state">State of participant is invalid. Game not accepted?</string>
+      <string name="unexpected_status">Unexpected status</string>
+
+      
+      <string name="show_active_games">Show game inbox</string>
+      <string name="find_opponent">Find new opponent</string>
+      
+      <string name="activeGamesText">%1$d games waiting for your turn \n%2$d waiting game invites</string>
+      <string name="gpg_header">Pick an option to continue:</string>
 
 </resources>

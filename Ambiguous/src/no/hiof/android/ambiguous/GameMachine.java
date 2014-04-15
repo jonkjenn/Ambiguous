@@ -1,13 +1,9 @@
 package no.hiof.android.ambiguous;
 
-import java.net.Socket;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 import no.hiof.android.ambiguous.OpponentController.OpponentListener;
-import no.hiof.android.ambiguous.ai.AIController;
-import no.hiof.android.ambiguous.datasource.CardDataSource;
 import no.hiof.android.ambiguous.model.Card;
 import no.hiof.android.ambiguous.model.Effect;
 import no.hiof.android.ambiguous.model.Effect.EffectType;
@@ -16,112 +12,84 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Handler;
 import android.os.SystemClock;
 
-//TODO: This class should be split up into smaller parts.
+//TODO:Class has been simplified but might still be applicable. This class should be split up into smaller parts. 
 /**
- * Sets up the game and moves the game between the different game states.
- * Listens to player and opponent game choices. Applies the effects from the
- * cards used by players. Notifies listeners about game changes.
+ * Moves the game between the different game states. Listens to player and
+ * opponent game choices. Applies the effects from the cards used by players.
+ * Notifies listeners about game changes.
  */
 public class GameMachine implements OpponentListener {
+
 	public Player player;
 	public Player opponent;
-	public OpponentController opponentController;
-	private NetworkOpponent networkOpponent;
-	private boolean isNetwork = false;
 
-	private CardDataSource cs;
+	private int delay;
 
 	public enum State {
 		PLAYER_TURN, PLAYER_DONE, OPPONENT_TURN, GAME_OVER
 	};
 
 	// Current state of the game.
-	public State state;
+	public State state = null;
 
 	/**
-	 * @param db
-	 *            An open writable database.
-	 * @param socket
-	 *            Optional network socket.
-	 * @param isServer
-	 *            True if this game instance is a server.
+	 * Can only create class by a builder.
+	 * 
+	 * @param builder
 	 */
-	public GameMachine(SQLiteDatabase db, Socket socket, boolean isServer) {
+	private GameMachine(Builder builder) {
+		this.player = builder.player;
+		this.opponent = builder.opponent;
+		this.delay = builder.delay;
+		this.state = builder.state;
 
-		this(db, socket, isServer, null, null, null);
+		// Randomly pick if player or opponent should start game.
+		if (state == null) {
+			state = (new Random().nextInt(2) == 0 ? State.PLAYER_TURN
+					: State.OPPONENT_TURN);
+		}
 	}
 
-	/**
-	 * 
-	 * @param db
-	 *            An open writable database.
-	 * @param socket
-	 *            Optional network socket.
-	 * @param isServer
-	 *            True if this game instance is a server.
-	 * @param savedPlayer
-	 *            Used as player instead of creating a new player.
-	 * @param savedOpponent
-	 *            Used as opponent instead of creating new opponent.
-	 * @param turn
-	 *            Current state used instead of creating new random state.
-	 */
-	public GameMachine(SQLiteDatabase db, Socket socket, boolean isServer,
-			Player savedPlayer, Player savedOpponent, State turn) {
+	public static class Builder {
+		final SQLiteDatabase db;
+		final Player player;
+		final Player opponent;
+		int delay = 1000;;
+		GameMachine.State state;
 
-		this.cs = new CardDataSource(db);
-
-		List<Card> cards = cs.getCards();
-
-		if (savedPlayer != null) {
-			player = savedPlayer;
-		} else {
-			player = new Player("JonAndOrAdrian");
-			player.setDeck(DeckBuilder.StandardDeck(cards));
+		public Builder(SQLiteDatabase db, Player player, Player opponent) {
+			this.db = db;
+			this.player = player;
+			this.opponent = opponent;
 		}
 
-		opponentController = new OpponentController(cs);
-		opponentController.setOpponentListener(this);
-
-		if (savedOpponent != null) {
-			opponent = savedOpponent;
-		} else {
-			opponent = new Player("Opponent");
-			opponent.setDeck(DeckBuilder.StandardDeck(cards));
+		public GameMachine build() {
+			return new GameMachine(this);
 		}
 
-		if (socket == null) {
-
-			AIController aIController = new AIController(opponent, player,
-					opponentController);
-			this.setTurnChangeListener(aIController);
-
-		} else {
-			isNetwork = true;
-
-			networkOpponent = new NetworkOpponent(opponentController, player,
-					opponent, socket);
-			setGameMachineListener(networkOpponent);
+		public Builder setDelay(int delay) {
+			this.delay = delay;
+			return this;
 		}
 
-		if (!isNetwork || isServer) {
-			state = (turn == null ? (new Random().nextInt(2) == 0 ? State.PLAYER_TURN
-					: State.OPPONENT_TURN)
-					: turn);
-			changeState();
+		public Builder setState(GameMachine.State state) {
+			this.state = state;
+			return this;
 		}
-
 	}
 
 	public boolean isPlayersTurn() {
 		return state == State.PLAYER_TURN;
 	}
 
+	public void startGame() {
+		changeState();
+	}
+
 	/**
 	 * Gives a delay before doing the actual state change.
 	 */
 	private void changeState() {
-		int delay = (isNetwork ? 50 : 1000);
 		Handler h = new Handler();
 		h.postAtTime(new Runnable() {
 
@@ -172,15 +140,18 @@ public class GameMachine implements OpponentListener {
 	public void playerPlayCard(int card) {
 		playCard(card);
 	}
-	
-	public void playerPlayCard(int card,int amount)
-	{
-		if (state != State.PLAYER_TURN || player.getResources() < player.getHand()[card].getCost()) {
+
+	public void playerPlayCard(int card, int amount) {
+		if (state != State.PLAYER_TURN
+				|| player.resources < player.getHand()[card].cost) {
 			notifyCouldNotPlayCard(card);
 			return;
 		}
 		Card c = player.getHand()[card];
-		c.getEffects().get(0).setMinValue(amount).setMaxValue(amount).setCrit(0);
+		Effect e = c.effects.get(0);
+		e.minValue = amount;
+		e.maxValue = (amount);
+		e.crit = 0;
 		playCard(player, c, card);
 		doChangeState();
 	}
@@ -200,11 +171,11 @@ public class GameMachine implements OpponentListener {
 	 * Checks if player or opponent is dead and changes state if so.
 	 */
 	private void checkDead() {
-		if (!player.isAlive()) {
+		if (!player.alive) {
 			notifyPlayerDead();
 			state = State.GAME_OVER;
 		}
-		if (!opponent.isAlive()) {
+		if (!opponent.alive) {
 			notifyOpponentDead();
 			state = State.GAME_OVER;
 		}
@@ -221,6 +192,7 @@ public class GameMachine implements OpponentListener {
 		if (state != State.PLAYER_TURN) {
 			return;
 		}
+		notifyPlayerDiscardCard(player.getCard(position));
 		player.cardUsed(position);
 		state = State.PLAYER_DONE;
 		doChangeState();
@@ -257,7 +229,7 @@ public class GameMachine implements OpponentListener {
 		// have enough resources.
 		if (card == null || caster == this.player && state != State.PLAYER_TURN
 				|| caster == this.opponent && state != State.OPPONENT_TURN
-				|| !caster.useResources(card.getCost())) {
+				|| !caster.useResources(card.cost)) {
 			if (caster == this.player) {
 				notifyCouldNotPlayCard(position);
 			}
@@ -275,7 +247,6 @@ public class GameMachine implements OpponentListener {
 			state = State.PLAYER_DONE;
 		}
 	}
-	
 
 	/**
 	 * Iterate through a cards effect and apply them to the target.
@@ -285,9 +256,9 @@ public class GameMachine implements OpponentListener {
 	 * @param target
 	 */
 	public void useCard(Card card, Player caster, Player target) {
-		for (int i = 0; i < card.getEffects().size(); i++) {
-			Effect e = card.getEffects().get(i);
-			switch (e.getTarget()) {
+		for (int i = 0; i < card.effects.size(); i++) {
+			Effect e = card.effects.get(i);
+			switch (e.target) {
 			case OPPONENT:
 				useEffect(e, target);
 				break;
@@ -308,7 +279,7 @@ public class GameMachine implements OpponentListener {
 	 * @param amount
 	 */
 	public void useEffect(Effect e, Player target, int amount) {
-		switch (e.getType()) {
+		switch (e.type) {
 		case ARMOR:
 			target.modArmor(amount);
 			break;
@@ -326,7 +297,7 @@ public class GameMachine implements OpponentListener {
 		}
 
 		if (state == State.PLAYER_TURN) {
-			notifyPlayerUsedEffect(e.getType(), target, amount);
+			notifyPlayerUsedEffect(e.type, target, amount);
 		}
 	}
 
@@ -337,26 +308,20 @@ public class GameMachine implements OpponentListener {
 	 * @param target
 	 */
 	public void useEffect(Effect e, Player target) {
-		switch (e.getType()) {
+		switch (e.type) {
 		case ARMOR:
-			useEffect(e, target, (e.getMinValue()));
+			useEffect(e, target, (e.minValue));
 			break;
 		case DAMAGE:
-			useEffect(
-					e,
-					target,
-					RandomAmountGenerator.GenerateAmount(e.getMinValue(),
-							e.getMaxValue(), e.getCrit()));
+			useEffect(e, target, RandomAmountGenerator.GenerateAmount(
+					e.minValue, e.maxValue, e.crit));
 			break;
 		case HEALTH:
-			useEffect(
-					e,
-					target,
-					RandomAmountGenerator.GenerateAmount(e.getMinValue(),
-							e.getMaxValue(), e.getCrit()));
+			useEffect(e, target, RandomAmountGenerator.GenerateAmount(
+					e.minValue, e.maxValue, e.crit));
 			break;
 		case RESOURCE:
-			useEffect(e, target, e.getMinValue());
+			useEffect(e, target, e.minValue);
 			break;
 		default:
 			break;
@@ -431,6 +396,12 @@ public class GameMachine implements OpponentListener {
 		}
 	}
 
+	void notifyPlayerDiscardCard(Card card) {
+		for (GameMachineListener listener : gameMachineListeners) {
+			listener.onPlayerDiscardCard(card);
+		}
+	}
+
 	public interface TurnChangeListener {
 		void turnChange(Player player);
 	}
@@ -470,7 +441,7 @@ public class GameMachine implements OpponentListener {
 			state = State.PLAYER_TURN;
 			doChangeState();
 		} else {
-			opponent.useResources(card.getCost());
+			opponent.useResources(card.cost);
 		}
 
 	}

@@ -49,12 +49,12 @@ public class AI {
 	 */
 	public int Start()
 	{
-		if(computer.getHealth() + computer.getArmor() > 100)
+		if(computer.health + computer.armor > 100)
 		{
 			return playAggressive();
 			
 		}
-		else if(computer.getHealth() + computer.getArmor() <= 100)
+		else if(computer.health + computer.armor <= 100)
 		{
 			return playDefensive();
 		}
@@ -73,7 +73,7 @@ public class AI {
 			{
 				return moredamage;				
 			}
-			else if(resource >=0 && computer.getResources() < 25)
+			else if(resource >=0 && computer.resources < 25)
 			{
 				return resource;
 			}
@@ -131,7 +131,7 @@ public class AI {
 	 */
 	private int hasDamageMoreThenPlayer()
 	{
-		return hasminEffect(player.getHealth() + player.getArmor(),Effect.EffectType.DAMAGE,Effect.Target.OPPONENT)[0];
+		return hasminEffect(player.health + player.armor,Effect.EffectType.DAMAGE,Effect.Target.OPPONENT)[0];
 	}
 	
 	/**
@@ -141,7 +141,7 @@ public class AI {
 	 * @return An int array where position 0 is card id and position 1 is average heal amount.
 	 */
 	private int[] hasHealLessMaxHP() {
-		return hasEffect(computer.maxHealth - computer.getHealth(),
+		return hasEffect(computer.maxHealth - computer.health,
 				Effect.EffectType.HEALTH, Effect.Target.SELF);
 	}
 
@@ -151,7 +151,7 @@ public class AI {
 	 * @return An int array where position 0 is card id and position 1 is average armor amount.
 	 */
 	private int[] hasArmorLessMaxArmor() {
-		return hasEffect(computer.maxArmor - computer.getArmor(),
+		return hasEffect(computer.maxArmor - computer.armor,
 				Effect.EffectType.ARMOR, Effect.Target.SELF);
 	}
 
@@ -170,10 +170,10 @@ public class AI {
 		int outamount = -1;
 
 		for (int i = 0; i < cards.length; i++) {
-			int effect = hasEffect(cards[i].getEffects(), type, target);
+			int effect = hasEffect(cards[i].effects, type, target);
 
-			if (effect >= 0 && cards[i].getCost() <= computer.getResources()) {
-				Effect e = cards[i].getEffects().get(effect);
+			if (effect >= 0 && cards[i].cost <= computer.resources) {
+				Effect e = cards[i].effects.get(effect);
 				if ((calcAvg(e)>min_amount) && (calcAvg(e)>outamount || outcard <= 0)) {
 					outcard = i;
 					outamount = calcAvg(e);
@@ -199,10 +199,10 @@ public class AI {
 		int outamount = -1;
 
 		for (int i = 0; i < cards.length; i++) {
-			int effect = hasEffect(cards[i].getEffects(), type, target);
+			int effect = hasEffect(cards[i].effects, type, target);
 
-			if (effect >= 0 && cards[i].getCost() <= computer.getResources()) {
-				Effect e = cards[i].getEffects().get(effect);
+			if (effect >= 0 && cards[i].cost <= computer.resources) {
+				Effect e = cards[i].effects.get(effect);
 				if ((calcAvg(e) - amount < 5)
 						&& ((Math.abs(amount - calcAvg(e)) < Math.abs(amount
 								- outamount)) || outcard <= 0)) {
@@ -220,14 +220,14 @@ public class AI {
 	 * @return Average effect amount.
 	 */
 	private int calcAvg(Effect effect) {
-		if(effect.getMaxValue()>0)
+		if(effect.maxValue>0)
 		{
-		return (effect.getMinValue() + effect.getMaxValue()) / 2
-				+ (int) (effect.getCrit() * 0.25);
+		return (effect.minValue + effect.maxValue) / 2
+				+ (int) (effect.crit * 0.25);
 		}
 		else
 		{
-			return effect.getMinValue();
+			return effect.minValue;
 		}
 	}
 
@@ -242,13 +242,13 @@ public class AI {
 		int outcard = -1;
 		for (int i = 0; i < cards.length; i++) {
 			if(cards[i]==null){continue;}
-			int effect = hasEffect(cards[i].getEffects(), type, target);
+			int effect = hasEffect(cards[i].effects, type, target);
 
-			if (effect >= 0 && cards[i].getCost() <= computer.getResources()) {
+			if (effect >= 0 && cards[i].cost <= computer.resources) {
 				if (outcard < 0) {
 					outcard = i;
 				} else {
-					if (cards[i].getCost() > cards[outcard].getCost()) {
+					if (cards[i].cost > cards[outcard].cost) {
 						outcard = i;
 					}
 				}
@@ -267,8 +267,8 @@ public class AI {
 	private int hasEffect(List<Effect> effects, Effect.EffectType type,
 			Effect.Target target) {
 		for (int i = 0; i < effects.size(); i++) {
-			if (effects.get(i).getType() == type
-					&& effects.get(i).getTarget() == target) {
+			if (effects.get(i).type == type
+					&& effects.get(i).target == target) {
 				return i;
 			}
 		}

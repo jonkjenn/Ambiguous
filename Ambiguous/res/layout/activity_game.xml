@@ -6,13 +6,18 @@
     android:background="#0F7F0F" >
 
     <Button
+        android:id="@+id/showTutorialButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:onClick="showTutorialButton"
         android:padding="0dp"
         android:text="@string/tutorial_button_show"
         android:textSize="12sp" />
-
+    <!-- <com.google.android.gms.common.SignInButton
+         android:id="@+id/sign_in_button"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content" />
+        />-->
     <TextView
         android:id="@+id/gameview_use"
         android:layout_width="match_parent"

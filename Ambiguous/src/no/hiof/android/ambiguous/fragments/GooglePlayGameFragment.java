@@ -22,7 +22,6 @@ import no.hiof.android.ambiguous.model.Player;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.IntentSender.SendIntentException;
-import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -256,19 +255,6 @@ public class GooglePlayGameFragment extends Fragment implements
 				Multiplayer.EXTRA_TURN_BASED_MATCH);
 
 		startGame(match);
-		/*
-		 * if (match != null) { if (match.getData() == null) {
-		 * startNewGame(match);// Not sure if this will ever happen. } else {
-		 * 
-		 * State state; // Find out if its our turn or opponents turn. if
-		 * (match.getTurnStatus() == TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN) {
-		 * state = State.PLAYER_TURN; } else { state = State.OPPONENT_TURN; }
-		 * getActivity().setupGameMachine(state); readGameState(match);// Loads
-		 * the data from the bytes passed in // the intent/match into our actual
-		 * game // objects ingame. gameMachine.startGame();// Start the actual
-		 * game. } }
-		 */
-
 	}
 
 	/**
@@ -341,25 +327,31 @@ public class GooglePlayGameFragment extends Fragment implements
 		State state;
 		// Find out if its our turn or opponents turn.
 		if (match.getTurnStatus() == TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN) {
-			state = State.PLAYER_TURN;
+
+			//Sort of a hack to correctly apply opponents actions before we change to players turn.
+			state = State.OPPONENT_TURN;
+			((GameActivity) getActivity()).setupGameMachine(state);
+			readGameState(match);// Loads the data from the bytes passed in
+									// the intent/match into our actual game
+									// objects in game.
+			gameMachine.startGame();//First start the game with opponent having turn.
+
+			gameMachine.state = State.PLAYER_TURN;//Game will now later be started again as player's turn
 		} else {
 			state = State.OPPONENT_TURN;
+			((GameActivity) getActivity()).setupGameMachine(state);
+			readGameState(match);// Loads the data from the bytes passed in
+									// the intent/match into our actual game
+									// objects ingame.
 		}
-		((GameActivity) getActivity()).setupGameMachine(state);
-		readGameState(match);// Loads the data from the bytes passed in
-								// the intent/match into our actual game
-								// objects ingame.
 
 		switch (match.getStatus()) {
 		case TurnBasedMatch.MATCH_STATUS_ACTIVE:
 			handleActiveMatch(match);
 			break;
 		case TurnBasedMatch.MATCH_STATUS_COMPLETE:
-			readGameState(match);
-			finishMatch();
 			break;
 		}
-
 	}
 
 	void handleActiveMatch(TurnBasedMatch match) {
@@ -758,6 +750,7 @@ public class GooglePlayGameFragment extends Fragment implements
 
 		results.add(new ParticipantResult(getMyId(), playerResult,
 				ParticipantResult.PLACING_UNINITIALIZED));
+
 		results.add(new ParticipantResult(getOpponentId(match), opponentResult,
 				ParticipantResult.PLACING_UNINITIALIZED));
 
@@ -765,8 +758,8 @@ public class GooglePlayGameFragment extends Fragment implements
 			Games.TurnBasedMultiplayer.finishMatch(gameHelper.getApiClient(),
 					match.getMatchId(), writeGameState(match), results);
 		} else if (match.getStatus() == TurnBasedMatch.MATCH_STATUS_COMPLETE) {
-			Games.TurnBasedMultiplayer.finishMatch(gameHelper.getApiClient(),
-					match.getMatchId());
+			//Games.TurnBasedMultiplayer.finishMatch(gameHelper.getApiClient(),
+					//match.getMatchId());
 		}
 	}
 

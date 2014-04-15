@@ -84,10 +84,10 @@ public class EditCardActivity extends Activity implements OnClickListener{
 	
 	private void saveCard()
 	{
-		this.card.setName(this.name.getText().toString());
-		this.card.setDescription(this.description.getText().toString());
-		this.card.setImage(this.image.getText().toString());
-		this.card.setCost(Integer.parseInt(this.cost.getText().toString()));
+		this.card.name = (this.name.getText().toString());
+		this.card.description = (this.description.getText().toString());
+		this.card.image = (this.image.getText().toString());
+		this.card.cost = (Integer.parseInt(this.cost.getText().toString()));
 		
 		cs.updateCard(this.card);
 	}
@@ -101,11 +101,11 @@ public class EditCardActivity extends Activity implements OnClickListener{
 		this.effects = (LinearLayout)findViewById(R.id.editcard_effects);
 		this.cost = (EditText)findViewById(R.id.editcard_cost);
 		
-		id.setText(Integer.toString(card.getId()));
-		name.setText(card.getName());
-		description.setText(card.getDescription());
-		image.setText(card.getImage());
-		cost.setText(Integer.toString(card.getCost()));
+		id.setText(Integer.toString(card.id));
+		name.setText(card.name);
+		description.setText(card.description);
+		image.setText(card.image);
+		cost.setText(Integer.toString(card.cost));
 		
 		loadEffects();
 		
@@ -114,7 +114,7 @@ public class EditCardActivity extends Activity implements OnClickListener{
 	private void loadEffects()
 	{
 		this.effects.removeAllViews();
-		List<Effect> effects = card.getEffects();
+		List<Effect> effects = card.effects;
 		
 		for(int i=0;i<effects.size();i++)
 		{
@@ -125,7 +125,7 @@ public class EditCardActivity extends Activity implements OnClickListener{
 	private void addEffect()
 	{
 		Effect effect = new Effect();
-		this.card.getEffects().add(effect);
+		this.card.effects.add(effect);
 		loadEffects();
 	}
 	
@@ -139,9 +139,9 @@ public class EditCardActivity extends Activity implements OnClickListener{
 		ll.addView(max);
 		ll.addView(crit);
 		
-		min.setText(Integer.toString(effect.getMinValue()));
-		max.setText(Integer.toString(effect.getMaxValue()));
-		crit.setText(Integer.toString(effect.getCrit()));
+		min.setText(Integer.toString(effect.minValue));
+		max.setText(Integer.toString(effect.maxValue));
+		crit.setText(Integer.toString(effect.crit));
 		
 		return ll;
 	}

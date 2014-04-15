@@ -13,16 +13,16 @@ import no.hiof.android.ambiguous.model.Effect.EffectType;
  * Keeps track of player's statistics and cards.
  */
 public class Player implements Parcelable {
-	private String name;
-	private List<Card> deck;
-	private Card[] hand;
+	public String name;
+	public List<Card> deck;
+	public Card[] hand;
 	public final int maxHealth = 150;
 	public final int maxArmor = 250;
-	private int health = maxHealth;
-	private int armor = 0;
-	private int resources = 10;
+	public int health = maxHealth;
+	public int armor = 0;
+	public int resources = 10;
 	public static final int NUMBER_OF_CARDS = 8;
-	private boolean alive = true;
+	public boolean alive = true;
 
 	public Player(String name) {
 		this.name = name;
@@ -136,10 +136,6 @@ public class Player implements Parcelable {
 		notifyStatChange(amount, EffectType.ARMOR);
 	}
 
-	public boolean isAlive() {
-		return this.alive;
-	}
-
 	/**
 	 * Removes resources from the player.
 	 * 
@@ -172,10 +168,6 @@ public class Player implements Parcelable {
 		notifyStatsUpdateListeners();
 	}
 
-	public int getHealth() {
-		return this.health;
-	}
-	
 	public void setHealth(int health){
 		this.health = health;
 		notifyStatsUpdateListeners();
@@ -191,18 +183,6 @@ public class Player implements Parcelable {
 	{
 		this.resources = resources;
 		notifyStatsUpdateListeners();
-	}
-
-	public int getArmor() {
-		return this.armor;
-	}
-
-	public int getResources() {
-		return this.resources;
-	}
-
-	public String getName() {
-		return this.name;
 	}
 
 	private ArrayList<PlayerUpdateListener> listeners = new ArrayList<PlayerUpdateListener>();

@@ -582,21 +582,21 @@ public class GooglePlayGameFragment extends Fragment implements
 
 			// 4. write 8 cards, 8 ints
 			for (int i = 0; i < creator.length; i++) {
-				w.writeInt(creator[i].getId());
+				w.writeInt(creator[i].id);
 			}
 
 			// 5. write 8 cards, 8 ints
 			for (int i = 0; i < other.length; i++) {
-				w.writeInt(other[i].getId());
+				w.writeInt(other[i].id);
 			}
 
 			// 6. write stats, 6 of em.
-			w.writeInt(pCreator.getHealth());
-			w.writeInt(pCreator.getArmor());
-			w.writeInt(pCreator.getResources());
-			w.writeInt(pOther.getHealth());
-			w.writeInt(pOther.getArmor());
-			w.writeInt(pOther.getResources());
+			w.writeInt(pCreator.health);
+			w.writeInt(pCreator.armor);
+			w.writeInt(pCreator.resources);
+			w.writeInt(pOther.health);
+			w.writeInt(pOther.armor);
+			w.writeInt(pOther.resources);
 		} catch (IOException e) {
 			Log.d("test", "Error creating bytes for google");
 		}
@@ -622,7 +622,7 @@ public class GooglePlayGameFragment extends Fragment implements
 			index1 = 2;
 		}
 		playedCard[index1] = (discard ? DISCARDED_CARD : PLAYED_CARD);
-		playedCard[index1 + 1] = (byte) c.getId();
+		playedCard[index1 + 1] = (byte) c.id;
 	}
 
 	/**
@@ -746,10 +746,10 @@ public class GooglePlayGameFragment extends Fragment implements
 		int playerResult = ParticipantResult.MATCH_RESULT_NONE;
 		int opponentResult = ParticipantResult.MATCH_RESULT_NONE;
 
-		if (!gameMachine.player.isAlive()) {
+		if (!gameMachine.player.alive) {
 			playerResult = ParticipantResult.MATCH_RESULT_LOSS;
 			opponentResult = ParticipantResult.MATCH_RESULT_WIN;
-		} else if (!gameMachine.opponent.isAlive()) {
+		} else if (!gameMachine.opponent.alive) {
 			playerResult = ParticipantResult.MATCH_RESULT_WIN;
 			opponentResult = ParticipantResult.MATCH_RESULT_LOSS;
 		}
@@ -863,7 +863,9 @@ public class GooglePlayGameFragment extends Fragment implements
 												R.string.activeGamesText),
 										yourturn, invites));
 								tw.setVisibility(View.VISIBLE);
-								getActivity().findViewById(R.id.activeGamesSpinner).setVisibility(View.GONE);
+								getActivity().findViewById(
+										R.id.activeGamesSpinner).setVisibility(
+										View.GONE);
 							}
 						});
 

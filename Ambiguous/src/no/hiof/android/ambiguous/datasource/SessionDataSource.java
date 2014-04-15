@@ -78,14 +78,14 @@ public class SessionDataSource {
 	 */
 	private ContentValues getPlayerContentValues(Player p, int id)
 	{
-		String playerName = p.getName();
+		String playerName = p.name;
 		checkIfPlayerExists(playerName);
 		
 		ContentValues cv = new ContentValues();
-//		cv.put("name", p.getName());
+//		cv.put("name", p.name);
 		cv.put("name", playerName);
-		cv.put("armor", p.getArmor());
-		cv.put("resources", p.getResources());
+		cv.put("armor", p.armor);
+		cv.put("resources", p.resources);
 		cv.put("deckid", saveDeck(p.getDeck(), id, Db.CARDLISTTYPE_DECK));
 		cv.put("handid", saveHand(p.getHand(), id, Db.CARDLISTTYPE_HAND));
 		cv.put("id", id);
@@ -109,7 +109,7 @@ public class SessionDataSource {
 			db.beginTransaction();
 			for (int i = 0; i < cards.length; i++) {
 				ContentValues handCV = new ContentValues();
-				handCV.put("cardid", cards[i].getId());
+				handCV.put("cardid", cards[i].id);
 				handCV.put("sessioncardlistid", rowId);
 				handCV.put("position", i);
 				

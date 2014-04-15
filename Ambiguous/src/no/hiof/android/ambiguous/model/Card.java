@@ -7,12 +7,12 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 public class Card implements Parcelable{
-	private int id;
-	private String name;
-	private String description;
-	private int cost;
-	private String image;
-	private List<Effect> effects;
+	public int id;
+	public String name;
+	public String description;
+	public int cost;
+	public String image;
+	public List<Effect> effects;
 	
 	public Card()
 	{
@@ -25,49 +25,6 @@ public class Card implements Parcelable{
 		this.name = name;
 	}
 	
-	public int getId() {
-		return id;
-	}
-	public Card setId(int id) {
-		this.id = id;
-		return this;
-	}
-	public String getName() {
-		return this.name;
-	}
-	public Card setName(String name) {
-		this.name = name;
-		return this;
-	}
-	public String getDescription() {
-		return description;
-	}
-	public Card setDescription(String description) {
-		this.description = description;
-		return this;
-	}
-	public int getCost() {
-		return cost;
-	}
-	public Card setCost(int cost) {
-		this.cost = cost;
-		return this;
-	}
-	public String getImage() {
-		return image;
-	}
-	public Card setImage(String image) {
-		this.image = image;
-		return this;
-	}
-	public List<Effect> getEffects() {
-		return effects;
-	}
-	public Card setEffects(List<Effect> effects) {
-		this.effects = effects;
-		return this;
-	}
-
 	@Override
 	public int describeContents() {
 		// TODO Auto-generated method stub

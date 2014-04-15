@@ -301,12 +301,12 @@ public class NetworkOpponent implements GameMachineListener {
 
 	@Override
 	public void onPlayerPlayedCard(Card card) {
-		sendPlayedCard(card.getId());
+		sendPlayedCard(card.id);
 	}
 
 	@Override
 	public void onPlayerDiscardCard(Card card) {
-		sendDiscardCard(card.getId());
+		sendDiscardCard(card.id);
 	}
 
 	@Override

@@ -32,11 +32,11 @@ public class EffectDataSource {
 	{
 		ContentValues v = new ContentValues();
         v.put("card_id", id);
-        v.put("type", e.getType().toString());
-        v.put("target", e.getTarget().toString());
-        v.put("minvalue", e.getMinValue());
-        v.put("maxvalue",e.getMaxValue());
-        v.put("crit", e.getCrit());
+        v.put("type", e.type.toString());
+        v.put("target", e.target.toString());
+        v.put("minvalue", e.minValue);
+        v.put("maxvalue",e.maxValue);
+        v.put("crit", e.crit);
         return v;
 	}
 
@@ -47,17 +47,17 @@ public class EffectDataSource {
 	public List<Effect> getEffects(Card card)
 	{
 		List<Effect> effects = new ArrayList<Effect>();
-		Cursor c = db.rawQuery(SELECT_EFFECTS, new String[] {Integer.toString(card.getId())});
+		Cursor c = db.rawQuery(SELECT_EFFECTS, new String[] {Integer.toString(card.id)});
 		c.moveToFirst();
 		while(!c.isAfterLast())
 		{
-			Effect e = new Effect()
-			.setId(c.getInt(c.getColumnIndex("id")))
-			.setType(Effect.EffectType.valueOf(c.getString(c.getColumnIndex("type"))))
-			.setTarget(Effect.Target.valueOf(c.getString(c.getColumnIndex("target"))))
-			.setMinValue(c.getInt(c.getColumnIndex("minvalue")))
-			.setMaxValue(c.getInt(c.getColumnIndex("maxvalue")))
-			.setCrit(c.getInt(c.getColumnIndex("crit")));
+			Effect e = new Effect();
+			e.id = (c.getInt(c.getColumnIndex("id")));
+			e.type = (Effect.EffectType.valueOf(c.getString(c.getColumnIndex("type"))));
+			e.target = (Effect.Target.valueOf(c.getString(c.getColumnIndex("target"))));
+			e.minValue = (c.getInt(c.getColumnIndex("minvalue")));
+			e.maxValue = (c.getInt(c.getColumnIndex("maxvalue")));
+			e.crit = (c.getInt(c.getColumnIndex("crit")));
 			effects.add(e);
 			c.moveToNext();
 		}

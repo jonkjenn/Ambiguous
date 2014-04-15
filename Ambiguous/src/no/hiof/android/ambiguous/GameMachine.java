@@ -143,13 +143,15 @@ public class GameMachine implements OpponentListener {
 
 	public void playerPlayCard(int card, int amount) {
 		if (state != State.PLAYER_TURN
-				|| player.getResources() < player.getHand()[card].getCost()) {
+				|| player.resources < player.getHand()[card].cost) {
 			notifyCouldNotPlayCard(card);
 			return;
 		}
 		Card c = player.getHand()[card];
-		c.getEffects().get(0).setMinValue(amount).setMaxValue(amount)
-				.setCrit(0);
+		Effect e = c.effects.get(0);
+		e.minValue = amount;
+		e.maxValue = (amount);
+		e.crit = 0;
 		playCard(player, c, card);
 		doChangeState();
 	}
@@ -169,11 +171,11 @@ public class GameMachine implements OpponentListener {
 	 * Checks if player or opponent is dead and changes state if so.
 	 */
 	private void checkDead() {
-		if (!player.isAlive()) {
+		if (!player.alive) {
 			notifyPlayerDead();
 			state = State.GAME_OVER;
 		}
-		if (!opponent.isAlive()) {
+		if (!opponent.alive) {
 			notifyOpponentDead();
 			state = State.GAME_OVER;
 		}
@@ -227,7 +229,7 @@ public class GameMachine implements OpponentListener {
 		// have enough resources.
 		if (card == null || caster == this.player && state != State.PLAYER_TURN
 				|| caster == this.opponent && state != State.OPPONENT_TURN
-				|| !caster.useResources(card.getCost())) {
+				|| !caster.useResources(card.cost)) {
 			if (caster == this.player) {
 				notifyCouldNotPlayCard(position);
 			}
@@ -254,9 +256,9 @@ public class GameMachine implements OpponentListener {
 	 * @param target
 	 */
 	public void useCard(Card card, Player caster, Player target) {
-		for (int i = 0; i < card.getEffects().size(); i++) {
-			Effect e = card.getEffects().get(i);
-			switch (e.getTarget()) {
+		for (int i = 0; i < card.effects.size(); i++) {
+			Effect e = card.effects.get(i);
+			switch (e.target) {
 			case OPPONENT:
 				useEffect(e, target);
 				break;
@@ -277,7 +279,7 @@ public class GameMachine implements OpponentListener {
 	 * @param amount
 	 */
 	public void useEffect(Effect e, Player target, int amount) {
-		switch (e.getType()) {
+		switch (e.type) {
 		case ARMOR:
 			target.modArmor(amount);
 			break;
@@ -295,7 +297,7 @@ public class GameMachine implements OpponentListener {
 		}
 
 		if (state == State.PLAYER_TURN) {
-			notifyPlayerUsedEffect(e.getType(), target, amount);
+			notifyPlayerUsedEffect(e.type, target, amount);
 		}
 	}
 
@@ -306,26 +308,20 @@ public class GameMachine implements OpponentListener {
 	 * @param target
 	 */
 	public void useEffect(Effect e, Player target) {
-		switch (e.getType()) {
+		switch (e.type) {
 		case ARMOR:
-			useEffect(e, target, (e.getMinValue()));
+			useEffect(e, target, (e.minValue));
 			break;
 		case DAMAGE:
-			useEffect(
-					e,
-					target,
-					RandomAmountGenerator.GenerateAmount(e.getMinValue(),
-							e.getMaxValue(), e.getCrit()));
+			useEffect(e, target, RandomAmountGenerator.GenerateAmount(
+					e.minValue, e.maxValue, e.crit));
 			break;
 		case HEALTH:
-			useEffect(
-					e,
-					target,
-					RandomAmountGenerator.GenerateAmount(e.getMinValue(),
-							e.getMaxValue(), e.getCrit()));
+			useEffect(e, target, RandomAmountGenerator.GenerateAmount(
+					e.minValue, e.maxValue, e.crit));
 			break;
 		case RESOURCE:
-			useEffect(e, target, e.getMinValue());
+			useEffect(e, target, e.minValue);
 			break;
 		default:
 			break;
@@ -399,11 +395,9 @@ public class GameMachine implements OpponentListener {
 			listener.onPlayerUsedeffect(type, target, amount);
 		}
 	}
-	
-	void notifyPlayerDiscardCard(Card card)
-	{
-		for(GameMachineListener listener: gameMachineListeners)
-		{
+
+	void notifyPlayerDiscardCard(Card card) {
+		for (GameMachineListener listener : gameMachineListeners) {
 			listener.onPlayerDiscardCard(card);
 		}
 	}
@@ -447,7 +441,7 @@ public class GameMachine implements OpponentListener {
 			state = State.PLAYER_TURN;
 			doChangeState();
 		} else {
-			opponent.useResources(card.getCost());
+			opponent.useResources(card.cost);
 		}
 
 	}

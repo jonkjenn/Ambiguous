@@ -610,7 +610,7 @@ public class GameActivity extends ActionBarActivity implements
 	 *            The position of the card in the players hand.
 	 */
 	public void playCard(int position) {
-		if (gameMachine.player.getCard(position).getName().equals("Minigame!")
+		if (gameMachine.player.getCard(position).name.equals("Minigame!")
 				&& getPackageManager().hasSystemFeature(
 						PackageManager.FEATURE_SENSOR_ACCELEROMETER)
 				&& Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
@@ -688,11 +688,11 @@ public class GameActivity extends ActionBarActivity implements
 		FragmentManager manager = getSupportFragmentManager();
 		FragmentTransaction transaction = manager.beginTransaction();
 
-		Effect e = gameMachine.player.getCard(cardPosition).getEffects().get(0);
+		Effect e = gameMachine.player.getCard(cardPosition).effects.get(0);
 		MinigameFragment minigame = new MinigameFragment();
 		Bundle b = new Bundle();
-		b.putInt("min", e.getMinValue());
-		b.putInt("max", e.getMaxValue());
+		b.putInt("min", e.minValue);
+		b.putInt("max", e.maxValue);
 		b.putInt("pos", cardPosition);
 		minigame.setArguments(b);
 
@@ -801,21 +801,21 @@ public class GameActivity extends ActionBarActivity implements
 	@Override
 	public void onStatsUpdateListener(Player player) {
 		if (player == gameMachine.player) {
-			// playerName.setText(player.getName());
+			// playerName.setText(player.name);
 			SharedPreferences sp = PreferenceManager
 					.getDefaultSharedPreferences(this);
 			playerName
 					.setText(sp.getString(SettingsActivity.KEY_PREF_USER, ""));
 
-			playerHealth.setText(String.valueOf(player.getHealth()));
-			playerArmor.setText(String.valueOf(player.getArmor()));
-			playerResource.setText(String.valueOf(player.getResources()));
+			playerHealth.setText(String.valueOf(player.health));
+			playerArmor.setText(String.valueOf(player.armor));
+			playerResource.setText(String.valueOf(player.resources));
 
 		} else if (player == gameMachine.opponent) {
-			opponentName.setText(player.getName());
-			opponentHealth.setText(String.valueOf(player.getHealth()));
-			opponentArmor.setText(String.valueOf(player.getArmor()));
-			opponentResource.setText(String.valueOf(player.getResources()));
+			opponentName.setText(player.name);
+			opponentHealth.setText(String.valueOf(player.health));
+			opponentArmor.setText(String.valueOf(player.armor));
+			opponentResource.setText(String.valueOf(player.resources));
 		}
 	}
 
@@ -936,8 +936,8 @@ public class GameActivity extends ActionBarActivity implements
 		super.onPause();
 
 		if (gameMachine == null
-				|| (gameMachine.player.isAlive() && gameMachine.opponent
-						.isAlive())) {
+				|| (gameMachine.player.alive && gameMachine.opponent
+						.alive)) {
 			sendAnnoyingNotification();
 		}
 
@@ -949,7 +949,7 @@ public class GameActivity extends ActionBarActivity implements
 		if (gameMachine != null && !useGPGS) {
 			sds.saveSession(gameMachine.state.ordinal(), gameMachine.player,
 					gameMachine.opponent,
-					(currentOpponentCard != null ? currentOpponentCard.getId()
+					(currentOpponentCard != null ? currentOpponentCard.id
 							: -1), opponentCardIsDiscarded);
 		}
 

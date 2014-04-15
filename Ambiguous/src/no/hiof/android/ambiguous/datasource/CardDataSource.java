@@ -34,7 +34,7 @@ public class CardDataSource {
 		
 		for(int i=0;i<cards.size();i++)
 		{
-			cardMap.put(cards.get(i).getId(), cards.get(i));
+			cardMap.put(cards.get(i).id, cards.get(i));
 		}
 		
 	}
@@ -46,9 +46,9 @@ public class CardDataSource {
 		long id = db.insert("Card", null, cv);
 		if(id>0)
 		{
-			for(int i=0;i<card.getEffects().size();i++)
+			for(int i=0;i<card.effects.size();i++)
 			{
-				db.insert("Effect", null, this.effectDs.getEffectContentValues(card.getEffects().get(i),id));
+				db.insert("Effect", null, this.effectDs.getEffectContentValues(card.effects.get(i),id));
 			}
 		}
 	}
@@ -61,10 +61,10 @@ public class CardDataSource {
 	private ContentValues getCardContentValues(Card c)
 	{
 		ContentValues cv = new ContentValues();
-		cv.put("name", c.getName());
-		cv.put("description", c.getDescription());
-		cv.put("cost", c.getCost());
-		cv.put("image", c.getImage());
+		cv.put("name", c.name);
+		cv.put("description", c.description);
+		cv.put("cost", c.cost);
+		cv.put("image", c.image);
 		
 		return cv;
 	}
@@ -93,7 +93,7 @@ public class CardDataSource {
 	{
 		ContentValues cv = getCardContentValues(card);
 
-		db.update("Card", cv, "id = ?", new String[]{Integer.toString(card.getId())});
+		db.update("Card", cv, "id = ?", new String[]{Integer.toString(card.id)});
 	}
 	
 	/**
@@ -126,7 +126,7 @@ public class CardDataSource {
 		for(int i=0;i<cards.size();i++)
 		{
 			Card card = cards.get(i);
-			card.setEffects(this.effectDs.getEffects(card));
+			card.effects = (this.effectDs.getEffects(card));
 		}
 		
 		return cards;
@@ -139,11 +139,12 @@ public class CardDataSource {
 	 */
 	private Card cardFromCursor(Cursor c)
 	{
-			return new Card(c.getString(1))
-			.setId(c.getInt(c.getColumnIndex("id")))
-			.setDescription(c.getString(c.getColumnIndex("description")))
-			.setImage(c.getString(c.getColumnIndex("image")))
-			.setCost(c.getInt(c.getColumnIndex("cost")));
+			Card card = new Card(c.getString(1));
+			card.id = (c.getInt(c.getColumnIndex("id")));
+			card.description = (c.getString(c.getColumnIndex("description")));
+			card.image = (c.getString(c.getColumnIndex("image")));
+			card.cost = (c.getInt(c.getColumnIndex("cost")));
+			return card;
 	}
 
 }

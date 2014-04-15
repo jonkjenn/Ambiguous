@@ -1,7 +1,6 @@
 package no.hiof.android.ambiguous;
 
 import no.hiof.android.ambiguous.datasource.CardDataSource;
-import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabase.CursorFactory;
@@ -117,7 +116,7 @@ public class Db extends SQLiteOpenHelper {
 	{
 		if(db == null)
 		{
-			db = new Db(ctx,name,null,3);
+			db = new Db(ctx,name,null,5);
 				
 		}
 		

@@ -43,6 +43,14 @@
             android:layout_height="wrap_content"
             android:onClick="goToNetwork"
             android:text="@string/menu_button_network" />
+
+        <Button
+            android:id="@+id/play_google_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="goToGoogle"
+            android:text="@string/menu_button_google" />
+
     </LinearLayout>
 
 </RelativeLayout>

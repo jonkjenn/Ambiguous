@@ -19,7 +19,7 @@ public class OpponentController {
 	}
 
 	public void PlayCard(int card, boolean generateDamage) {
-		PlayCard(cs.getCard(card), generateDamage);
+		PlayCard(CardDataSource.getCard(card), generateDamage);
 	}
 
 	public void UseEffect(EffectType type, Player target, int amount) {

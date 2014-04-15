@@ -3,16 +3,23 @@ package no.hiof.android.ambiguous.activities;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Calendar;
+import java.util.List;
 
 import no.hiof.android.ambiguous.AlarmReceiver;
 import no.hiof.android.ambiguous.Db;
+import no.hiof.android.ambiguous.DeckBuilder;
 import no.hiof.android.ambiguous.GameMachine;
 import no.hiof.android.ambiguous.GameMachine.State;
 import no.hiof.android.ambiguous.HandDragListener;
+import no.hiof.android.ambiguous.NetworkOpponent;
+import no.hiof.android.ambiguous.OpponentController;
 import no.hiof.android.ambiguous.OpponentController.OpponentListener;
 import no.hiof.android.ambiguous.R;
 import no.hiof.android.ambiguous.adapter.GameDeckAdapter;
+import no.hiof.android.ambiguous.ai.AIController;
+import no.hiof.android.ambiguous.datasource.CardDataSource;
 import no.hiof.android.ambiguous.datasource.SessionDataSource;
+import no.hiof.android.ambiguous.fragments.GooglePlayGameFragment;
 import no.hiof.android.ambiguous.fragments.MinigameFragment;
 import no.hiof.android.ambiguous.fragments.MinigameFragment.MinigameListener;
 import no.hiof.android.ambiguous.fragments.TutorialFragment;
@@ -30,6 +37,7 @@ import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -45,6 +53,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
@@ -62,6 +71,9 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
 
 /**
  * Initializes games and shows/handles the game UI.
@@ -119,6 +131,16 @@ public class GameActivity extends ActionBarActivity implements
 	// TODO: Store this during pause. Both in bundle and in database.
 	private int previousRotation;
 
+	// Google Play Game Service
+	private boolean useGPGS = false;
+	private GooglePlayGameFragment gPGHandler;
+
+	public Player player;
+	public Player opponent;
+	private OpponentController opponentController;
+	private NetworkOpponent networkOpponent;
+	private AIController aiController;
+
 	// Network settings
 	private boolean isNetwork;
 	private String address;
@@ -131,11 +153,8 @@ public class GameActivity extends ActionBarActivity implements
 
 	private AlertDialog waitingForNetwork;
 
-	/*
-	 * private static final String KEY_TEXT_PLAYER_VALUE = "playerTextValue";
-	 * private static final String KEY_TEXT_OPPONENT_VALUE =
-	 * "opponentTextValue";
-	 */
+	CardDataSource cs;
+	public static List<Card> cards;
 
 	// We check API level in code
 	@SuppressLint("NewApi")
@@ -146,11 +165,8 @@ public class GameActivity extends ActionBarActivity implements
 
 		cancelAnnoyingNotification();
 
-		layoutContainer = (RelativeLayout) findViewById(R.id.game_layout_container);
-		playerStatus = (TextView) findViewById(R.id.stats_player);
-		handView = (GridView) findViewById(R.id.game_grid);
-
-		opponentCard = (ImageView) findViewById(R.id.opponent_card);
+		// Find all the views we use so we only have to find them once
+		findViews();
 
 		// TODO: What?
 		playerStatus.setText(" ");
@@ -160,8 +176,47 @@ public class GameActivity extends ActionBarActivity implements
 			loadSavedData(savedInstanceState);
 		}
 
-		// Find all views so we only have to find them once.
+		// We dont want the actionbar visible during the game
+		ActionBar actionBar = getSupportActionBar();
+		actionBar.hide();
 
+		// Gets the db that will be reused throughout the game.
+		this.db = Db.getDb(getApplicationContext()).getWritableDatabase();
+		cs = new CardDataSource(db);
+		cards = cs.getCards();
+
+		this.useGPGS = getIntent().getBooleanExtra("useGPGS", false);
+		this.isNetwork = getIntent().getBooleanExtra("isNetwork", false);
+
+		if (this.isNetwork && loadNetworkInfo()) {// We start a LAN Network game
+			startNetwork();
+
+		} else if (useGPGS) {// We start a game with Google Play Game Service
+			int e = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
+
+			if (e != ConnectionResult.SUCCESS) {
+				GooglePlayServicesUtil.getErrorDialog(e, this, 0).show();
+			}
+
+		} else {
+			setupGameMachine(null);
+		}
+
+		if (!hideTutorial()) {
+			showTutorialFragment(false);
+		} else if (useGPGS) {
+			showGooglePlayGameFragment();
+		}
+	}
+
+	/**
+	 * Find all the views we use so we only have to find them once
+	 */
+	void findViews() {
+		layoutContainer = (RelativeLayout) findViewById(R.id.game_layout_container);
+		playerStatus = (TextView) findViewById(R.id.stats_player);
+		handView = (GridView) findViewById(R.id.game_grid);
+		opponentCard = (ImageView) findViewById(R.id.opponent_card);
 		playerName = (TextView) findViewById(R.id.stat_player_name);
 		playerHealth = (TextView) findViewById(R.id.stat_player_health);
 		playerArmor = (TextView) findViewById(R.id.stat_player_armor);
@@ -169,7 +224,6 @@ public class GameActivity extends ActionBarActivity implements
 		floatingHealthPlayer = (ViewGroup) findViewById(R.id.floating_health_player);
 		floatingArmorPlayer = (ViewGroup) findViewById(R.id.floating_armor_player);
 		floatingResourcehPlayer = (ViewGroup) findViewById(R.id.floating_resource_player);
-
 		opponentName = (TextView) findViewById(R.id.stat_opponent_name);
 		opponentHealth = (TextView) findViewById(R.id.stat_opponent_health);
 		opponentArmor = (TextView) findViewById(R.id.stat_opponent_armor);
@@ -177,22 +231,114 @@ public class GameActivity extends ActionBarActivity implements
 		floatingHealthOpponent = (ViewGroup) findViewById(R.id.floating_health_opponent);
 		floatingArmorOpponent = (ViewGroup) findViewById(R.id.floating_armor_opponent);
 		floatingResourcehOpponent = (ViewGroup) findViewById(R.id.floating_resource_opponent);
+	}
 
-		ActionBar actionBar = getSupportActionBar();
-		actionBar.hide();
+	/**
+	 * Checks if there is a saved player to load or creates new Player objects
+	 * for player and opponent.
+	 */
+	void setupPlayers() {
+		// Resume gamemachine with previous player states.
+		if (savedPlayer != null && savedOpponent != null) {
+			player = savedPlayer;
+			opponent = savedOpponent;
+		} else { // Start fresh new gamemachine.
+			player = new Player("Local player");
+			player.setDeck(DeckBuilder.StandardDeck(cards));
+			opponent = new Player("Opponent");
+			opponent.setDeck(DeckBuilder.StandardDeck(cards));
+		}
+	}
 
-		// Gets the db that will be reused throughout the game.
-		this.db = Db.getDb(getApplicationContext()).getWritableDatabase();
+	/**
+	 * Sets up the game machine that "drives" the game.
+	 */
+	@SuppressLint("NewApi")
+	// Version is checked in code
+	public void setupGameMachine(GameMachine.State state) {
+		
+		hideGooglePlayGameFragment();
+		
+		resetLayout();
 
-		this.isNetwork = getIntent().getBooleanExtra("isNetwork", false);
-		if (this.isNetwork && loadNetworkInfo()) {
-			startNetwork();
-		} else {
-			setupGameMachine();
+		setupPlayers();
+
+		// Settings common for all game types
+		GameMachine.Builder b = new GameMachine.Builder(db, player, opponent);
+
+		// Setup settings specific for the different game modes.
+
+		// Lan network
+		if (isNetwork) {
+			b.setDelay(50);// Do not need extra delays in network play
+			if (isServer) {
+				// If we're the server we have to randomly
+				// pick which player starts.
+				b.setState(null);
+			}
+		} else if (useGPGS)// Google game service
+		{
+			b.setDelay(50);// Do not want extra delays.
+			b.setState(state);
+		} else// Against AI
+		{
+			b.setDelay(1000);
+			if (savedState != null) {// Set the starting state if we have it
+										// saved
+				b.setState(savedState);
+			}
+			b.setState(null);
 		}
 
-		if (!hideTutorial()) {
-			showTutorialFragment(false);
+		gameMachine = b.build();
+		setupOpponents();
+		setupUIListeners();
+	}
+
+	/**
+	 * Sets up the communication with the OpponentController depending on which
+	 * game type we're in.
+	 */
+	void setupOpponents() {
+		opponentController = new OpponentController(cs);
+		opponentController.setOpponentListener(gameMachine);
+
+		if (isNetwork) {// LAN
+			networkOpponent = new NetworkOpponent(opponentController, player,
+					opponent, socket);
+			gameMachine.setGameMachineListener(networkOpponent);
+			gameMachine.startGame();
+		} else if (useGPGS) {// Google game service
+			gameMachine.setGameMachineListener(gPGHandler);
+			gPGHandler.setOpponentController(opponentController);
+			gPGHandler.setGameMachine(gameMachine);
+			// The google play handler will start the gameMachine later.
+		} else {// AI
+			aiController = new AIController(opponent, player,
+					opponentController);
+			gameMachine.setTurnChangeListener(aiController);
+			gameMachine.startGame();
+		}
+	}
+
+	void setupUIListeners() {
+		// Listen to gamemachine for changes that should be reflect in UI.
+		gameMachine.setGameMachineListener(this);
+
+		// Listen to player and opponent for changes that should be reflected in
+		// UI.
+		player.setPlayerUpdateListeners(this);
+		opponent.setPlayerUpdateListeners(this);
+		opponentController.setOpponentListener(this);
+
+		// If high enough API level we use drag drop on cards, with lower
+		// versions we use a long click context menu.
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+
+			handDragListener = new HandDragListener(gameMachine, this);
+			layoutContainer.setOnDragListener(handDragListener);
+		} else {
+			registerForContextMenu(handView);
 		}
 	}
 
@@ -205,9 +351,8 @@ public class GameActivity extends ActionBarActivity implements
 		SharedPreferences s = getPreferences(Context.MODE_PRIVATE);
 		return s.getBoolean("hideTutorial", false);
 	}
-	
-	public void showTutorialButton(View view)
-	{
+
+	public void showTutorialButton(View view) {
 		showTutorialFragment(true);
 	}
 
@@ -215,17 +360,18 @@ public class GameActivity extends ActionBarActivity implements
 	 * Displays the tutorial
 	 */
 	private void showTutorialFragment(boolean hideNeverButton) {
+		//hideGooglePlayGameFragment();
+
 		final FragmentManager manager = getSupportFragmentManager();
 
 		final TutorialFragment tutorial = new TutorialFragment();
-		if(hideNeverButton)
-		{
+		if (hideNeverButton) {
 			Bundle b = new Bundle();
 			b.putBoolean("hideNeverShow", true);
 			tutorial.setArguments(b);
 		}
 		FragmentTransaction transaction = manager.beginTransaction();
-		transaction.add(R.id.game_layout_container, tutorial, "tutorial");
+		transaction.add(R.id.game_layout_container, tutorial, "tutorial").addToBackStack("showTutorial");
 		transaction.commit();
 	}
 
@@ -247,6 +393,49 @@ public class GameActivity extends ActionBarActivity implements
 		t.remove(manager.findFragmentByTag("tutorial"));
 		t.commitAllowingStateLoss();// Since its only a
 									// tutorial.
+
+		if (useGPGS) {
+			showGooglePlayGameFragment();
+		}
+	}
+
+	/**
+	 * Make the fragment visible or create a new if does not exist.
+	 */
+	void showGooglePlayGameFragment() {
+		FragmentManager manager = getSupportFragmentManager();
+		gPGHandler =(GooglePlayGameFragment) manager.findFragmentByTag("gpg");
+		FragmentTransaction transaction = manager.beginTransaction();
+		if (gPGHandler == null) {
+			gPGHandler = new GooglePlayGameFragment();
+			transaction.add(R.id.game_layout_container, gPGHandler, "gpg");
+		} else {
+			transaction.show(manager.findFragmentByTag("gpg"));
+		}
+		transaction.commit();
+	}
+
+	/**
+	 * Temporarily hide the fragment
+	 */
+	void hideGooglePlayGameFragment() {
+		FragmentManager manager = getSupportFragmentManager();
+		FragmentTransaction t = manager.beginTransaction();
+		Fragment f = manager.findFragmentByTag("gpg");
+		if (f != null) {
+			t.hide(f).addToBackStack(null);
+			t.commit();
+		}
+	}
+
+	/**
+	 * Close the fragment for good.
+	 */
+	void closeGooglePlayGameFragment() {
+		FragmentManager manager = getSupportFragmentManager();
+		FragmentTransaction t = manager.beginTransaction();
+		t.remove(manager.findFragmentByTag("gpg"));
+		t.commit();
 	}
 
 	/**
@@ -355,53 +544,25 @@ public class GameActivity extends ActionBarActivity implements
 		savedSessionId = savedInstanceState.getInt("Session");
 	}
 
-	/**
-	 * Sets up the game machine that "drives" the game.
-	 */
-	@SuppressLint("NewApi")
-	// Version is checked in code
-	private void setupGameMachine() {
-		// Resume gamemachine with previous player states.
-		if (savedPlayer != null && savedOpponent != null) {
-			gameMachine = new GameMachine(this.db, socket, isServer,
-					savedPlayer, savedOpponent, savedState);
-		} else { // Start fresh new gamemachine.
-			gameMachine = new GameMachine(this.db, socket, isServer);
-		}
-
-		// Listen to gamemachine for changes that should be reflect in UI.
-		gameMachine.setGameMachineListener(this);
-		gameMachine.opponentController.setOpponentListener(this);
-
-		// Listen to player and opponent for changes that should be reflected in
-		// UI.
-		gameMachine.player.setPlayerUpdateListeners(this);
-		gameMachine.opponent.setPlayerUpdateListeners(this);
-
-		// If high enough API level we use drag drop on cards, with lower
-		// versions we use a long click context menu.
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-
-			handDragListener = new HandDragListener(gameMachine, this);
-			layoutContainer.setOnDragListener(handDragListener);
-		} else {
-			registerForContextMenu(handView);
-		}
-	}
-
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
-		// We store stuff so that can resume later.
-		outState.putParcelable("Player", gameMachine.player);
-		outState.putParcelable("Opponent", gameMachine.opponent);
-		outState.putInt("State", gameMachine.state.ordinal());
-		outState.putParcelable("OpponentCard", currentOpponentCard);
-		outState.putBoolean("OpponentCardDiscarded", opponentCardIsDiscarded);
-		outState.putInt("Session", savedSessionId);
-		// TODO: Implementing storing state to database so can resume even if
-		// app is destroyed.
-		// save sessionid?
+
+		if (gameMachine != null && gameMachine.player != null
+				& gameMachine.opponent != null) {
+			// We store stuff so that can resume later.
+			outState.putParcelable("Player", gameMachine.player);
+			outState.putParcelable("Opponent", gameMachine.opponent);
+			outState.putInt("State", gameMachine.state.ordinal());
+			outState.putParcelable("OpponentCard", currentOpponentCard);
+			outState.putBoolean("OpponentCardDiscarded",
+					opponentCardIsDiscarded);
+			outState.putInt("Session", savedSessionId);
+			// TODO: Implementing storing state to database so can resume even
+			// if
+			// app is destroyed.
+			// save sessionid?
+		}
 	}
 
 	/**
@@ -449,7 +610,7 @@ public class GameActivity extends ActionBarActivity implements
 	 *            The position of the card in the players hand.
 	 */
 	public void playCard(int position) {
-		if (gameMachine.player.getCard(position).getName().equals("Minigame!")
+		if (gameMachine.player.getCard(position).name.equals("Minigame!")
 				&& getPackageManager().hasSystemFeature(
 						PackageManager.FEATURE_SENSOR_ACCELEROMETER)
 				&& Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
@@ -527,11 +688,11 @@ public class GameActivity extends ActionBarActivity implements
 		FragmentManager manager = getSupportFragmentManager();
 		FragmentTransaction transaction = manager.beginTransaction();
 
-		Effect e = gameMachine.player.getCard(cardPosition).getEffects().get(0);
+		Effect e = gameMachine.player.getCard(cardPosition).effects.get(0);
 		MinigameFragment minigame = new MinigameFragment();
 		Bundle b = new Bundle();
-		b.putInt("min", e.getMinValue());
-		b.putInt("max", e.getMaxValue());
+		b.putInt("min", e.minValue);
+		b.putInt("max", e.maxValue);
 		b.putInt("pos", cardPosition);
 		minigame.setArguments(b);
 
@@ -574,8 +735,22 @@ public class GameActivity extends ActionBarActivity implements
 		opponentName.setBackgroundColor(Color.RED);
 	}
 
+	/**
+	 * Resets the layout.
+	 */
+	public void resetLayout() {
+		playerName.setBackgroundColor(Color.TRANSPARENT);
+		opponentName.setBackgroundColor(Color.TRANSPARENT);
+		currentOpponentCard = null;
+		opponentCardIsDiscarded = false;
+		opponentCard.setImageBitmap(null);
+		// Hide the discard graphic since we're not discarding.
+		findViewById(R.id.discard).setVisibility(View.INVISIBLE);
+	}
+
 	@Override
 	public void onOpponentTurnListener() {
+		opponentName.setBackgroundColor(Color.RED);
 	}
 
 	@Override
@@ -626,21 +801,21 @@ public class GameActivity extends ActionBarActivity implements
 	@Override
 	public void onStatsUpdateListener(Player player) {
 		if (player == gameMachine.player) {
-			// playerName.setText(player.getName());
+			// playerName.setText(player.name);
 			SharedPreferences sp = PreferenceManager
 					.getDefaultSharedPreferences(this);
 			playerName
 					.setText(sp.getString(SettingsActivity.KEY_PREF_USER, ""));
 
-			playerHealth.setText(String.valueOf(player.getHealth()));
-			playerArmor.setText(String.valueOf(player.getArmor()));
-			playerResource.setText(String.valueOf(player.getResources()));
+			playerHealth.setText(String.valueOf(player.health));
+			playerArmor.setText(String.valueOf(player.armor));
+			playerResource.setText(String.valueOf(player.resources));
 
 		} else if (player == gameMachine.opponent) {
-			opponentName.setText(player.getName());
-			opponentHealth.setText(String.valueOf(player.getHealth()));
-			opponentArmor.setText(String.valueOf(player.getArmor()));
-			opponentResource.setText(String.valueOf(player.getResources()));
+			opponentName.setText(player.name);
+			opponentHealth.setText(String.valueOf(player.health));
+			opponentArmor.setText(String.valueOf(player.armor));
+			opponentResource.setText(String.valueOf(player.resources));
 		}
 	}
 
@@ -752,7 +927,7 @@ public class GameActivity extends ActionBarActivity implements
 			// When start as a network game, the game will wait for this until
 			// it start.
 			this.socket = socket;
-			setupGameMachine();
+			setupGameMachine(null);
 		}
 	}
 
@@ -761,8 +936,8 @@ public class GameActivity extends ActionBarActivity implements
 		super.onPause();
 
 		if (gameMachine == null
-				|| (gameMachine.player.isAlive() && gameMachine.opponent
-						.isAlive())) {
+				|| (gameMachine.player.alive && gameMachine.opponent
+						.alive)) {
 			sendAnnoyingNotification();
 		}
 
@@ -771,10 +946,10 @@ public class GameActivity extends ActionBarActivity implements
 		if (savedSessionId != -1) {
 			sds.setSessionId(savedSessionId);
 		}
-		if (gameMachine != null) {
+		if (gameMachine != null && !useGPGS) {
 			sds.saveSession(gameMachine.state.ordinal(), gameMachine.player,
 					gameMachine.opponent,
-					(currentOpponentCard != null ? currentOpponentCard.getId()
+					(currentOpponentCard != null ? currentOpponentCard.id
 							: -1), opponentCardIsDiscarded);
 		}
 
@@ -862,4 +1037,15 @@ public class GameActivity extends ActionBarActivity implements
 		}
 	}
 
+	public static void showGenericDialog(Context context, String title,
+			String message) {
+		Builder b = new Builder(context);
+		b.setCancelable(false).setPositiveButton("OK", null).setTitle(title)
+				.setMessage(message).show();
+	}
+	
+	@Override
+	protected void onActivityResult(int arg0, int arg1, Intent arg2) {
+		super.onActivityResult(arg0, arg1, arg2);
+	}
 }

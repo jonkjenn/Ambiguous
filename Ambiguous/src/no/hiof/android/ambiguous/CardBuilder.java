@@ -19,17 +19,17 @@ public class CardBuilder {
 	 */
 	public static Card SelfArmor(String name,String description, String image, int cost, int amount)
 	{
-		Card c = new Card(name)
-		.setDescription(description)
-		.setCost(cost)
-		.setImage(image);
+		Card c = new Card(name);
+		c.description = description;
+		c.cost = cost;
+		c.image = image;
 		
-		Effect e2 = new Effect()
-		.setType(Effect.EffectType.ARMOR)
-		.setTarget(Effect.Target.SELF)
-		.setMinValue(amount);
+		Effect e2 = new Effect();
+		e2.type =  Effect.EffectType.ARMOR;
+		e2.target = Effect.Target.SELF;
+		e2.minValue = amount;
 		
-		c.getEffects().add(e2);
+		c.effects.add(e2);
 		
 		return c;
 	}
@@ -47,19 +47,19 @@ public class CardBuilder {
 	 */
 	public static Card SelfHeal(String name,String description, String image, int cost, int min, int max, int crit)
 	{
-		Card c = new Card(name)
-		.setDescription(description)
-		.setCost(cost)
-		.setImage(image);
+		Card c = new Card(name);
+		c.description = description;
+		c.cost = cost;
+		c.image = image;
 		
-		Effect e2 = new Effect()
-		.setType(Effect.EffectType.HEALTH)
-		.setTarget(Effect.Target.SELF)
-		.setMinValue(min)
-		.setMaxValue(max)
-		.setCrit(crit);
+		Effect e2 = new Effect();
+		e2.type =  Effect.EffectType.HEALTH;
+		e2.target = Effect.Target.SELF;
+		e2.minValue = min;
+		e2.maxValue = max;
+		e2.crit = crit;
 		
-		c.getEffects().add(e2);
+		c.effects.add(e2);
 		
 		return c;
 	}
@@ -75,17 +75,19 @@ public class CardBuilder {
 	 */
 	public static Card AddResources(String name,String description, String image, int cost, int amount)
 	{
-		Card c = new Card(name)
-		.setDescription(description)
-		.setCost(cost)
-		.setImage(image);
+		Card c = new Card(name);
+		c.description = description;
+		c.cost = cost;
+		c.image = image;
 		
-		Effect e2 = new Effect()
-		.setType(Effect.EffectType.RESOURCE)
-		.setTarget(Effect.Target.SELF)
-		.setMinValue(amount);
+		Effect e2 = new Effect();
+		e2.type =  Effect.EffectType.RESOURCE;
+		e2.target = Effect.Target.SELF;
+		e2.minValue = amount;
 		
-		c.getEffects().add(e2);
+		c.effects.add(e2);
+		
+		c.effects.add(e2);
 		
 		return c;
 	}
@@ -103,21 +105,20 @@ public class CardBuilder {
 	 */
 	public static Card DamageOponent(String name,String description, String image, int cost, int min,int max, int crit)
 	{
-		Card c = new Card(name)
-		.setDescription(description)
-		.setCost(cost)
-		.setImage(image);
+		Card c = new Card(name);
+		c.description = description;
+		c.cost = cost;
+		c.image = image;
 		
-		Effect e2 = new Effect()
-		.setType(Effect.EffectType.DAMAGE)
-		.setTarget(Effect.Target.OPPONENT)
-		.setMinValue(min)
-		.setMaxValue(max)
-		.setCrit(crit);
+		Effect e2 = new Effect();
+		e2.type =  Effect.EffectType.DAMAGE;
+		e2.target = Effect.Target.OPPONENT;
+		e2.minValue = min;
+		e2.maxValue = max;
+		e2.crit = crit;
 		
-		c.getEffects().add(e2);
+		c.effects.add(e2);
 		
 		return c;
 	}
-
 }

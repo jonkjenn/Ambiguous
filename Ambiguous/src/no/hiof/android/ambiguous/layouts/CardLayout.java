@@ -38,8 +38,8 @@ public class CardLayout {
 	 */
 	public static Bitmap getCardBitmap(Card card, ViewGroup parent) {
 		// If exist in cache.
-		if (bitmaps.containsKey(card.getName())) {
-			return bitmaps.get(card.getName());
+		if (bitmaps.containsKey(card.name)) {
+			return bitmaps.get(card.name);
 		} else// Create a new bitmap.
 		{
 			getCardLayout(card, parent);
@@ -65,11 +65,11 @@ public class CardLayout {
 		}
 
 		// If the card has been created before we return it from the cache.
-		if (bitmaps.containsKey(card.getName())) {
+		if (bitmaps.containsKey(card.name)) {
 			ImageView v = (ImageView) inflater.inflate(R.layout.card_game2,
 					parent, false);
-			v.setTag(card.getImage());
-			v.setImageBitmap(bitmaps.get(card.getName()));
+			v.setTag(card.image);
+			v.setImageBitmap(bitmaps.get(card.name));
 			return v;
 		}
 
@@ -77,12 +77,12 @@ public class CardLayout {
 		// Create a bitmap to use instead of the View, improve performance.
 		Bitmap b = viewToBitmap(cardView);
 		// Add the bitmap to the cache to prevent creating more of the same.
-		bitmaps.put(card.getName(), b);
+		bitmaps.put(card.name, b);
 
 		// Build the simple ImageView to use for the bitmap of the Card View.
 		ImageView v = (ImageView) inflater.inflate(R.layout.card_game2, parent,
 				false);
-		v.setTag(card.getImage());
+		v.setTag(card.image);
 		v.setImageBitmap(b);
 
 		return v;
@@ -103,10 +103,10 @@ public class CardLayout {
 		TextView description = (TextView) view
 				.findViewById(R.id.card_description);
 		ImageView image = (ImageView) view.findViewById(R.id.card_image);
-		cost.setText(Integer.toString(card.getCost()));
-		name.setText(card.getName());
+		cost.setText(Integer.toString(card.cost));
+		name.setText(card.name);
 		if (description != null) {
-			description.setText(card.getDescription());
+			description.setText(card.description);
 		}
 
 		// We store the images as drawable resources, so got to use this "hack"
@@ -116,7 +116,7 @@ public class CardLayout {
 		int imageId = parent
 				.getContext()
 				.getResources()
-				.getIdentifier(card.getImage(), "drawable",
+				.getIdentifier(card.image, "drawable",
 						parent.getContext().getPackageName());
 
 		if (imageId > 0) {
@@ -124,7 +124,7 @@ public class CardLayout {
 		}
 
 		//Add the effects to the card.
-		List<Effect> e = card.getEffects();
+		List<Effect> e = card.effects;
 		LinearLayout l = (LinearLayout) view.findViewById(R.id.card_effects);
 		l.removeAllViews();// For fixing double effects when resume activity
 
@@ -160,9 +160,9 @@ public class CardLayout {
 	private static TextView getEffectView(Effect e, Context context) {
 		String text = "";
 
-		String min = Integer.toString(e.getMinValue());
-		String max = Integer.toString(e.getMaxValue());
-		String crit = Integer.toString(e.getCrit());
+		String min = Integer.toString(e.minValue);
+		String max = Integer.toString(e.maxValue);
+		String crit = Integer.toString(e.crit);
 
 		//Textview that shows the effects min/max/crit
 		TextView t = new TextView(context);
@@ -177,7 +177,7 @@ public class CardLayout {
 		t.setPadding(3, 0, 3, 0);
 
 		//Change the color and layout depending on which effect type.
-		switch (e.getType()) {
+		switch (e.type) {
 		case ARMOR:
 			text = min;
 			t.setBackgroundColor(Color.BLUE);

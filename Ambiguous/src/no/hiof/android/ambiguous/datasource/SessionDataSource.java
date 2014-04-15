@@ -84,6 +84,7 @@ public class SessionDataSource {
 		ContentValues cv = new ContentValues();
 //		cv.put("name", p.getName());
 		cv.put("name", playerName);
+		cv.put("health", p.getHealth());
 		cv.put("armor", p.getArmor());
 		cv.put("resources", p.getResources());
 		cv.put("deckid", saveDeck(p.getDeck(), id, Db.CARDLISTTYPE_DECK));

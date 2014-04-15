@@ -37,6 +37,7 @@ public class Db extends SQLiteOpenHelper {
 	private static final String CREATE_PLAYER_TABLE = 
 			"CREATE TABLE IF NOT EXISTS `Player` (" +
 			"`name` VARCHAR(45) NOT NULL," +
+			"`health` INTEGER," +
 			"`armor` INTEGER," +
 			"`resources` INTEGER," +
 			"`deckid` INTEGER," +

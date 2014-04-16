@@ -59,6 +59,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;
@@ -158,6 +159,7 @@ public class GameActivity extends ActionBarActivity implements
 	private AlertDialog waitingForNetwork;
 
 	CardDataSource cs;
+	SessionDataSource sds;
 	public static List<Card> cards;
 
 	// We check API level in code
@@ -188,6 +190,7 @@ public class GameActivity extends ActionBarActivity implements
 		this.db = Db.getDb(getApplicationContext()).getWritableDatabase();
 		cs = new CardDataSource(db);
 		cards = cs.getCards();
+		sds = new SessionDataSource(db);
 
 		this.useGPGS = getIntent().getBooleanExtra("useGPGS", false);
 		this.isNetwork = getIntent().getBooleanExtra("isNetwork", false);
@@ -997,8 +1000,6 @@ public class GameActivity extends ActionBarActivity implements
 			sendAnnoyingNotification();
 		}
 
-		// Move sessionDataSource out to be a global field
-		SessionDataSource sds = new SessionDataSource(db);
 		if (savedSessionId != -1) {
 			sds.setSessionId(savedSessionId);
 		}
@@ -1009,6 +1010,22 @@ public class GameActivity extends ActionBarActivity implements
 					gameMachine.opponent,
 					(currentOpponentCard != null ? currentOpponentCard.id : -1),
 					opponentCardIsDiscarded);
+
+			GameMachine.State state = gameMachine.state;
+			// Deletes the session if the game has finished
+			if(state == GameMachine.State.GAME_OVER){
+				db.delete("Session", null, null);
+			}
+			else{
+				// If gameMachine exists, and the game is not finished, attempt to save 
+				// the current session in the database
+				Boolean saveSucessful = sds.saveSession(state.ordinal(), gameMachine.player,
+						gameMachine.opponent,
+						(currentOpponentCard != null ? currentOpponentCard.id
+								: -1), opponentCardIsDiscarded);
+				if(!saveSucessful)
+					Log.d("sds.saveSession", "Something caused saveSession to fail");
+			}
 		}
 
 		if (isNetwork) {

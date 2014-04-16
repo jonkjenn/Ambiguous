@@ -23,6 +23,16 @@ public class Player implements Parcelable {
 	public int resources = 10;
 	public static final int NUMBER_OF_CARDS = 8;
 	private boolean alive = true;
+	
+	public Player(String name, int health, int armor, int resources, Card[] hand, List<Card> deck){
+		super();
+		this.name = name;
+		this.health = health;
+		this.armor = armor;
+		this.resources = resources;
+		this.hand = hand;
+		this.deck = deck;
+	}
 
 	public Player(String name) {
 		this.name = name;

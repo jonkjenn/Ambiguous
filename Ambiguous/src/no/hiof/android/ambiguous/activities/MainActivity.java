@@ -1,7 +1,13 @@
 package no.hiof.android.ambiguous.activities;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import no.hiof.android.ambiguous.Db;
 import no.hiof.android.ambiguous.R;
+import no.hiof.android.ambiguous.datasource.CardDataSource;
+import no.hiof.android.ambiguous.model.Card;
+import no.hiof.android.ambiguous.model.Player;
 import android.app.Activity;
 import android.content.Intent;
 import android.database.Cursor;
@@ -20,6 +26,7 @@ import android.widget.Button;
 public class MainActivity extends Activity {
 	private SQLiteDatabase db;
 	private boolean savedSessionExists;
+	private Button resumeButton;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -29,17 +36,16 @@ public class MainActivity extends Activity {
 		// Ensure application is properly initialized with default settings
 		PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 
-		this.db = Db.getDb(getApplicationContext()).getReadableDatabase();
-		Cursor c = db.rawQuery("SELECT max(id) FROM " + "Session" + " Limit 1",
-				null);
-		savedSessionExists = (c.getCount() <= 0 ? false : true);
-		c.close();
-
-		if (savedSessionExists) {
-			Button resumeButton = (Button) findViewById(R.id.resume_button);
-			if (resumeButton != null) {
-				resumeButton.setEnabled(true);
-			}
+		resumeButton = (Button) findViewById(R.id.resume_button);
+		if(resumeButton != null){
+			this.db = Db.getDb(getApplicationContext()).getReadableDatabase();
+			Cursor c = db.rawQuery("SELECT id FROM " + "Session" + " ORDER BY id DESC Limit 1",
+					null);
+			c.moveToFirst();
+			savedSessionExists = (c.getCount() <= 0 ? false : true);
+			c.close();
+			resumeButton.setEnabled(savedSessionExists);
+			
 		}
 	}
 
@@ -79,26 +85,75 @@ public class MainActivity extends Activity {
 		int opponentCardId = c.getInt(c.getColumnIndexOrThrow("opponentCard"));
 		Intent intent = new Intent(this,
 				no.hiof.android.ambiguous.activities.GameActivity.class)
-				.putExtra("SessionId", c.getInt(c.getColumnIndexOrThrow("id")))
+				.putExtra("SessionId", 
+						c.getInt(c.getColumnIndexOrThrow("id")))
 				.putExtra("SessionPlayer",
 						c.getInt(c.getColumnIndexOrThrow("player")))
 				.putExtra("SessionOpponent",
 						c.getInt(c.getColumnIndexOrThrow("opponent")))
 				.putExtra("SessionTurn",
 						c.getInt(c.getColumnIndexOrThrow("turn")))
-				.putExtra("SessionOpponentCard", opponentCardId)
-				.putExtra(
-						"SessionOpponentDiscard",
+				.putExtra("SessionOpponentCard", 
+						opponentCardId)
+				.putExtra("SessionOpponentDiscard",
 						(c.getInt(c.getColumnIndexOrThrow("opponentDiscard")) != 0 ? true
 								: false));
 
 		c.close();
-		c = db.rawQuery("SELECT name,armor,resources,deckid,handid FROM Player WHERE id = ?", new String[]{String.valueOf(playerId)});
+		
+		int playerUser = 0;
+		int playerOpponent = 1;
+		String[] name = new String[2];
+		int[] health = new int[2];
+		int[] armor = new int[2];
+		int[] resources = new int[2];
+		List<Card[]> hand = new ArrayList<Card[]>();
+		List<Card> deckUser = new ArrayList<Card>();
+		List<Card> deckOpponent = new ArrayList<Card>();
+		
+		c = db.rawQuery("SELECT name,health,armor,resources,deckid,handid FROM Player WHERE id = ?", new String[]{String.valueOf(playerId)});
 		c.moveToFirst();
-//		Player player = new Player(c.getString(c.getColumnIndexOrThrow("name")),
-//									c.getInt(c.getColumnIndexOrThrow("armor")),
-//									c.getInt(c.getColumnIndexOrThrow("resources")));
-//		
+
+		name[playerUser] = c.getString(c.getColumnIndexOrThrow("name"));
+		health[playerUser] = c.getInt(c.getColumnIndexOrThrow("health"));
+		armor[playerUser] = c.getInt(c.getColumnIndexOrThrow("armor"));
+		resources[playerUser] = c.getInt(c.getColumnIndexOrThrow("resources"));
+		
+		int handIdUser = c.getInt(c.getColumnIndexOrThrow("handid"));
+		int deckIdUser = c.getInt(c.getColumnIndexOrThrow("deckid"));
+		c.close();
+		
+		// Get the cards in the Player's hand
+		c = db.rawQuery("SELECT cardid FROM Playercard WHERE sessioncardlistid = ? ORDER BY position ASC", 
+				new String[]{String.valueOf(handIdUser)});
+		if(c.moveToFirst()){
+			CardDataSource cds = new CardDataSource(db);
+			List<Card> tempHand = new ArrayList<Card>();
+			while(!c.isAfterLast()){
+				tempHand.add(cds.getCard(c.getInt(c.getColumnIndexOrThrow("cardid"))));
+				c.moveToNext();
+			}
+			hand.add(0,tempHand.toArray(new Card[tempHand.size()]));
+		}
+		c.close();
+		
+		// Get the cards in the Player's deck
+				c = db.rawQuery("SELECT cardid FROM Playercard WHERE sessioncardlistid = ? ORDER BY position ASC", 
+						new String[]{String.valueOf(deckIdUser)});
+				if(c.moveToFirst()){
+					CardDataSource cds = new CardDataSource(db);
+					List<Card> tempDeck = new ArrayList<Card>();
+					while(!c.isAfterLast()){
+						deckUser.add(cds.getCard(c.getInt(c.getColumnIndexOrThrow("cardid"))));
+						c.moveToNext();
+					}
+				}
+				c.close();
+		
+		Player player = new Player(	name[playerUser], health[playerUser],
+									armor[playerUser], resources[playerUser], 
+									hand.get(playerUser), deckUser);
+		
 		
 		startActivity(intent);
 	}
@@ -154,11 +209,15 @@ public class MainActivity extends Activity {
 	@Override
 	protected void onResume() {
 		super.onResume();
-		if (this.db != null) {
-			Cursor c = db.rawQuery("SELECT max(id) FROM " + "Session"
-					+ " Limit 1", null);
+		if (this.db != null){
+			Cursor c = db.rawQuery("SELECT id FROM " + "Session"
+					+ " ORDER BY id DESC Limit 1", null);
+			c.moveToFirst();
 			savedSessionExists = (c.getCount() <= 0 ? false : true);
 			c.close();
+			if(resumeButton != null){
+				resumeButton.setEnabled(savedSessionExists);
+			}
 		}
 	}
 

@@ -220,10 +220,23 @@ public class Player implements Parcelable {
 	 * 
 	 * @param listener
 	 */
-	public void setPlayerUpdateListeners(PlayerUpdateListener listener) {
+	public void setPlayerUpdateListener(PlayerUpdateListener listener) {
 		this.listeners.add(listener);
 		notifyCardsUpdateListeners();
 		notifyStatsUpdateListeners();
+	}
+	
+	public void removePlayerUpdateListener(PlayerUpdateListener listener)
+	{
+		listeners.remove(listener);
+	}
+	
+	/**
+	 * Delete all player update listeners
+	 */
+	public void clearPlayerUpdateListeners()
+	{
+		listeners.clear();
 	}
 
 	/**

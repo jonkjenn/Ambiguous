@@ -336,9 +336,29 @@ public class GameMachine implements OpponentListener {
 	public void setGameMachineListener(GameMachineListener listener) {
 		gameMachineListeners.add(listener);
 	}
+	
+	public void removeGameMachineListener(GameMachineListener listener)
+	{
+		gameMachineListeners.remove(listener);
+	}
+	
+	public void clearGameMachineListener()
+	{
+		gameMachineListeners.clear();
+	}
 
 	public void setTurnChangeListener(TurnChangeListener listener) {
 		turnChangeListeners.add(listener);
+	}
+	
+	public void removeTurnChangeListener(TurnChangeListener listener)
+	{
+		turnChangeListeners.remove(listener);
+	}
+	
+	public void clearTurnChangedListener()
+	{
+		turnChangeListeners.clear();
 	}
 
 	private void notifyTurnChanged(Player player) {

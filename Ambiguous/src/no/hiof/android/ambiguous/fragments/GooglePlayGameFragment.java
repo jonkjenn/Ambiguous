@@ -95,13 +95,16 @@ public class GooglePlayGameFragment extends Fragment implements
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
 	}
 
 	@Override
 	public void onViewCreated(View view, Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onViewCreated(view, savedInstanceState);
+
+		if (savedInstanceState != null) {
+			match = (TurnBasedMatch) savedInstanceState.getParcelable("match");
+		}
 
 		// Google created helper class for helping with signing into the Google
 		// service etc
@@ -139,6 +142,12 @@ public class GooglePlayGameFragment extends Fragment implements
 			}
 		});
 		b.setVisibility(View.VISIBLE);
+	}
+
+	@Override
+	public void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		outState.putParcelable("match", match);
 	}
 
 	@Override
@@ -357,6 +366,9 @@ public class GooglePlayGameFragment extends Fragment implements
 									// objects ingame.
 		}
 
+		this.gameMachine.removeGameMachineListener(this);
+		this.gameMachine.setGameMachineListener(this);
+
 		switch (match.getStatus()) {
 		case TurnBasedMatch.MATCH_STATUS_ACTIVE:
 			handleActiveMatch(match);
@@ -560,6 +572,7 @@ public class GooglePlayGameFragment extends Fragment implements
 			w.write(playedCard[0]);
 			w.write(playedCard[1]);
 			w.write(playedCard[2]);
+
 			w.write(playedCard[3]);
 
 			// 2. Write number of effects 1 int
@@ -774,8 +787,10 @@ public class GooglePlayGameFragment extends Fragment implements
 			Games.TurnBasedMultiplayer.finishMatch(gameHelper.getApiClient(),
 					match.getMatchId(), writeGameState(match), results);
 		} else if (match.getStatus() == TurnBasedMatch.MATCH_STATUS_COMPLETE) {
-			// Games.TurnBasedMultiplayer.finishMatch(gameHelper.getApiClient(),
-			// match.getMatchId());
+			if (match.getTurnStatus() == TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN) {
+				Games.TurnBasedMultiplayer.finishMatch(
+						gameHelper.getApiClient(), match.getMatchId());
+			}
 		}
 	}
 
@@ -821,6 +836,9 @@ public class GooglePlayGameFragment extends Fragment implements
 
 	@Override
 	public void onPlayerUsedeffect(EffectType type, Player target, int amount) {
+		if (type == EffectType.DAMAGE) {
+			amount *= -1;
+		}
 		playerUsedEffect(type, target, amount);
 	}
 
@@ -893,6 +911,10 @@ public class GooglePlayGameFragment extends Fragment implements
 						startGame(match);
 					}
 				});
+
+		if (match != null) {
+			startGame(match);
+		}
 	}
 
 	@Override

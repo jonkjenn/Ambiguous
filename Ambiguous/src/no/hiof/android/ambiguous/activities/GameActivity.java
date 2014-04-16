@@ -9,9 +9,9 @@ import no.hiof.android.ambiguous.AlarmReceiver;
 import no.hiof.android.ambiguous.Db;
 import no.hiof.android.ambiguous.DeckBuilder;
 import no.hiof.android.ambiguous.GameMachine;
-import no.hiof.android.ambiguous.LayoutHelper;
 import no.hiof.android.ambiguous.GameMachine.State;
 import no.hiof.android.ambiguous.HandDragListener;
+import no.hiof.android.ambiguous.LayoutHelper;
 import no.hiof.android.ambiguous.NetworkOpponent;
 import no.hiof.android.ambiguous.OpponentController;
 import no.hiof.android.ambiguous.OpponentController.OpponentListener;
@@ -213,11 +213,10 @@ public class GameActivity extends ActionBarActivity implements
 					.findFragmentByTag("gpg");
 			if (gPGHandler == null) {
 				showGooglePlayGameFragment();
-			}else if(!gPGSVisible)
-			{
+			} else if (!gPGSVisible) {
 				hideGooglePlayGameFragment();
 			}
-			
+
 		}
 	}
 
@@ -305,6 +304,7 @@ public class GameActivity extends ActionBarActivity implements
 		}
 
 		gameMachine = b.build();
+		removeUIListeners();
 		setupOpponents();
 		setupUIListeners();
 	}
@@ -314,6 +314,7 @@ public class GameActivity extends ActionBarActivity implements
 	 * game type we're in.
 	 */
 	void setupOpponents() {
+
 		opponentController = new OpponentController(cs);
 		opponentController.setOpponentListener(gameMachine);
 
@@ -323,7 +324,6 @@ public class GameActivity extends ActionBarActivity implements
 			gameMachine.setGameMachineListener(networkOpponent);
 			gameMachine.startGame();
 		} else if (useGPGS) {// Google game service
-			gameMachine.setGameMachineListener(gPGHandler);
 			gPGHandler.setOpponentController(opponentController);
 			gPGHandler.setGameMachine(gameMachine);
 			// The google play handler will start the gameMachine later.
@@ -341,8 +341,8 @@ public class GameActivity extends ActionBarActivity implements
 
 		// Listen to player and opponent for changes that should be reflected in
 		// UI.
-		player.setPlayerUpdateListeners(this);
-		opponent.setPlayerUpdateListeners(this);
+		player.setPlayerUpdateListener(this);
+		opponent.setPlayerUpdateListener(this);
 		opponentController.setOpponentListener(this);
 
 		// If high enough API level we use drag drop on cards, with lower
@@ -354,6 +354,35 @@ public class GameActivity extends ActionBarActivity implements
 		} else {
 			registerForContextMenu(handView);
 		}
+	}
+
+	/**
+	 * Remove all the listeners, important so we avoid leaks.
+	 */
+	void removeUIListeners() {
+		if (openSocketTask != null) {
+			openSocketTask.clearOpenSocketListeners();
+		}
+
+		if (gameMachine != null) {
+			gameMachine.clearGameMachineListener();
+			gameMachine.clearTurnChangedListener();
+		}
+
+		if (player != null) {
+			player.clearPlayerUpdateListeners();
+			opponent.clearPlayerUpdateListeners();
+		}
+
+		if (opponentController != null) {
+			opponentController.clearOpponentListener();
+		}
+
+		if (layoutContainer != null) {
+			layoutContainer.setOnDragListener(null);
+		}
+
+		unregisterForContextMenu(handView);
 	}
 
 	/**
@@ -374,7 +403,6 @@ public class GameActivity extends ActionBarActivity implements
 	 * Displays the tutorial
 	 */
 	private void showTutorialFragment(boolean hideNeverButton) {
-		// hideGooglePlayGameFragment();
 
 		final FragmentManager manager = getSupportFragmentManager();
 
@@ -404,6 +432,7 @@ public class GameActivity extends ActionBarActivity implements
 	 */
 	private void closeTutorial() {
 		FragmentManager manager = getSupportFragmentManager();
+		manager.popBackStack("showTutorial", FragmentManager.POP_BACK_STACK_INCLUSIVE);
 		FragmentTransaction t = manager.beginTransaction();
 		t.remove(manager.findFragmentByTag("tutorial"));
 		t.commitAllowingStateLoss();// Since its only a
@@ -418,7 +447,7 @@ public class GameActivity extends ActionBarActivity implements
 	 * Make the fragment visible or create a new if does not exist.
 	 */
 	void showGooglePlayGameFragment() {
-		gPGSVisible =true;
+		gPGSVisible = true;
 		FragmentManager manager = getSupportFragmentManager();
 		gPGHandler = (GooglePlayGameFragment) manager.findFragmentByTag("gpg");
 		FragmentTransaction transaction = manager.beginTransaction();
@@ -435,12 +464,13 @@ public class GameActivity extends ActionBarActivity implements
 	 * Temporarily hide the fragment
 	 */
 	void hideGooglePlayGameFragment() {
-		gPGSVisible = true;
 		FragmentManager manager = getSupportFragmentManager();
+		manager.popBackStack("GPG", FragmentManager.POP_BACK_STACK_INCLUSIVE);
 		FragmentTransaction t = manager.beginTransaction();
 		Fragment f = manager.findFragmentByTag("gpg");
 		if (f != null) {
-			t.hide(f).addToBackStack(null);
+			gPGSVisible = false;
+			t.hide(f).addToBackStack("GPG");
 			t.commit();
 		}
 	}
@@ -545,6 +575,7 @@ public class GameActivity extends ActionBarActivity implements
 		 * playerStatus.setText(savedPlayerText); String savedOpponentText =
 		 * savedInstanceState .getString(KEY_TEXT_OPPONENT_VALUE);
 		 */
+		gPGSVisible = savedInstanceState.getBoolean("gPGVisible", false);
 		savedPlayer = savedInstanceState.getParcelable("Player");
 		savedOpponent = savedInstanceState.getParcelable("Opponent");
 		savedState = GameMachine.State.values()[savedInstanceState
@@ -566,6 +597,8 @@ public class GameActivity extends ActionBarActivity implements
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
+
+		outState.putBoolean("gPGVisible", gPGSVisible);
 
 		if (gameMachine != null && gameMachine.player != null
 				& gameMachine.opponent != null) {
@@ -1036,6 +1069,17 @@ public class GameActivity extends ActionBarActivity implements
 
 		a.set(AlarmManager.RTC,
 				Calendar.getInstance().getTimeInMillis() + 600000, alarm);
+	}
+
+	@Override
+	protected void onStop() {
+		super.onStop();
+
+		// If configuration change like screen orientation we remove all
+		// listeners since activity will be recreated.
+		if (isChangingConfigurations()) {
+			removeUIListeners();
+		}
 	}
 
 	/**

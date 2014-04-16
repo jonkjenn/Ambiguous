@@ -144,4 +144,9 @@ public class OpenSocketTask extends AsyncTask<OpenSocketListener, Void, Socket> 
 		void onOpenSocketListener(Socket socket, ServerSocket server,
 				Exception exception);
 	}
+	
+	public void clearOpenSocketListeners()
+	{
+		listeners.clear();
+	}
 }

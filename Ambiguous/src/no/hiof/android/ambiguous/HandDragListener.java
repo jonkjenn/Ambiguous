@@ -13,6 +13,9 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+/**
+ * Preferably should not have gameactivity reference here. 
+ */
 @TargetApi(Build.VERSION_CODES.HONEYCOMB)
 public class HandDragListener implements OnDragListener {
 	private GameMachine gameMachine;

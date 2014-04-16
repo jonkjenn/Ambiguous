@@ -71,6 +71,14 @@ public class OpponentController {
 	public void setOpponentListener(OpponentListener listener) {
 		listeners.add(listener);
 	}
+	
+	/**
+	 * Remove all opponentlisteners
+	 */
+	public void clearOpponentListener()
+	{
+		listeners.clear();
+	}
 
 	public interface OpponentListener {
 		void onOpponentPlayCard(Card card, boolean generateDamage);

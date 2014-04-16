@@ -22,7 +22,7 @@ public class Player implements Parcelable {
 	public int armor = 0;
 	public int resources = 10;
 	private static final int NUMBER_OF_CARDS = 8;
-	private boolean alive = true;
+	public boolean alive = true;
 	
 	public Player(String name, int health, int armor, int resources, Card[] hand, List<Card> deck){
 		super();

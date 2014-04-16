@@ -31,6 +31,17 @@ public class SessionDataSource {
 		this.sessionId = sessionId;
 	}
 	
+	/**
+	 * Save the current game as it is to the database, preserving everything that is required to 
+	 * continue the game exactly where it was paused. If the same session has been saved earlier,
+	 * it will be overwritten and replaced by the new session with same id.
+	 * @param turn
+	 * @param player
+	 * @param opponent
+	 * @param opponentCardId
+	 * @param cardWasDiscarded
+	 * @return
+	 */
 	public boolean saveSession(int turn, Player player, Player opponent, int opponentCardId, boolean cardWasDiscarded){
 		int playerId = savePlayer(player);
 		int opponentId = savePlayer(opponent);

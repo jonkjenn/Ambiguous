@@ -271,7 +271,13 @@ public class Player implements Parcelable {
 		out.writeInt(health);
 		out.writeInt(armor);
 		out.writeInt(resources);
-		out.writeParcelableArray(hand, 0);
+
+		// Convert hand to List<Card>, cause writing an array as parcel obviously is a pain, cause you can't cast Object[] to Card[]
+		List<Card> arList = new ArrayList<Card>();
+		for (int i = 0; i < hand.length; i++) {
+			arList.add(hand[i]);
+		}
+		out.writeList(arList);
 		out.writeList(deck);
 	}
 
@@ -295,7 +301,10 @@ public class Player implements Parcelable {
 		health = in.readInt();
 		armor = in.readInt();
 		resources = in.readInt();
-		in.readParcelableArray(null);
-		in.readList(deck, null);
+		
+		List<Card> placeHolder = in.readArrayList(Card.class.getClassLoader());
+		hand = placeHolder.toArray(new Card[placeHolder.size()]);
+
+		deck = in.readArrayList(Card.class.getClassLoader());
 	}
 }

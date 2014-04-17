@@ -13,6 +13,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -83,18 +84,19 @@ public class MainActivity extends Activity {
 		int playerId = c.getInt(c.getColumnIndexOrThrow("player"));
 		int opponentId = c.getInt(c.getColumnIndexOrThrow("opponent"));
 		int opponentCardId = c.getInt(c.getColumnIndexOrThrow("opponentCard"));
+		CardDataSource cds = new CardDataSource(db);
 		Intent intent = new Intent(this,
 				no.hiof.android.ambiguous.activities.GameActivity.class)
 				.putExtra("SessionId", 
 						c.getInt(c.getColumnIndexOrThrow("id")))
-				.putExtra("SessionPlayer",
-						c.getInt(c.getColumnIndexOrThrow("player")))
-				.putExtra("SessionOpponent",
-						c.getInt(c.getColumnIndexOrThrow("opponent")))
+//				.putExtra("SessionPlayer",
+//						c.getInt(c.getColumnIndexOrThrow("player")))
+//				.putExtra("SessionOpponent",
+//						c.getInt(c.getColumnIndexOrThrow("opponent")))
 				.putExtra("SessionTurn",
 						c.getInt(c.getColumnIndexOrThrow("turn")))
-				.putExtra("SessionOpponentCard", 
-						opponentCardId)
+//				.putExtra("SessionOpponentCard", 
+//						cds.getCard(opponentCardId))
 				.putExtra("SessionOpponentDiscard",
 						(c.getInt(c.getColumnIndexOrThrow("opponentDiscard")) != 0 ? true
 								: false));
@@ -111,6 +113,7 @@ public class MainActivity extends Activity {
 		List<Card> deckUser = new ArrayList<Card>();
 		List<Card> deckOpponent = new ArrayList<Card>();
 		
+		// Get the data stored in the row of the specified player from db
 		c = db.rawQuery("SELECT name,health,armor,resources,deckid,handid FROM Player WHERE id = ?", new String[]{String.valueOf(playerId)});
 		c.moveToFirst();
 
@@ -127,13 +130,13 @@ public class MainActivity extends Activity {
 		c = db.rawQuery("SELECT cardid FROM Playercard WHERE sessioncardlistid = ? ORDER BY position ASC", 
 				new String[]{String.valueOf(handIdUser)});
 		if(c.moveToFirst()){
-			CardDataSource cds = new CardDataSource(db);
 			List<Card> tempHand = new ArrayList<Card>();
 			while(!c.isAfterLast()){
-				tempHand.add(cds.getCard(c.getInt(c.getColumnIndexOrThrow("cardid"))));
+				tempHand.add(CardDataSource.getCard(c.getInt(c.getColumnIndexOrThrow("cardid"))));
 				c.moveToNext();
 			}
-			hand.add(0,tempHand.toArray(new Card[tempHand.size()]));
+			// add a new Card[] to the current list of hands
+			hand.add(playerUser,tempHand.toArray(new Card[tempHand.size()]));
 		}
 		c.close();
 		
@@ -141,20 +144,64 @@ public class MainActivity extends Activity {
 				c = db.rawQuery("SELECT cardid FROM Playercard WHERE sessioncardlistid = ? ORDER BY position ASC", 
 						new String[]{String.valueOf(deckIdUser)});
 				if(c.moveToFirst()){
-					CardDataSource cds = new CardDataSource(db);
-					List<Card> tempDeck = new ArrayList<Card>();
 					while(!c.isAfterLast()){
-						deckUser.add(cds.getCard(c.getInt(c.getColumnIndexOrThrow("cardid"))));
+						deckUser.add(CardDataSource.getCard(c.getInt(c.getColumnIndexOrThrow("cardid"))));
 						c.moveToNext();
 					}
 				}
 				c.close();
 		
+		// put everything together in a Player object, which is parcelable
 		Player player = new Player(	name[playerUser], health[playerUser],
 									armor[playerUser], resources[playerUser], 
 									hand.get(playerUser), deckUser);
+	
+		intent.putExtra("SessionPlayer", (Parcelable)player);
 		
+		// Get the data stored in the row of the specified opponent from db
+		c = db.rawQuery("SELECT name,health,armor,resources,deckid,handid FROM Player WHERE id = ?", new String[]{String.valueOf(opponentId)});
+		c.moveToFirst();
+
+		name[playerOpponent] = c.getString(c.getColumnIndexOrThrow("name"));
+		health[playerOpponent] = c.getInt(c.getColumnIndexOrThrow("health"));
+		armor[playerOpponent] = c.getInt(c.getColumnIndexOrThrow("armor"));
+		resources[playerOpponent] = c.getInt(c.getColumnIndexOrThrow("resources"));
 		
+		int handIdOpponent = c.getInt(c.getColumnIndexOrThrow("handid"));
+		int deckIdOpponent = c.getInt(c.getColumnIndexOrThrow("deckid"));
+		c.close();
+		
+		// Get the cards in the Opponent's hand
+				c = db.rawQuery("SELECT cardid FROM Playercard WHERE sessioncardlistid = ? ORDER BY position ASC", 
+						new String[]{String.valueOf(handIdOpponent)});
+				if(c.moveToFirst()){
+					List<Card> tempHand = new ArrayList<Card>();
+					while(!c.isAfterLast()){
+						tempHand.add(CardDataSource.getCard(c.getInt(c.getColumnIndexOrThrow("cardid"))));
+						c.moveToNext();
+					}
+					// add a new Card[] to the current list of hands
+					hand.add(playerOpponent,tempHand.toArray(new Card[tempHand.size()]));
+				}
+				c.close();
+				
+		// Get the cards in the Opponent's deck
+				c = db.rawQuery("SELECT cardid FROM Playercard WHERE sessioncardlistid = ? ORDER BY position ASC", 
+						new String[]{String.valueOf(deckIdOpponent)});
+				if(c.moveToFirst()){
+					while(!c.isAfterLast()){
+						deckOpponent.add(CardDataSource.getCard(c.getInt(c.getColumnIndexOrThrow("cardid"))));
+						c.moveToNext();
+					}
+				}
+				c.close();
+		
+		// put everything together in a Player object, which is parcelable
+		Player opponent = new Player( name[playerOpponent], health[playerOpponent],
+									armor[playerOpponent], resources[playerOpponent], 
+									hand.get(playerOpponent), deckOpponent);
+			
+		intent.putExtra("SessionOpponent", (Parcelable)opponent);
 		startActivity(intent);
 	}
 

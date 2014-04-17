@@ -54,6 +54,7 @@ public class Effect implements Parcelable{
 		type = EffectType.values()[source.readInt()];
 		minValue = source.readInt();
 		maxValue = source.readInt();
+		crit = source.readInt();
 		target = Target.values()[source.readInt()];
 	}
 }

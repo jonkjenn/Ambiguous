@@ -71,11 +71,17 @@ public class SessionDataSource {
 		return (workedFine == -1 ? false : true);
 	}
 	
+	/**
+	 * Saves the specified instance of Player in the db, returning it's id
+	 * @param player
+	 * @return
+	 */
 	private int savePlayer(Player player){
-		
-		Cursor c = db.rawQuery("SELECT max(id) FROM player", null);
-		c.moveToFirst();
-		int newPlayerId = c.getInt(0)+1;
+		int newPlayerId = 0;
+		Cursor c = db.rawQuery("SELECT id FROM player ORDER BY id DESC LIMIT 1", null);
+		if(c.moveToFirst()){
+			newPlayerId = c.getInt(0)+1;
+		}
 		c.close();
 		return (int)db.insert("Player", null, getPlayerContentValues(player, newPlayerId));
 		

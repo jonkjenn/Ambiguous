@@ -61,6 +61,7 @@ public class Card implements Parcelable{
 		description = source.readString();
 		cost = source.readInt();
 		image = source.readString();
-		source.readList(effects, null);
+		effects = new ArrayList<Effect>();
+		effects = source.readArrayList(Effect.class.getClassLoader());
 	}
 }

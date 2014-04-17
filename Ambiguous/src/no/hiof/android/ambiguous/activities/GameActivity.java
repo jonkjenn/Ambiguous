@@ -181,6 +181,13 @@ public class GameActivity extends ActionBarActivity implements
 		if (savedInstanceState != null) {
 			loadSavedData(savedInstanceState);
 		}
+		// Fix this!
+//		if(this.getIntent().getExtras().getInt("SessionId") >= 0){
+//			Bundle extras = this.getIntent().getExtras();
+//			savedSessionId = extras.getInt("SessionId");
+//			savedPlayer = (Player) extras.get("SessionPlayer");
+//			savedOpponent = (Player) extras.get("SessionOpponent");
+//		}
 
 		// We dont want the actionbar visible during the game
 		ActionBar actionBar = getSupportActionBar();

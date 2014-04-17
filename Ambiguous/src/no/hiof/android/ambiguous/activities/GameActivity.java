@@ -435,7 +435,8 @@ public class GameActivity extends ActionBarActivity implements
 	 */
 	private void closeTutorial() {
 		FragmentManager manager = getSupportFragmentManager();
-		manager.popBackStack("showTutorial", FragmentManager.POP_BACK_STACK_INCLUSIVE);
+		manager.popBackStack("showTutorial",
+				FragmentManager.POP_BACK_STACK_INCLUSIVE);
 		FragmentTransaction t = manager.beginTransaction();
 		t.remove(manager.findFragmentByTag("tutorial"));
 		t.commitAllowingStateLoss();// Since its only a
@@ -1013,18 +1014,19 @@ public class GameActivity extends ActionBarActivity implements
 
 			GameMachine.State state = gameMachine.state;
 			// Deletes the session if the game has finished
-			if(state == GameMachine.State.GAME_OVER){
+			if (state == GameMachine.State.GAME_OVER) {
 				db.delete("Session", null, null);
-			}
-			else{
-				// If gameMachine exists, and the game is not finished, attempt to save 
+			} else {
+				// If gameMachine exists, and the game is not finished, attempt
+				// to save
 				// the current session in the database
-				Boolean saveSucessful = sds.saveSession(state.ordinal(), gameMachine.player,
-						gameMachine.opponent,
+				Boolean saveSucessful = sds.saveSession(state.ordinal(),
+						gameMachine.player, gameMachine.opponent,
 						(currentOpponentCard != null ? currentOpponentCard.id
 								: -1), opponentCardIsDiscarded);
-				if(!saveSucessful)
-					Log.d("sds.saveSession", "Something caused saveSession to fail");
+				if (!saveSucessful)
+					Log.d("sds.saveSession",
+							"Something caused saveSession to fail");
 			}
 		}
 
@@ -1096,6 +1098,9 @@ public class GameActivity extends ActionBarActivity implements
 		// listeners since activity will be recreated.
 		if (isChangingConfigurations()) {
 			removeUIListeners();
+		} else {
+			//Clear the static cache, this could possibly be tied to activity life cycle either directly or by fragment
+			cs.purge();
 		}
 	}
 

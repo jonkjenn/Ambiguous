@@ -146,5 +146,11 @@ public class CardDataSource {
 			card.cost = (c.getInt(c.getColumnIndex("cost")));
 			return card;
 	}
+	
+	public void purge()
+	{
+		cards = null;
+		cardMap = null;
+	}
 
 }

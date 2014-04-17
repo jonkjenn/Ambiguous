@@ -174,8 +174,7 @@ public class GameMachine implements OpponentListener {
 		if (!player.isAlive()) {
 			notifyPlayerDead();
 			state = State.GAME_OVER;
-		}
-		if (!opponent.isAlive()) {
+		}else if (!opponent.isAlive()) {
 			notifyOpponentDead();
 			state = State.GAME_OVER;
 		}

@@ -14,7 +14,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 /**
- * Preferably should not have gameactivity reference here. 
+ * Preferably should not have GameActivity reference here.
  */
 @TargetApi(Build.VERSION_CODES.HONEYCOMB)
 public class HandDragListener implements OnDragListener {
@@ -24,6 +24,8 @@ public class HandDragListener implements OnDragListener {
 	private View useCardNotificationView;
 	private View discardCardNotificationView;
 	private RelativeLayout layoutContainer;
+
+	int height, width;
 
 	public HandDragListener(GameMachine gameMachine, GameActivity gameActivity) {
 		this.useCardNotificationView = gameActivity
@@ -35,6 +37,7 @@ public class HandDragListener implements OnDragListener {
 		this.handView = (GridView) gameActivity.findViewById(R.id.game_grid);
 		this.layoutContainer = (RelativeLayout) gameActivity
 				.findViewById(R.id.game_layout_container);
+
 	}
 
 	@Override
@@ -57,15 +60,17 @@ public class HandDragListener implements OnDragListener {
 			case DragEvent.ACTION_DRAG_STARTED:
 				if (event.getLocalState() != null) {
 					startDrag(cardTouchData.position);
+					return true;
 				}
-				return true;
+				return false;
 
 			case DragEvent.ACTION_DRAG_LOCATION:
 				if (event.getLocalState() != null) {
 					handleDragToLocation(cardTouchData, (int) event.getX(),
 							(int) event.getY());
+					return true;
 				}
-				break;
+				return false;
 
 			case DragEvent.ACTION_DROP:
 				if (event.getLocalState() != null) {
@@ -73,6 +78,14 @@ public class HandDragListener implements OnDragListener {
 							(int) event.getY());
 				}
 				return true;
+			case DragEvent.ACTION_DRAG_EXITED:
+				
+				//If we drag outside of the activity we reset the drag, BUT we also use the coordinates as a drop location
+				//For example Dragging card out at the top will use the card.
+				useCardNotificationView.setVisibility(View.GONE);
+				discardCardNotificationView.setVisibility(View.GONE);
+				stopDrag(cardTouchData.position);
+				handleDropEvent(cardTouchData, (int)event.getX(), (int)event.getY());
 			}
 		}
 		return false;
@@ -86,6 +99,10 @@ public class HandDragListener implements OnDragListener {
 	 *            The position of the card in the players hand.
 	 */
 	private void startDrag(int card) {
+		if (this.height == 0) {
+			this.height = layoutContainer.getMeasuredHeight();
+			this.width = layoutContainer.getMeasuredWidth();
+		}
 		ImageView layout = (ImageView) gameActivity
 				.findViewById(R.id.drag_card);
 		ImageView i = (ImageView) handView.getChildAt(card);
@@ -112,7 +129,11 @@ public class HandDragListener implements OnDragListener {
 	 *            The Y coordinate of where we're pushing on the card to drag
 	 *            it.
 	 */
-	private void drag(int card, int x, int y, int insideX, int insideY) {
+	void drag(int card, int x, int y, int insideX, int insideY) {
+		if (y < 10) {
+			useCard(card);
+			return;
+		}
 		// Hide the original card on players deck.
 		handView.getChildAt(card).setVisibility(View.INVISIBLE);
 		// Set the view we actually drag around the screen visible.
@@ -122,13 +143,15 @@ public class HandDragListener implements OnDragListener {
 
 		RelativeLayout.LayoutParams par = new RelativeLayout.LayoutParams(
 				parent.getLayoutParams());
+		// Move the card by changing the left and top margins
+		par.setMargins(x - insideX, y - insideY, 0, 0);
+
 		// So we dont move the card outside the game view.
-		if ((par.leftMargin + par.width) > handView.getWidth()) {
+		if (par.topMargin - 10 > this.height) {
+			discardCard(card);
 			return;
 		}
 
-		// Move the card by changing the left and top margins
-		par.setMargins(x - insideX, y - insideY, 0, 0);
 		parent.setLayoutParams(par);
 	}
 
@@ -151,6 +174,8 @@ public class HandDragListener implements OnDragListener {
 		gameActivity.findViewById(R.id.drag_card).setVisibility(View.INVISIBLE);
 	}
 
+	int previousY = -1;
+
 	/**
 	 * Handles when a drag action moves and generate new coordinates.
 	 * 
@@ -167,7 +192,7 @@ public class HandDragListener implements OnDragListener {
 
 		// If have moved the card upwards enough we display the top bar that
 		// tells the user he can now drop the card to use it.
-		if (touchData.viewHeight / 2 + eventY < touchData.screenY - 100) {
+		if (touchData.viewHeight / 2 + eventY < touchData.screenY - 200) {
 			useCardNotificationView.setVisibility(View.VISIBLE);
 		} else {
 			useCardNotificationView.setVisibility(View.INVISIBLE);
@@ -175,12 +200,13 @@ public class HandDragListener implements OnDragListener {
 
 		// If have moved the card downwards enough we display the bottom bar
 		// that tells the user he can now drop the card to discard it.
-		if (touchData.viewHeight / 2 + eventY > this.layoutContainer
-				.getHeight()) {
+		if (touchData.viewHeight / 2 + eventY > this.height - 100) {
 			discardCardNotificationView.setVisibility(View.VISIBLE);
 		} else {
 			discardCardNotificationView.setVisibility(View.INVISIBLE);
 		}
+
+		previousY = eventY;
 	}
 
 	/**
@@ -194,23 +220,34 @@ public class HandDragListener implements OnDragListener {
 			int eventX, int eventY) {
 
 		// If moved the card "enough" upwards use the card.
-		if (touchData.viewHeight / 2 + eventY < touchData.screenY - 100) {
-			useCardNotificationView.setVisibility(View.INVISIBLE);
-			removeDrag();
-			
-			gameActivity.playCard(touchData.position);
+		if (touchData.viewHeight / 2 + eventY < touchData.screenY - 200) {
+			useCard(touchData.position);
 
 		}// If moved the card enough downwards discard the card.
-		else if (touchData.viewHeight / 2 + eventY > this.layoutContainer
-				.getHeight()) {
-			gameActivity.findViewById(R.id.gameview_discard).setVisibility(
-					TextView.INVISIBLE);
-			removeDrag();
-			gameMachine.playerDiscardCard(touchData.position);
+		else if (touchData.viewHeight / 2 + eventY > this.height - 100) {
+			// else if (touchData.viewHeight / 2 + eventY > this.layoutContainer
+			// .getHeight()) {
+			discardCard(touchData.position);
 		} else // Cancel the dragdrop so that user can pick a different card.
 		{
 			stopDrag(touchData.position);
 		}
+	}
+
+	void discardCard(int card) {
+		gameActivity.findViewById(R.id.gameview_discard).setVisibility(
+				TextView.INVISIBLE);
+		removeDrag();
+		gameMachine.playerDiscardCard(card);
+
+	}
+
+	void useCard(int card) {
+		useCardNotificationView.setVisibility(View.INVISIBLE);
+		removeDrag();
+
+		gameActivity.playCard(card);
+
 	}
 
 }

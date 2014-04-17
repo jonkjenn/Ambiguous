@@ -87,8 +87,6 @@ public class CardBuilder {
 		
 		c.effects.add(e2);
 		
-		c.effects.add(e2);
-		
 		return c;
 	}
 

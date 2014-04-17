@@ -13,11 +13,14 @@
         android:padding="0dp"
         android:text="@string/tutorial_button_show"
         android:textSize="12sp" />
-    <!-- <com.google.android.gms.common.SignInButton
+    <!--
+    <com.google.android.gms.common.SignInButton
          android:id="@+id/sign_in_button"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content" />
-        />-->
+        />
+    -->
+
     <TextView
         android:id="@+id/gameview_use"
         android:layout_width="match_parent"
@@ -30,16 +33,16 @@
 
     <LinearLayout
         android:id="@+id/opponent_card_container"
-        android:layout_centerHorizontal="true"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
         android:gravity="center_horizontal"
         android:orientation="vertical" >
-        <TextView 
+
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/opponents_actions"
-            />
+            android:text="@string/opponents_actions" />
 
         <ImageView
             android:id="@+id/opponent_card"
@@ -50,16 +53,7 @@
             android:orientation="horizontal" >
         </ImageView>
     </LinearLayout>
-        <TextView
-            android:id="@+id/result_text"
-            android:layout_below="@id/opponent_card_container"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:includeFontPadding="false"
-            android:textColor="#00FF00"
-            android:textSize="60sp"
-            android:textStyle="bold" />
+
 
     <TextView
         android:id="@+id/discard"
@@ -341,13 +335,23 @@
         android:text="@string/activity_main_discard"
         android:visibility="gone" />
 
-    <ImageView
-        android:id="@+id/drag_card"
-        android:layout_width="70dp"
-        android:layout_height="110dp"
-        android:layout_alignParentTop="true"
-        android:adjustViewBounds="true"
-        android:scaleType="matrix" >
-    </ImageView>
+        <ImageView
+            android:id="@+id/drag_card"
+            android:layout_width="84dp"
+            android:layout_height="133dp"
+            android:adjustViewBounds="true"
+            android:scaleType="matrix" >
+        </ImageView>
+
+    <TextView
+        android:id="@+id/result_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/opponent_card_container"
+        android:layout_centerHorizontal="true"
+        android:includeFontPadding="false"
+        android:textColor="#00FF00"
+        android:textSize="60sp"
+        android:textStyle="bold" />
 
 </RelativeLayout>

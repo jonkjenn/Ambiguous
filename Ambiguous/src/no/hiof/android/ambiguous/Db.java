@@ -116,7 +116,7 @@ public class Db extends SQLiteOpenHelper {
 	{
 		if(db == null)
 		{
-			db = new Db(ctx,name,null,5);
+			db = new Db(ctx,name,null,7);
 				
 		}
 		

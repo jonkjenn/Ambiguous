@@ -120,6 +120,7 @@ public class GooglePlayGameFragment extends Fragment implements
 
 		// The button that display a list of active games and game invites. Game
 		// inbox.
+
 		Button b = (Button) getActivity().findViewById(
 				R.id.showActiveGamesButton);
 		b.setOnClickListener(new OnClickListener() {
@@ -352,12 +353,16 @@ public class GooglePlayGameFragment extends Fragment implements
 			readGameState(match);// Loads the data from the bytes passed in
 									// the intent/match into our actual game
 									// objects in game.
-			gameMachine.startGame();// First start the game with opponent having
-									// turn.
+			// gameMachine.startGame();// First start the game with opponent
+			// having
+			// turn.
 
-			gameMachine.state = State.PLAYER_TURN;// Game will now later be
-													// started again as player's
-													// turn
+			if (gameMachine.state != GameMachine.State.GAME_OVER) {
+				gameMachine.state = State.PLAYER_TURN;
+			}// Game will now later be
+				// started again as
+				// player's
+				// turn}
 		} else {
 			state = State.OPPONENT_TURN;
 			((GameActivity) getActivity()).setupGameMachine(state);
@@ -366,6 +371,7 @@ public class GooglePlayGameFragment extends Fragment implements
 									// objects ingame.
 		}
 
+		// Prevent duplicate listener
 		this.gameMachine.removeGameMachineListener(this);
 		this.gameMachine.setGameMachineListener(this);
 
@@ -374,7 +380,9 @@ public class GooglePlayGameFragment extends Fragment implements
 			handleActiveMatch(match);
 			break;
 		case TurnBasedMatch.MATCH_STATUS_COMPLETE:
-			gameMachine.startGame();
+			if (gameMachine.state != GameMachine.State.GAME_OVER) {
+				gameMachine.startGame();
+			}
 			break;
 		}
 	}
@@ -783,9 +791,13 @@ public class GooglePlayGameFragment extends Fragment implements
 		results.add(new ParticipantResult(getOpponentId(match), opponentResult,
 				ParticipantResult.PLACING_UNINITIALIZED));
 
-		if (match.getStatus() == TurnBasedMatch.MATCH_STATUS_ACTIVE) {
-			Games.TurnBasedMultiplayer.finishMatch(gameHelper.getApiClient(),
-					match.getMatchId(), writeGameState(match), results);
+		if (match.getStatus() == TurnBasedMatch.MATCH_STATUS_ACTIVE
+				|| match.getStatus() == TurnBasedMatch.MATCH_STATUS_COMPLETE) {
+			if (match.getTurnStatus() == TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN) {
+				Games.TurnBasedMultiplayer.finishMatch(
+						gameHelper.getApiClient(), match.getMatchId(),
+						writeGameState(match), results);
+			}
 		} else if (match.getStatus() == TurnBasedMatch.MATCH_STATUS_COMPLETE) {
 			if (match.getTurnStatus() == TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN) {
 				Games.TurnBasedMultiplayer.finishMatch(

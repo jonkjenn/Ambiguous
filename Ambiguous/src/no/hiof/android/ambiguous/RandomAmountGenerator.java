@@ -6,7 +6,7 @@ public class RandomAmountGenerator {
 	private static Random crit = new Random();
 
 	/**
-	 * Generate random number in a range with an potential additional critical
+	 * Generate random number in a range with a potential additional critical
 	 * number.
 	 * 
 	 * @param min

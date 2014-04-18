@@ -116,7 +116,7 @@ public class GooglePlayGameFragment extends Fragment implements
 
 		gameHelper.setup(this);
 
-		resultTextView = (TextView) getView().findViewById(R.id.result_text);
+		resultTextView = (TextView) view.findViewById(R.id.result_text);
 
 		// The button that display a list of active games and game invites. Game
 		// inbox.

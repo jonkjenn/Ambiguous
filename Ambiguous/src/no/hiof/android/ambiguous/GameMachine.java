@@ -99,7 +99,7 @@ public class GameMachine implements OpponentListener {
 			}
 		}, SystemClock.uptimeMillis() + delay);
 	}
-
+	
 	/**
 	 * Changes the current game state.
 	 */

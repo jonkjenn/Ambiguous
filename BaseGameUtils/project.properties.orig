@@ -13,5 +13,9 @@
 # Project target.
 target=android-19
 android.library=true
+<<<<<<< HEAD
+android.library.reference.1=..\\google-play-services_lib
+=======
 android.library.reference.1=../google-play-services_lib
+>>>>>>> fragmentation
 android.library.reference.2=../appcompat

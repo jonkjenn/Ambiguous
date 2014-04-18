@@ -192,10 +192,12 @@ public class GameActivity extends ActionBarActivity implements
 		if (savedInstanceState != null) {
 			loadSavedData(savedInstanceState);
 		}
+<<<<<<< HEAD
 		else{
 			resumeGame(this.getIntent().getExtras());
 		}
 		
+=======
 
 		// Fix this!
 		// if(this.getIntent().getExtras().getInt("SessionId") >= 0){
@@ -205,6 +207,7 @@ public class GameActivity extends ActionBarActivity implements
 		// savedOpponent = (Player) extras.get("SessionOpponent");
 		// }
 
+>>>>>>> fragmentation
 		// We dont want the actionbar visible during the game
 		ActionBar actionBar = getSupportActionBar();
 		actionBar.hide();

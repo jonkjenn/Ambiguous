@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+            <ImageView
+            android:id="@+id/drag_card"
+            android:layout_width="84dp"
+            android:layout_height="133dp"
+            android:adjustViewBounds="true"
+            android:scaleType="matrix" >
+        </ImageView>
+
+    <TextView
+        android:id="@+id/gameview_discard"
+        android:layout_width="match_parent"
+        android:layout_height="20dp"
+        android:layout_alignParentBottom="true"
+        android:background="#FF0000"
+        android:text="@string/activity_main_discard"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/gameview_use"
+        android:layout_width="match_parent"
+        android:layout_height="30dp"
+        android:layout_alignParentTop="true"
+        android:background="#50CC33"
+        android:gravity="center"
+        android:text="@string/activity_main_usecard"
+        android:visibility="gone" />
+
+</RelativeLayout>

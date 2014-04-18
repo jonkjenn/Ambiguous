@@ -13,23 +13,6 @@
         android:padding="0dp"
         android:text="@string/tutorial_button_show"
         android:textSize="12sp" />
-    <!--
-    <com.google.android.gms.common.SignInButton
-         android:id="@+id/sign_in_button"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content" />
-        />
-    -->
-
-    <TextView
-        android:id="@+id/gameview_use"
-        android:layout_width="match_parent"
-        android:layout_height="30dp"
-        android:layout_alignParentTop="true"
-        android:background="#50CC33"
-        android:gravity="center"
-        android:text="@string/activity_main_usecard"
-        android:visibility="gone" />
 
     <LinearLayout
         android:id="@+id/opponent_card_container"
@@ -52,9 +35,7 @@
             android:gravity="center"
             android:orientation="horizontal" >
         </ImageView>
-    </LinearLayout>
-
-
+     
     <TextView
         android:id="@+id/discard"
         android:layout_width="wrap_content"
@@ -67,16 +48,15 @@
         android:textColor="#000000"
         android:visibility="gone" >
     </TextView>
+   </LinearLayout>
 
-    <GridView
-        android:id="@+id/game_grid"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+    <fragment android:name="no.hiof.android.ambiguous.fragments.CardHandFragment"
+        class="no.hiof.android.ambiguous.fragments.CardHandFragment"
+        android:id="@+id/cardhand_fragment"
         android:layout_alignParentBottom="true"
-        android:numColumns="4"
-        android:stretchMode="columnWidth"
-        android:verticalSpacing="5dp" >
-    </GridView>
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+         />
 
     <TextView
         android:id="@+id/turnIndicator"
@@ -95,7 +75,7 @@
         android:id="@+id/stat_layout_opponent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@id/game_grid"
+        android:layout_above="@id/cardhand_fragment"
         android:layout_alignParentRight="true"
         android:paddingRight="5dp" >
 
@@ -212,7 +192,7 @@
         android:id="@+id/stat_layout_player"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@id/game_grid"
+        android:layout_above="@id/cardhand_fragment"
         android:layout_alignParentLeft="true"
         android:orientation="horizontal" >
 
@@ -325,29 +305,17 @@
             </LinearLayout>
         </TableRow>
     </TableLayout>
-
-    <TextView
-        android:id="@+id/gameview_discard"
+    
+    <fragment android:name="no.hiof.android.ambiguous.fragments.DragFragment"
+        android:id="@+id/drag_fragment"
         android:layout_width="match_parent"
-        android:layout_height="20dp"
-        android:layout_alignParentBottom="true"
-        android:background="#FF0000"
-        android:text="@string/activity_main_discard"
-        android:visibility="gone" />
-
-        <ImageView
-            android:id="@+id/drag_card"
-            android:layout_width="84dp"
-            android:layout_height="133dp"
-            android:adjustViewBounds="true"
-            android:scaleType="matrix" >
-        </ImageView>
+        android:layout_height="match_parent"/>
 
     <TextView
-        android:id="@+id/result_text"
+        android:id="@+id/main_result_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/opponent_card_container"
+        android:layout_above="@id/drag_fragment"
         android:layout_centerHorizontal="true"
         android:includeFontPadding="false"
         android:textColor="#00FF00"

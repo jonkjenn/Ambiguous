@@ -177,18 +177,14 @@ public class GameActivity extends ActionBarActivity implements
 		// TODO: What?
 		playerStatus.setText(" ");
 		setBackground(PreferenceManager.getDefaultSharedPreferences(this));
-
+		
 		if (savedInstanceState != null) {
 			loadSavedData(savedInstanceState);
 		}
-		// Fix this!
-//		if(this.getIntent().getExtras().getInt("SessionId") >= 0){
-//			Bundle extras = this.getIntent().getExtras();
-//			savedSessionId = extras.getInt("SessionId");
-//			savedPlayer = (Player) extras.get("SessionPlayer");
-//			savedOpponent = (Player) extras.get("SessionOpponent");
-//		}
-
+		else{
+			resumeGame(this.getIntent().getExtras());
+		}
+		
 		// We dont want the actionbar visible during the game
 		ActionBar actionBar = getSupportActionBar();
 		actionBar.hide();
@@ -227,6 +223,28 @@ public class GameActivity extends ActionBarActivity implements
 				hideGooglePlayGameFragment();
 			}
 
+		}
+	}
+
+	private void resumeGame(Bundle extras) {
+		if(extras == null){
+			return;
+		} else if(!(extras.getInt("SessionId") >= 0)){
+			return;
+		} else {
+			savedSessionId = extras.getInt("SessionId");
+			savedPlayer = (Player) extras.get("SessionPlayer");
+			savedOpponent = (Player) extras.get("SessionOpponent");
+			savedState = GameMachine.State.values()[extras.getInt("SessionTurn")];
+			currentOpponentCard = extras.getParcelable("SessionOpponentCard");
+			opponentCardIsDiscarded = extras.getBoolean("SessionOpponentDiscard");
+			if(currentOpponentCard != null){
+				if(opponentCardIsDiscarded){
+					opponentDiscardCard(currentOpponentCard);
+				} else {
+					opponentPlayCard(currentOpponentCard);
+				}
+			}
 		}
 	}
 
@@ -282,7 +300,9 @@ public class GameActivity extends ActionBarActivity implements
 
 		hideGooglePlayGameFragment();
 
-		resetLayout();
+		if(useGPGS){
+			resetLayout();
+		}
 
 		setupPlayers();
 
@@ -309,8 +329,9 @@ public class GameActivity extends ActionBarActivity implements
 			if (savedState != null) {// Set the starting state if we have it
 										// saved
 				b.setState(savedState);
+			}else{
+				b.setState(null);
 			}
-			b.setState(null);
 		}
 
 		gameMachine = b.build();

@@ -95,8 +95,8 @@ public class MainActivity extends Activity {
 //						c.getInt(c.getColumnIndexOrThrow("opponent")))
 				.putExtra("SessionTurn",
 						c.getInt(c.getColumnIndexOrThrow("turn")))
-//				.putExtra("SessionOpponentCard", 
-//						cds.getCard(opponentCardId))
+				.putExtra("SessionOpponentCard", 
+						(Parcelable)cds.getCard(opponentCardId))
 				.putExtra("SessionOpponentDiscard",
 						(c.getInt(c.getColumnIndexOrThrow("opponentDiscard")) != 0 ? true
 								: false));

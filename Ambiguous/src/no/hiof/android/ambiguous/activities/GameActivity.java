@@ -10,16 +10,20 @@ import no.hiof.android.ambiguous.Db;
 import no.hiof.android.ambiguous.DeckBuilder;
 import no.hiof.android.ambiguous.GameMachine;
 import no.hiof.android.ambiguous.GameMachine.State;
-import no.hiof.android.ambiguous.HandDragListener;
 import no.hiof.android.ambiguous.LayoutHelper;
 import no.hiof.android.ambiguous.NetworkOpponent;
 import no.hiof.android.ambiguous.OpponentController;
 import no.hiof.android.ambiguous.OpponentController.OpponentListener;
 import no.hiof.android.ambiguous.R;
-import no.hiof.android.ambiguous.adapter.GameDeckAdapter;
 import no.hiof.android.ambiguous.ai.AIController;
 import no.hiof.android.ambiguous.datasource.CardDataSource;
 import no.hiof.android.ambiguous.datasource.SessionDataSource;
+import no.hiof.android.ambiguous.fragments.CardHandFragment;
+import no.hiof.android.ambiguous.fragments.CardHandFragment.CardTouchData;
+import no.hiof.android.ambiguous.fragments.CardHandFragment.OnCardTouchedListener;
+import no.hiof.android.ambiguous.fragments.DragFragment;
+import no.hiof.android.ambiguous.fragments.DragFragment.OnDragStatusChangedListener;
+import no.hiof.android.ambiguous.fragments.DragFragment.OnPlayerUsedCardListener;
 import no.hiof.android.ambiguous.fragments.GooglePlayGameFragment;
 import no.hiof.android.ambiguous.fragments.MinigameFragment;
 import no.hiof.android.ambiguous.fragments.MinigameFragment.MinigameListener;
@@ -82,7 +86,9 @@ import com.google.android.gms.common.GooglePlayServicesUtil;
  */
 public class GameActivity extends ActionBarActivity implements
 		GameMachine.GameMachineListener, OpponentListener,
-		PlayerUpdateListener, OpenSocketListener, MinigameListener {
+		PlayerUpdateListener, OpenSocketListener, MinigameListener,
+		OnPlayerUsedCardListener, OnCardTouchedListener,
+		OnDragStatusChangedListener {
 	private SQLiteDatabase db;
 
 	// Shows the cards on players "hand"
@@ -117,14 +123,15 @@ public class GameActivity extends ActionBarActivity implements
 	private ViewGroup floatingArmorOpponent;
 	private ViewGroup floatingResourcehOpponent;
 
+	CardHandFragment cardHandFragment;
+	DragFragment dragFragment;
+
 	// TODO: Possibly recode so don't need these as
 	// fields.http://stackoverflow.com/questions/5088856/how-to-detect-landscape-left-normal-vs-landscape-right-reverse-with-support?rq=1
 	private Player savedPlayer;
 	private Player savedOpponent;
 	private State savedState;
 	private int savedSessionId = -1;
-
-	private HandDragListener handDragListener;
 
 	// TODO: playerStatus currently used for status messages, opponentStatus
 	// indicates turns. Should rename!
@@ -140,8 +147,8 @@ public class GameActivity extends ActionBarActivity implements
 	private GooglePlayGameFragment gPGHandler;
 	boolean gPGSVisible = false;
 
-	public Player player;
-	public Player opponent;
+	Player player;
+	Player opponent;
 	private OpponentController opponentController;
 	private NetworkOpponent networkOpponent;
 	private AIController aiController;
@@ -174,6 +181,10 @@ public class GameActivity extends ActionBarActivity implements
 		// Find all the views we use so we only have to find them once
 		findViews();
 
+		dragFragment.setPlayerUsedCardListener(this);
+		dragFragment.setOnDragStatusChanged(this);
+		cardHandFragment.setOnCardTouchedListener(this);
+
 		// TODO: What?
 		playerStatus.setText(" ");
 		setBackground(PreferenceManager.getDefaultSharedPreferences(this));
@@ -181,13 +192,14 @@ public class GameActivity extends ActionBarActivity implements
 		if (savedInstanceState != null) {
 			loadSavedData(savedInstanceState);
 		}
+
 		// Fix this!
-//		if(this.getIntent().getExtras().getInt("SessionId") >= 0){
-//			Bundle extras = this.getIntent().getExtras();
-//			savedSessionId = extras.getInt("SessionId");
-//			savedPlayer = (Player) extras.get("SessionPlayer");
-//			savedOpponent = (Player) extras.get("SessionOpponent");
-//		}
+		// if(this.getIntent().getExtras().getInt("SessionId") >= 0){
+		// Bundle extras = this.getIntent().getExtras();
+		// savedSessionId = extras.getInt("SessionId");
+		// savedPlayer = (Player) extras.get("SessionPlayer");
+		// savedOpponent = (Player) extras.get("SessionOpponent");
+		// }
 
 		// We dont want the actionbar visible during the game
 		ActionBar actionBar = getSupportActionBar();
@@ -252,8 +264,12 @@ public class GameActivity extends ActionBarActivity implements
 		floatingHealthOpponent = (ViewGroup) findViewById(R.id.floating_health_opponent);
 		floatingArmorOpponent = (ViewGroup) findViewById(R.id.floating_armor_opponent);
 		floatingResourcehOpponent = (ViewGroup) findViewById(R.id.floating_resource_opponent);
-		resultTextView = (TextView) layoutContainer
-				.findViewById(R.id.result_text);
+		resultTextView = (TextView) findViewById(R.id.main_result_text);
+
+		cardHandFragment = (CardHandFragment) getSupportFragmentManager()
+				.findFragmentById(R.id.cardhand_fragment);
+		dragFragment = (DragFragment) getSupportFragmentManager()
+				.findFragmentById(R.id.drag_fragment);
 	}
 
 	/**
@@ -357,13 +373,13 @@ public class GameActivity extends ActionBarActivity implements
 
 		// If high enough API level we use drag drop on cards, with lower
 		// versions we use a long click context menu.
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-
-			handDragListener = new HandDragListener(gameMachine, this);
-			layoutContainer.setOnDragListener(handDragListener);
-		} else {
-			registerForContextMenu(handView);
-		}
+		/*
+		 * if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+		 * 
+		 * handDragListener = new HandDragListener(gameMachine, this);
+		 * layoutContainer.setOnDragListener(handDragListener); } else {
+		 * registerForContextMenu(handView); }
+		 */
 	}
 
 	/**
@@ -766,10 +782,11 @@ public class GameActivity extends ActionBarActivity implements
 	// If try to use a card we dont have enough resources for etc.
 	@Override
 	public void onCouldNotPlayCardListener(int position) {
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB
-				&& handDragListener != null) {
-			handDragListener.stopDrag(position);
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+			dragFragment.stopDrag(position);
 		}
+
 	}
 
 	// Background behind player's name turns red on their turn.
@@ -777,12 +794,13 @@ public class GameActivity extends ActionBarActivity implements
 	@SuppressLint("NewApi")
 	@Override
 	public void onPlayerTurnListener() {
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB
-				&& handDragListener != null) {
-			layoutContainer.setOnDragListener(handDragListener);
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+			dragFragment.enableDrag();
 		} else {
 			registerForContextMenu(handView);
 		}
+
 		playerName.setBackgroundColor(Color.RED);
 		opponentName.setBackgroundColor(Color.TRANSPARENT);
 	}
@@ -792,7 +810,7 @@ public class GameActivity extends ActionBarActivity implements
 	@Override
 	public void onPlayerDoneListener() {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-			layoutContainer.setOnDragListener(null);
+			dragFragment.disableDrag();
 		}
 		playerName.setBackgroundColor(Color.TRANSPARENT);
 		opponentName.setBackgroundColor(Color.RED);
@@ -831,12 +849,13 @@ public class GameActivity extends ActionBarActivity implements
 	@SuppressLint("NewApi")
 	@Override
 	public void onPlayerPlayedCard(Card card) {
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB
-				&& handDragListener != null) {
-			handDragListener.removeDrag();
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+			dragFragment.disableDrag();
 		} else {
 			unregisterForContextMenu(handView);
 		}
+
 	}
 
 	@Override
@@ -857,8 +876,7 @@ public class GameActivity extends ActionBarActivity implements
 	public void onCardsUpdateListener(Player player, Card[] cards) {
 		// Update the cards on the screen if the player's cards change.
 		if (player == gameMachine.player) {
-			GameDeckAdapter adapter = new GameDeckAdapter(cards);
-			handView.setAdapter(adapter);
+			cardHandFragment.updateCards(cards);
 		}
 	}
 
@@ -1106,7 +1124,8 @@ public class GameActivity extends ActionBarActivity implements
 		if (isChangingConfigurations()) {
 			removeUIListeners();
 		} else {
-			//Clear the static cache, this could possibly be tied to activity life cycle either directly or by fragment
+			// Clear the static cache, this could possibly be tied to activity
+			// life cycle either directly or by fragment
 			cs.purge();
 		}
 	}
@@ -1145,5 +1164,33 @@ public class GameActivity extends ActionBarActivity implements
 	@Override
 	protected void onActivityResult(int arg0, int arg1, Intent arg2) {
 		super.onActivityResult(arg0, arg1, arg2);
+	}
+
+	// Get from DragFragment if player use or discard card.
+	@Override
+	public void onPlayerUsedCard(int card, boolean discard) {
+		if (!discard) {
+			playCard(card);
+		} else {
+			gameMachine.playerDiscardCard(card);
+		}
+	}
+
+	// When a card is touched we start a drag & drop on that card.
+	@Override
+	public void onCardTouched(View v, CardTouchData cardTouchData) {
+	}
+
+	@Override
+	public void onDragStatusChanged(int card, int status) {
+		switch (status) {
+		case DragFragment.DRAG_STARTED:
+			cardHandFragment.hideCard(card);
+			break;
+		case DragFragment.DRAG_STOPPED:
+			cardHandFragment.showCard(card);
+			break;
+		}
+
 	}
 }

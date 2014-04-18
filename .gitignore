@@ -1,7 +1,10 @@
 # generated files
 BaseGameUtils/bin/
 BaseGameUtils/gen/
+BaseGameUtils/.project
 google-play-services_lib/bin/
 google-play-services_lib/gen/
+google-play-services/.project
 appcompat/bin/
 appcompat/gen/
+appcompat/.project

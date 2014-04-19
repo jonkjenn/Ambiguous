@@ -22,11 +22,6 @@
         android:gravity="center_horizontal"
         android:orientation="vertical" >
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/opponents_actions" />
-
         <ImageView
             android:id="@+id/opponent_card"
             android:layout_width="70dp"
@@ -40,8 +35,7 @@
         android:id="@+id/discard"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="80dp"
+        android:layout_gravity="center"
         android:background="#FF0000"
         android:gravity="center"
         android:text="DISCARDED"
@@ -51,7 +45,6 @@
    </LinearLayout>
 
     <fragment android:name="no.hiof.android.ambiguous.fragments.CardHandFragment"
-        class="no.hiof.android.ambiguous.fragments.CardHandFragment"
         android:id="@+id/cardhand_fragment"
         android:layout_alignParentBottom="true"
         android:layout_width="wrap_content"
@@ -306,20 +299,21 @@
         </TableRow>
     </TableLayout>
     
-    <fragment android:name="no.hiof.android.ambiguous.fragments.DragFragment"
-        android:id="@+id/drag_fragment"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
-
     <TextView
         android:id="@+id/main_result_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@id/drag_fragment"
+        android:layout_below="@id/opponent_card_container"
         android:layout_centerHorizontal="true"
         android:includeFontPadding="false"
         android:textColor="#00FF00"
         android:textSize="60sp"
         android:textStyle="bold" />
+    
+    <FrameLayout 
+        android:id="@+id/drag_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        ></FrameLayout>
 
 </RelativeLayout>

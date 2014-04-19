@@ -1,7 +1,9 @@
 package no.hiof.android.ambiguous.fragments;
 
 import no.hiof.android.ambiguous.R;
+import android.annotation.TargetApi;
 import android.graphics.Bitmap;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.DragEvent;
@@ -13,6 +15,7 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 public class DragFragment extends Fragment implements OnDragListener {
 	private View useCardNotificationView;
 	private View discardCardNotificationView;
@@ -149,7 +152,7 @@ public class DragFragment extends Fragment implements OnDragListener {
 
 		dragCard.setLayoutParams(par);
 
-		//Here we will show the drag card and hide the static card.
+		// Here we will show the drag card and hide the static card.
 		if (dragCard.getVisibility() != View.VISIBLE) {
 			notifyDragStatusChanged(card, DRAG_STARTED);
 

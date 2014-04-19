@@ -4,16 +4,23 @@ import no.hiof.android.ambiguous.EmptyDragShadowBuilder;
 import no.hiof.android.ambiguous.Helper;
 import no.hiof.android.ambiguous.R;
 import no.hiof.android.ambiguous.adapter.PlayerHandAdapter;
+import no.hiof.android.ambiguous.fragments.DragFragment.OnPlayerUsedCardListener;
 import no.hiof.android.ambiguous.model.Card;
+import android.annotation.TargetApi;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
+import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.GridView;
 import android.widget.ImageView;
 
@@ -33,7 +40,9 @@ public class CardHandFragment extends Fragment implements OnTouchListener {
 
 		hand = (GridView) view.findViewById(R.id.game_grid);
 
-		view.setOnTouchListener(this);
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+			view.setOnTouchListener(this);
+		}
 	}
 
 	public void updateCards(Card[] cards) {
@@ -42,6 +51,7 @@ public class CardHandFragment extends Fragment implements OnTouchListener {
 		hand.setAdapter(adapter);
 	}
 
+	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 	@Override
 	public boolean onTouch(View v, MotionEvent me) {
 
@@ -49,25 +59,21 @@ public class CardHandFragment extends Fragment implements OnTouchListener {
 		if (tag != null) {
 			int position = Helper.getPositionFromTag(tag);
 
-			if (listener != null) {
+			if (v instanceof ImageView) {
+				ImageView iv = (ImageView) v;
+				Bitmap b = ((BitmapDrawable) iv.getDrawable()).getBitmap();
 
-				if (v instanceof ImageView) {
-					ImageView iv = (ImageView) v;
-					Bitmap b = ((BitmapDrawable) iv.getDrawable()).getBitmap();
+				CardTouchData cardTouchData = new CardTouchData(
+						(int) me.getRawY(), position, v.getHeight(),
+						(int) me.getX(), (int) me.getY(), b);
 
-					CardTouchData cardTouchData = new CardTouchData(
-							(int) me.getRawY(), position, v.getHeight(),
-							(int) me.getX(), (int) me.getY(), b);
+				// Empty shadow since we display our own manually to avoid
+				// the
+				// transparency.
+				EmptyDragShadowBuilder shadow = new EmptyDragShadowBuilder(v);
 
-					// Empty shadow since we display our own manually to avoid
-					// the
-					// transparency.
-					EmptyDragShadowBuilder shadow = new EmptyDragShadowBuilder(
-							v);
-
-					// Start a drag event with the touched card.
-					v.startDrag(null, shadow, cardTouchData, 0);
-				}
+				// Start a drag event with the touched card.
+				v.startDrag(null, shadow, cardTouchData, 0);
 
 			}
 			return true;
@@ -76,13 +82,17 @@ public class CardHandFragment extends Fragment implements OnTouchListener {
 	}
 
 	public void showCard(int position) {
-		hand.getChildAt(position).setVisibility(View.VISIBLE);
+		if (position < hand.getChildCount()) {
+			hand.getChildAt(position).setVisibility(View.VISIBLE);
+		}
 	}
 
 	public void hideCard(int position) {
-		hand.getChildAt(position).setVisibility(View.INVISIBLE);
+		if (position < hand.getChildCount()) {
+			hand.getChildAt(position).setVisibility(View.INVISIBLE);
+		}
 	}
-	
+
 	OnCardTouchedListener listener;
 
 	public interface OnCardTouchedListener {
@@ -114,5 +124,61 @@ public class CardHandFragment extends Fragment implements OnTouchListener {
 			this.localY = localY;
 			this.bitmap = bitmap;
 		}
+	}
+
+	// Should only be called on lower API versions, since we use drag and drop
+	// otherwise.
+	@Override
+	public void onCreateContextMenu(ContextMenu menu, View v,
+			ContextMenuInfo menuInfo) {
+		super.onCreateContextMenu(menu, v, menuInfo);
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+			getActivity().getMenuInflater().inflate(R.menu.click_card_on_hand,
+					menu);
+		}
+
+	}
+
+	// When a player selects a card to use.
+	@Override
+	public boolean onContextItemSelected(MenuItem item) {
+
+		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item
+				.getMenuInfo();
+
+		switch (item.getItemId()) {
+		case R.id.card_context_use:
+			notifyPlayerUsedCardListener(info.position, false);
+			return true;
+		case R.id.card_context_discard:
+			notifyPlayerUsedCardListener(info.position, true);
+			return true;
+		default:
+			return super.onContextItemSelected(item);
+		}
+	}
+
+	DragFragment.OnPlayerUsedCardListener onPlayerUsedCardListener;
+
+	void notifyPlayerUsedCardListener(int position, boolean discard) {
+		onPlayerUsedCardListener.onPlayerUsedCard(position, discard);
+	}
+
+	public void setOnPlayerUsedCardListener(OnPlayerUsedCardListener listener) {
+		this.onPlayerUsedCardListener = listener;
+	}
+
+	public void enableUseCards() {
+		registerForContextMenu(hand);
+	}
+
+	public void disableUseCards() {
+		unregisterForContextMenu(hand);
+	}
+
+	@Override
+	public void onStop() {
+		super.onStop();
+		disableUseCards();
 	}
 }

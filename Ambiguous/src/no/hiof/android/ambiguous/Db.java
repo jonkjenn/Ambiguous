@@ -93,6 +93,12 @@ public class Db extends SQLiteOpenHelper {
 			"FOREIGN KEY (`sessioncardlistid`) REFERENCES `Playercardlist` (`id`)," +
 			"FOREIGN KEY (`cardid`) REFERENCES `Card` (`id`) )";
 	
+	private static final String CREATE_STATISTICS_TABLE = 
+			"CREATE TABLE IF NOT EXISTS `Statistics` (" +
+			"`id` INTEGER NOT NULL," +
+			"`win`INTEGER," +
+			"PRIMARY KEY (`id`) )";
+	
 	private static final String name = "db";
 	
 	private static final String DROP_CARDLISTTYPE_TABLE = "DROP TABLE IF EXISTS "+TABLE_NAME_CARDLISTTYPE;
@@ -104,6 +110,7 @@ public class Db extends SQLiteOpenHelper {
 	private static final String DROP_EFFECT_TABLE = "DROP TABLE IF EXISTS Effect";
 	private static final String DROP_CONNECTION_TABLE = "DROP TABLE IF EXISTS Connection";
 	private static final String DROP_PLAYERCARD_TABLE = "DROP TABLE IF EXISTS Playercard";
+	private static final String DROP_STATISTICS_TABLE = "DROP TABLE IF EXISTS Statistics";
 	
 	private static Db db;
 
@@ -116,7 +123,7 @@ public class Db extends SQLiteOpenHelper {
 	{
 		if(db == null)
 		{
-			db = new Db(ctx,name,null,7);
+			db = new Db(ctx,name,null,8);
 				
 		}
 		
@@ -138,6 +145,7 @@ public class Db extends SQLiteOpenHelper {
 		db.execSQL(DROP_PLAYERPROFILE_TABLE);
 		db.execSQL(DROP_PLAYERCARDLIST_TABLE);
 		db.execSQL(DROP_CARDLISTTYPE_TABLE);
+		db.execSQL(DROP_STATISTICS_TABLE);
 	}
 
 	@Override
@@ -162,6 +170,7 @@ public class Db extends SQLiteOpenHelper {
 		db.execSQL(CREATE_EFFECT_TABLE);
 		db.execSQL(CREATE_CONNECTION_TABLE);
 		db.execSQL(CREATE_PLAYERCARD_TABLE);
+		db.execSQL(CREATE_STATISTICS_TABLE);
 	}
 
 	/**
@@ -173,6 +182,7 @@ public class Db extends SQLiteOpenHelper {
 		//ContentValues contentValues = new ContentValues();
 		db.execSQL("INSERT INTO "+TABLE_NAME_CARDLISTTYPE+" (name) VALUES('"+CARDLISTTYPE_DECK+"')");
 		db.execSQL("INSERT INTO "+TABLE_NAME_CARDLISTTYPE+" (name) VALUES('"+CARDLISTTYPE_HAND+"')");
+		db.execSQL("INSERT INTO Statistics (win) VALUES('0')");
 		CardDataSource cs = new CardDataSource(db);
 
 		cs.addCard(CardBuilder.DamageOponent("Pistol","","pistol1",4,5,10,5));

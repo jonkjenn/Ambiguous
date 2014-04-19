@@ -44,6 +44,7 @@ import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
 import android.app.PendingIntent;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
@@ -52,6 +53,7 @@ import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.os.Build;
@@ -856,6 +858,29 @@ public class GameActivity extends ActionBarActivity implements
 	public void onOpponentDeadListener(Player opponent) {
 		LayoutHelper.showResult(resultTextView, true);
 		cardHandFragment.disableUseCards();
+		saveVictory();
+		
+	}
+
+	private void saveVictory() {
+		try{
+			db.beginTransaction();
+			db.execSQL("UPDATE Statistics SET win = (win + 1) " +
+					"WHERE id = (SELECT id FROM Statistics ORDER BY id DESC LIMIT 1)");
+			db.setTransactionSuccessful();
+		}
+		finally{
+			db.endTransaction();
+		}
+		Cursor c = db.rawQuery("SELECT * FROM Statistics", null);
+		c.moveToFirst();
+		while(!c.isAfterLast()){
+			System.out.println(c.getInt(c.getColumnIndex("id"))+
+					" | "+c.getColumnIndex("win"));
+			c.moveToNext();
+		}
+		c.close();
+		
 	}
 
 	// We check in code

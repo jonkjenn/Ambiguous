@@ -90,6 +90,10 @@ public class MainActivity extends Activity {
 
 		c.close();
 		
+		// CardDataSource has to be initialized at least once before calling the 
+		// static method CardDataSource.getCard(id), or else the app throws a nullpointerException 
+		CardDataSource cds = new CardDataSource(db);
+		
 		// Put everything together and pass it along as extras in the intent
 		Card SessionOpponentCard = CardDataSource.getCard(opponentCardId);
 		boolean SessionOpponentDiscard = (opponentDiscard != 0 ? true : false);
@@ -100,23 +104,16 @@ public class MainActivity extends Activity {
 			return;
 		}
 		// If there is a stored name in sharedpreferences, use that instead.
-		player.name = PreferenceManager.getDefaultSharedPreferences(this).getString(SettingsFragment.KEY_PREF_USER,
-				player.name);
+		player.name = PreferenceManager.getDefaultSharedPreferences(this)
+				.getString(SettingsFragment.KEY_PREF_USER,player.name);
 		
-		Intent intent = new Intent(this,
-				no.hiof.android.ambiguous.activities.GameActivity.class)
-				.putExtra("SessionId", 
-						sessionId)
-				.putExtra("SessionPlayer",
-						(Parcelable)player)
-				.putExtra("SessionOpponent",
-						(Parcelable)opponent)
-				.putExtra("SessionTurn",
-						sessionTurn)
-				.putExtra("SessionOpponentCard", 
-						(Parcelable)SessionOpponentCard)
-				.putExtra("SessionOpponentDiscard",
-						SessionOpponentDiscard);
+		Intent intent = new Intent(this, no.hiof.android.ambiguous.activities.GameActivity.class)
+				.putExtra("SessionId",sessionId)
+				.putExtra("SessionPlayer",(Parcelable)player)
+				.putExtra("SessionOpponent",(Parcelable)opponent)
+				.putExtra("SessionTurn",sessionTurn)
+				.putExtra("SessionOpponentCard",(Parcelable)SessionOpponentCard)
+				.putExtra("SessionOpponentDiscard",SessionOpponentDiscard);
 		
 		startActivity(intent);
 	}

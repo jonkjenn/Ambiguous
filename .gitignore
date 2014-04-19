@@ -8,3 +8,4 @@ google-play-services/.project
 appcompat/bin/
 appcompat/gen/
 appcompat/.project
+.classpath

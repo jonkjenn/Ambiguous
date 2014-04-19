@@ -12,6 +12,7 @@ local.properties
 .loadpath
 # Java class files
 *.class
+.classpath
 
 # External tool builders
 .externalToolBuilders/

@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+      <TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/stat_layout_opponent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        >
+
+        <TableRow>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_span="2"
+                android:gravity="left"
+                android:lines="1"
+                android:text="0" />
+        </TableRow>
+
+        <TableRow>
+
+
+            <ImageView
+                android:id="@+id/image_stat_health"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/health"
+                android:src="@android:drawable/ic_input_add" />
+
+            <TextView
+                android:id="@+id/health"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0"
+                android:textSize="22sp" />
+
+            <LinearLayout
+                android:id="@+id/floating_health"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" >
+
+                <include layout="@layout/floatingtextview" />
+
+                <include layout="@layout/floatingtextview" />
+
+                <include layout="@layout/floatingtextview" >
+                </include>
+            </LinearLayout>
+        </TableRow>
+
+        <TableRow>
+
+            <ImageView
+                android:id="@+id/image_stat_armor"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/armor"
+                android:src="@android:drawable/ic_lock_lock" />
+
+            <TextView
+                android:id="@+id/armor"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0"
+                android:textSize="22sp" />
+
+            <LinearLayout
+                android:id="@+id/floating_armor"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" >
+
+                <include layout="@layout/floatingtextview" />
+
+                <include layout="@layout/floatingtextview" />
+
+                <include layout="@layout/floatingtextview" />
+            </LinearLayout>
+
+        </TableRow>
+
+        <TableRow>
+
+            <ImageView
+                android:id="@+id/image_stat_resource"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/resource"
+                android:src="@android:drawable/ic_lock_idle_charging" />
+
+            <TextView
+                android:id="@+id/resource"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0"
+                android:textSize="22sp" />
+
+            <LinearLayout
+                android:id="@+id/floating_resource"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" >
+
+                <include layout="@layout/floatingtextview" />
+
+                <include layout="@layout/floatingtextview" />
+
+                <include layout="@layout/floatingtextview" />
+            </LinearLayout>
+
+        </TableRow>
+    </TableLayout>
+    

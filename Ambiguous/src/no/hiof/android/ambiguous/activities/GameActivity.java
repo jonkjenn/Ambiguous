@@ -25,6 +25,8 @@ import no.hiof.android.ambiguous.fragments.DragFragment.OnPlayerUsedCardListener
 import no.hiof.android.ambiguous.fragments.GooglePlayGameFragment;
 import no.hiof.android.ambiguous.fragments.MinigameFragment;
 import no.hiof.android.ambiguous.fragments.MinigameFragment.MinigameListener;
+import no.hiof.android.ambiguous.fragments.PlayerStatsFragment;
+import no.hiof.android.ambiguous.fragments.PlayerStatsFragment.OnLoadedListener;
 import no.hiof.android.ambiguous.fragments.TutorialFragment;
 import no.hiof.android.ambiguous.layouts.CardLayout;
 import no.hiof.android.ambiguous.model.Card;
@@ -54,7 +56,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -65,7 +66,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.Surface;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -87,14 +87,6 @@ public class GameActivity extends ActionBarActivity implements
 	private RelativeLayout layoutContainer;
 	private GameMachine gameMachine;
 
-	private TextView playerName;
-	private TextView playerHealth;
-	private TextView playerArmor;
-	private TextView playerResource;
-	private ViewGroup floatingHealthPlayer;
-	private ViewGroup floatingArmorPlayer;
-	private ViewGroup floatingResourcehPlayer;
-
 	private TextView resultTextView;
 
 	private ImageView opponentCard;
@@ -104,16 +96,11 @@ public class GameActivity extends ActionBarActivity implements
 	private Card currentOpponentCard;
 	private boolean opponentCardIsDiscarded = false;
 
-	private TextView opponentName;
-	private TextView opponentHealth;
-	private TextView opponentArmor;
-	private TextView opponentResource;
-	private ViewGroup floatingHealthOpponent;
-	private ViewGroup floatingArmorOpponent;
-	private ViewGroup floatingResourcehOpponent;
-
 	CardHandFragment cardHandFragment;
 	DragFragment dragFragment;
+
+	PlayerStatsFragment playerStats;
+	PlayerStatsFragment opponentStats;
 
 	// TODO: Possibly recode so don't need these as
 	// fields.http://stackoverflow.com/questions/5088856/how-to-detect-landscape-left-normal-vs-landscape-right-reverse-with-support?rq=1
@@ -121,10 +108,6 @@ public class GameActivity extends ActionBarActivity implements
 	private Player savedOpponent;
 	private State savedState;
 	private int savedSessionId = -1;
-
-	// TODO: playerStatus currently used for status messages, opponentStatus
-	// indicates turns. Should rename!
-	TextView playerStatus;
 
 	// During minigame we lock the rotation, store the previous rotation in this
 	// so we can reset it after minigame.
@@ -176,15 +159,46 @@ public class GameActivity extends ActionBarActivity implements
 			// handle it being in xml
 			dragFragment = new DragFragment();
 			getSupportFragmentManager().beginTransaction()
-					.add(R.id.drag_container, dragFragment, "dragFragment").commit();
+					.add(R.id.drag_container, dragFragment, "dragFragment")
+					.commit();
 
 			dragFragment.setPlayerUsedCardListener(this);
 			dragFragment.setOnDragStatusChanged(this);
 		}
 		cardHandFragment.setOnPlayerUsedCardListener(this);
+		
+		
+		//The stats window showing player's stats.
+		playerStats = new PlayerStatsFragment();
+		
+		//So we can update stats as soon as the fragment is done loading.
+		playerStats.setOnLoadedListener(new OnLoadedListener() {
+			@Override
+			public void onLoaded() {
+				onStatsUpdateListener(player);
+			}
+		});
+		
+		Bundle args = new Bundle();
+		args.putBoolean("reverse", true);
+		playerStats.setArguments(args);
+		
+		getSupportFragmentManager().beginTransaction().add(R.id.playerstats_fragment, playerStats,"playerstatsFragment").commit();
+		
+		//The stats window showing opponent's stats.
+		opponentStats = new PlayerStatsFragment();
 
+		//So we can update stats as soon as the fragment is done loading.
+		opponentStats.setOnLoadedListener(new OnLoadedListener() {
+			@Override
+			public void onLoaded() {
+				onStatsUpdateListener(opponent);
+			}
+		});
+
+		getSupportFragmentManager().beginTransaction().add(R.id.opponentstats_fragment, opponentStats,"opponentStatsFragment").commit();
+		
 		// TODO: What?
-		playerStatus.setText(" ");
 		setBackground(PreferenceManager.getDefaultSharedPreferences(this));
 
 		if (savedInstanceState != null) {
@@ -271,22 +285,7 @@ public class GameActivity extends ActionBarActivity implements
 	 */
 	void findViews() {
 		layoutContainer = (RelativeLayout) findViewById(R.id.game_layout_container);
-		playerStatus = (TextView) findViewById(R.id.stats_player);
 		opponentCard = (ImageView) findViewById(R.id.opponent_card);
-		playerName = (TextView) findViewById(R.id.stat_player_name);
-		playerHealth = (TextView) findViewById(R.id.stat_player_health);
-		playerArmor = (TextView) findViewById(R.id.stat_player_armor);
-		playerResource = (TextView) findViewById(R.id.stat_player_resource);
-		floatingHealthPlayer = (ViewGroup) findViewById(R.id.floating_health_player);
-		floatingArmorPlayer = (ViewGroup) findViewById(R.id.floating_armor_player);
-		floatingResourcehPlayer = (ViewGroup) findViewById(R.id.floating_resource_player);
-		opponentName = (TextView) findViewById(R.id.stat_opponent_name);
-		opponentHealth = (TextView) findViewById(R.id.stat_opponent_health);
-		opponentArmor = (TextView) findViewById(R.id.stat_opponent_armor);
-		opponentResource = (TextView) findViewById(R.id.stat_opponent_resource);
-		floatingHealthOpponent = (ViewGroup) findViewById(R.id.floating_health_opponent);
-		floatingArmorOpponent = (ViewGroup) findViewById(R.id.floating_armor_opponent);
-		floatingResourcehOpponent = (ViewGroup) findViewById(R.id.floating_resource_opponent);
 		resultTextView = (TextView) findViewById(R.id.main_result_text);
 
 		cardHandFragment = (CardHandFragment) getSupportFragmentManager()
@@ -791,9 +790,9 @@ public class GameActivity extends ActionBarActivity implements
 	@Override
 	public void onPlayerTurnListener() {
 		enableUseCards();
-
-		playerName.setBackgroundColor(Color.RED);
-		opponentName.setBackgroundColor(Color.TRANSPARENT);
+		
+		playerStats.myTurn();
+		opponentStats.notMyTurn();
 	}
 
 	@SuppressLint("NewApi")
@@ -801,8 +800,8 @@ public class GameActivity extends ActionBarActivity implements
 	@Override
 	public void onPlayerDoneListener() {
 		disableUseCards();
-		playerName.setBackgroundColor(Color.TRANSPARENT);
-		opponentName.setBackgroundColor(Color.RED);
+		playerStats.notMyTurn();
+		opponentStats.myTurn();
 	}
 
 	/**
@@ -832,8 +831,8 @@ public class GameActivity extends ActionBarActivity implements
 	 */
 	public void resetLayout() {
 		LayoutHelper.hideResult(resultTextView);
-		playerName.setBackgroundColor(Color.TRANSPARENT);
-		opponentName.setBackgroundColor(Color.TRANSPARENT);
+		playerStats.notMyTurn();
+		opponentStats.notMyTurn();
 		currentOpponentCard = null;
 		opponentCardIsDiscarded = false;
 		opponentCard.setImageBitmap(null);
@@ -843,17 +842,20 @@ public class GameActivity extends ActionBarActivity implements
 
 	@Override
 	public void onOpponentTurnListener() {
-		opponentName.setBackgroundColor(Color.RED);
+		playerStats.notMyTurn();
+		opponentStats.myTurn();
 	}
 
 	@Override
 	public void onPlayerDeadListener(Player player) {
 		LayoutHelper.showResult(resultTextView, false);
+		cardHandFragment.disableUseCards();
 	}
 
 	@Override
 	public void onOpponentDeadListener(Player opponent) {
 		LayoutHelper.showResult(resultTextView, true);
+		cardHandFragment.disableUseCards();
 	}
 
 	// We check in code
@@ -887,96 +889,30 @@ public class GameActivity extends ActionBarActivity implements
 	@Override
 	public void onStatsUpdateListener(Player player) {
 		if (player == gameMachine.player) {
+
 			// playerName.setText(player.name);
 			SharedPreferences sp = PreferenceManager
 					.getDefaultSharedPreferences(this);
-			playerName
-					.setText(sp.getString(SettingsActivity.KEY_PREF_USER, ""));
 
-			playerHealth.setText(String.valueOf(player.health));
-			playerArmor.setText(String.valueOf(player.armor));
-			playerResource.setText(String.valueOf(player.resources));
+			playerStats.setStats(
+					sp.getString(SettingsActivity.KEY_PREF_USER, "Player"),
+					player.health, player.armor, player.resources);
 
-		} else if (player == gameMachine.opponent) {
-			opponentName.setText(player.name);
-			opponentHealth.setText(String.valueOf(player.health));
-			opponentArmor.setText(String.valueOf(player.armor));
-			opponentResource.setText(String.valueOf(player.resources));
+		} else {
+			opponentStats.setStats(player.name, player.health, player.armor,
+					player.resources);
 		}
 	}
 
 	@Override
 	public void onStatChange(Player player, int amount, EffectType type) {
-
-		final boolean isPlayer = player == gameMachine.player;
-
-		final ViewGroup viewGroup;
-		final TextView floatingText;
-
-		// Find the correct viewgroup for the floating text and set the correct
-		// color on the text
-		int color;
-		switch (type) {
-		case ARMOR:
-			viewGroup = (isPlayer ? floatingArmorPlayer : floatingArmorOpponent);
-			color = Color.BLUE;
-			break;
-		case DAMAGE:
-			viewGroup = (isPlayer ? floatingHealthPlayer
-					: floatingHealthOpponent);
-			color = Color.RED;
-			break;
-		case HEALTH:
-			viewGroup = (isPlayer ? floatingHealthPlayer
-					: floatingHealthOpponent);
-			color = Color.rgb(45, 190, 50);
-			break;
-		case RESOURCE:
-			viewGroup = (isPlayer ? floatingResourcehPlayer
-					: floatingResourcehOpponent);
-			color = Color.rgb(180, 180, 50);
-			break;
-		default:
-			viewGroup = null;
-			color = Color.WHITE;
-			break;
+		if (player == gameMachine.player) {
+			playerStats.updateStat(type, amount);
 		}
-
-		int index = -1;
-
-		// Find the first empty textview so we can put the new stat text there.
-		for (int i = 0; i < viewGroup.getChildCount(); i++) {
-			if (((TextView) viewGroup.getChildAt(i)).getText().length() == 0) {
-				index = i;
-				break;
-			}
+		else
+		{
+			opponentStats.updateStat(type, amount);
 		}
-
-		// We have to set this outside the loop because its final, is a better
-		// way to do this?
-		floatingText = (index >= 0 ? (TextView) viewGroup.getChildAt(index)
-				: null);
-
-		// TODO: Improve this?
-		// If there is no empty text fields the stat wont be shown. Could
-		// improve this.
-		if (floatingText == null || viewGroup == null) {
-			return;
-		}
-
-		// Adds the + sign if positive damage, negative shows automatically.
-		floatingText.setText((amount >= 0 ? "+" : "")
-				+ Integer.toString(amount));
-		floatingText.setTextColor(color);
-
-		// So text is removed after a delay
-		Runnable r = new Runnable() {
-			@Override
-			public void run() {
-				floatingText.setText("");
-			}
-		};
-		new Handler().postDelayed(r, 2000);
 	}
 
 	@Override

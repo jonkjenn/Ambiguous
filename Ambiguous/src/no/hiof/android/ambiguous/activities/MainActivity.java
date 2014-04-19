@@ -6,6 +6,7 @@ import java.util.List;
 import no.hiof.android.ambiguous.Db;
 import no.hiof.android.ambiguous.R;
 import no.hiof.android.ambiguous.datasource.CardDataSource;
+import no.hiof.android.ambiguous.fragments.SettingsFragment;
 import no.hiof.android.ambiguous.model.Card;
 import no.hiof.android.ambiguous.model.Player;
 import android.app.Activity;
@@ -20,6 +21,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 /**
  * The main menu that starts at startup of the app.
@@ -40,13 +42,6 @@ public class MainActivity extends Activity {
 		resumeButton = (Button) findViewById(R.id.resume_button);
 		if(resumeButton != null){
 			this.db = Db.getDb(getApplicationContext()).getReadableDatabase();
-			Cursor c = db.rawQuery("SELECT id FROM " + "Session" + " ORDER BY id DESC Limit 1",
-					null);
-			c.moveToFirst();
-			savedSessionExists = (c.getCount() <= 0 ? false : true);
-			c.close();
-			resumeButton.setEnabled(savedSessionExists);
-			
 		}
 	}
 
@@ -80,129 +75,131 @@ public class MainActivity extends Activity {
 				.rawQuery(
 						"SELECT id,player,opponent,turn,opponentCard,opponentDiscard FROM Session WHERE id = (SELECT max(id) FROM Session) LIMIT 1",
 						null);
-		c.moveToFirst();
+		if(!c.moveToFirst()){
+			c.close();
+			abortResumeGame();
+			return;
+		}
+		// Extract all the data from the session row and then close the cursor
 		int playerId = c.getInt(c.getColumnIndexOrThrow("player"));
 		int opponentId = c.getInt(c.getColumnIndexOrThrow("opponent"));
 		int opponentCardId = c.getInt(c.getColumnIndexOrThrow("opponentCard"));
-		CardDataSource cds = new CardDataSource(db);
+		int sessionId = c.getInt(c.getColumnIndexOrThrow("id"));
+		int sessionTurn = c.getInt(c.getColumnIndexOrThrow("turn"));
+		int opponentDiscard = c.getInt(c.getColumnIndexOrThrow("opponentDiscard"));
+
+		c.close();
+		
+		// Put everything together and pass it along as extras in the intent
+		Card SessionOpponentCard = CardDataSource.getCard(opponentCardId);
+		boolean SessionOpponentDiscard = (opponentDiscard != 0 ? true : false);
+		Player player = getPlayerFromDb(playerId);
+		Player opponent = getPlayerFromDb(opponentId);
+		if(player == null || opponent == null){
+			abortResumeGame();
+			return;
+		}
+		// If there is a stored name in sharedpreferences, use that instead.
+		player.name = PreferenceManager.getDefaultSharedPreferences(this).getString(SettingsFragment.KEY_PREF_USER,
+				player.name);
+		
 		Intent intent = new Intent(this,
 				no.hiof.android.ambiguous.activities.GameActivity.class)
 				.putExtra("SessionId", 
-						c.getInt(c.getColumnIndexOrThrow("id")))
-//				.putExtra("SessionPlayer",
-//						c.getInt(c.getColumnIndexOrThrow("player")))
-//				.putExtra("SessionOpponent",
-//						c.getInt(c.getColumnIndexOrThrow("opponent")))
+						sessionId)
+				.putExtra("SessionPlayer",
+						(Parcelable)player)
+				.putExtra("SessionOpponent",
+						(Parcelable)opponent)
 				.putExtra("SessionTurn",
-						c.getInt(c.getColumnIndexOrThrow("turn")))
+						sessionTurn)
 				.putExtra("SessionOpponentCard", 
-						(Parcelable)cds.getCard(opponentCardId))
+						(Parcelable)SessionOpponentCard)
 				.putExtra("SessionOpponentDiscard",
-						(c.getInt(c.getColumnIndexOrThrow("opponentDiscard")) != 0 ? true
-								: false));
+						SessionOpponentDiscard);
+		
+		startActivity(intent);
+	}
+	
+	/**
+	 * Called if a check confirms that a game is unable to be resumed,
+	 *  disables the resume button and informs the user with a toast 
+	 */
+	private void abortResumeGame() {
+		resumeButton.setEnabled(false);
+		Toast.makeText(this, "Could not resume game, sorry", Toast.LENGTH_LONG).show();
+		
+	}
 
+	/**
+	 * Attempts to build a player object from the db, will return null if there is insufficient data
+	 * @param playerId
+	 * @return
+	 */
+	public Player getPlayerFromDb(int playerId){
+		String name;
+		int health;
+		int armor;
+		int resources;
+		Card[] hand;
+		List<Card> deck;
+		
+		Cursor c = db.rawQuery("SELECT name,health,armor,resources,deckid,handid FROM Player WHERE id = ?",
+				new String[]{String.valueOf(playerId)});
+		if(!c.moveToFirst()){
+			c.close();
+			return null;
+		}
+		
+		name = c.getString(c.getColumnIndexOrThrow("name"));
+		health = c.getInt(c.getColumnIndexOrThrow("health"));
+		armor = c.getInt(c.getColumnIndexOrThrow("armor"));
+		resources = c.getInt(c.getColumnIndexOrThrow("resources"));
+		
+		int handId = c.getInt(c.getColumnIndexOrThrow("handid"));
+		int deckId = c.getInt(c.getColumnIndexOrThrow("deckid"));
 		c.close();
 		
-		int playerUser = 0;
-		int playerOpponent = 1;
-		String[] name = new String[2];
-		int[] health = new int[2];
-		int[] armor = new int[2];
-		int[] resources = new int[2];
-		List<Card[]> hand = new ArrayList<Card[]>();
-		List<Card> deckUser = new ArrayList<Card>();
-		List<Card> deckOpponent = new ArrayList<Card>();
+		List<Card> handCards = getCardsFromDb(handId);
+		if(handCards == null){
+			return null;
+		}
+		// hand is currently stored as a Card[] in Player.hand
+		hand = handCards.toArray(new Card[handCards.size()]);
 		
-		// Get the data stored in the row of the specified player from db
-		c = db.rawQuery("SELECT name,health,armor,resources,deckid,handid FROM Player WHERE id = ?", new String[]{String.valueOf(playerId)});
-		c.moveToFirst();
+		deck = getCardsFromDb(deckId);
+		if(deck == null){
+			return null;
+		}
+		
+		return new Player(name,health,armor,resources,hand,deck);
+	}
 
-		name[playerUser] = c.getString(c.getColumnIndexOrThrow("name"));
-		health[playerUser] = c.getInt(c.getColumnIndexOrThrow("health"));
-		armor[playerUser] = c.getInt(c.getColumnIndexOrThrow("armor"));
-		resources[playerUser] = c.getInt(c.getColumnIndexOrThrow("resources"));
-		
-		int handIdUser = c.getInt(c.getColumnIndexOrThrow("handid"));
-		int deckIdUser = c.getInt(c.getColumnIndexOrThrow("deckid"));
-		c.close();
-		
-		// Get the cards in the Player's hand
-		c = db.rawQuery("SELECT cardid FROM Playercard WHERE sessioncardlistid = ? ORDER BY position ASC", 
-				new String[]{String.valueOf(handIdUser)});
-		if(c.moveToFirst()){
-			List<Card> tempHand = new ArrayList<Card>();
-			while(!c.isAfterLast()){
-				tempHand.add(CardDataSource.getCard(c.getInt(c.getColumnIndexOrThrow("cardid"))));
-				c.moveToNext();
-			}
-			// add a new Card[] to the current list of hands
-			hand.add(playerUser,tempHand.toArray(new Card[tempHand.size()]));
+	/**
+	 * playerCardListId is the id associated with a specific player's list of cards, which is either
+	 *  the list of cards in the player's hand, or
+	 *  the list of cards in the player's deck
+	 *  i.e handid and deckid from the Player table. 
+	 * @param playerCardListId
+	 * @return
+	 */
+	private List<Card> getCardsFromDb(int playerCardListId) {
+		List<Card> tempList;
+		// sessioncardlistid is synonymous with playercardlistid
+		Cursor c = db.rawQuery("SELECT cardid FROM Playercard WHERE sessioncardlistid = ? ORDER BY position ASC", 
+				new String[]{String.valueOf(playerCardListId)});
+		if(!c.moveToFirst()){
+			c.close();
+			return null;
+		}
+		tempList = new ArrayList<Card>();
+		while(!c.isAfterLast()){
+			int cardId = c.getInt(c.getColumnIndexOrThrow("cardid"));
+			tempList.add(CardDataSource.getCard(cardId));
+			c.moveToNext();
 		}
 		c.close();
-		
-		// Get the cards in the Player's deck
-				c = db.rawQuery("SELECT cardid FROM Playercard WHERE sessioncardlistid = ? ORDER BY position ASC", 
-						new String[]{String.valueOf(deckIdUser)});
-				if(c.moveToFirst()){
-					while(!c.isAfterLast()){
-						deckUser.add(CardDataSource.getCard(c.getInt(c.getColumnIndexOrThrow("cardid"))));
-						c.moveToNext();
-					}
-				}
-				c.close();
-		
-		// put everything together in a Player object, which is parcelable
-		Player player = new Player(	name[playerUser], health[playerUser],
-									armor[playerUser], resources[playerUser], 
-									hand.get(playerUser), deckUser);
-	
-		intent.putExtra("SessionPlayer", (Parcelable)player);
-		
-		// Get the data stored in the row of the specified opponent from db
-		c = db.rawQuery("SELECT name,health,armor,resources,deckid,handid FROM Player WHERE id = ?", new String[]{String.valueOf(opponentId)});
-		c.moveToFirst();
-
-		name[playerOpponent] = c.getString(c.getColumnIndexOrThrow("name"));
-		health[playerOpponent] = c.getInt(c.getColumnIndexOrThrow("health"));
-		armor[playerOpponent] = c.getInt(c.getColumnIndexOrThrow("armor"));
-		resources[playerOpponent] = c.getInt(c.getColumnIndexOrThrow("resources"));
-		
-		int handIdOpponent = c.getInt(c.getColumnIndexOrThrow("handid"));
-		int deckIdOpponent = c.getInt(c.getColumnIndexOrThrow("deckid"));
-		c.close();
-		
-		// Get the cards in the Opponent's hand
-				c = db.rawQuery("SELECT cardid FROM Playercard WHERE sessioncardlistid = ? ORDER BY position ASC", 
-						new String[]{String.valueOf(handIdOpponent)});
-				if(c.moveToFirst()){
-					List<Card> tempHand = new ArrayList<Card>();
-					while(!c.isAfterLast()){
-						tempHand.add(CardDataSource.getCard(c.getInt(c.getColumnIndexOrThrow("cardid"))));
-						c.moveToNext();
-					}
-					// add a new Card[] to the current list of hands
-					hand.add(playerOpponent,tempHand.toArray(new Card[tempHand.size()]));
-				}
-				c.close();
-				
-		// Get the cards in the Opponent's deck
-				c = db.rawQuery("SELECT cardid FROM Playercard WHERE sessioncardlistid = ? ORDER BY position ASC", 
-						new String[]{String.valueOf(deckIdOpponent)});
-				if(c.moveToFirst()){
-					while(!c.isAfterLast()){
-						deckOpponent.add(CardDataSource.getCard(c.getInt(c.getColumnIndexOrThrow("cardid"))));
-						c.moveToNext();
-					}
-				}
-				c.close();
-		
-		// put everything together in a Player object, which is parcelable
-		Player opponent = new Player( name[playerOpponent], health[playerOpponent],
-									armor[playerOpponent], resources[playerOpponent], 
-									hand.get(playerOpponent), deckOpponent);
-			
-		intent.putExtra("SessionOpponent", (Parcelable)opponent);
-		startActivity(intent);
+		return tempList;
 	}
 
 	/** Called when the user clicks the Game button, starts up a new game vs AI. **/
@@ -259,8 +256,7 @@ public class MainActivity extends Activity {
 		if (this.db != null){
 			Cursor c = db.rawQuery("SELECT id FROM " + "Session"
 					+ " ORDER BY id DESC Limit 1", null);
-			c.moveToFirst();
-			savedSessionExists = (c.getCount() <= 0 ? false : true);
+			savedSessionExists = c.moveToFirst();
 			c.close();
 			if(resumeButton != null){
 				resumeButton.setEnabled(savedSessionExists);

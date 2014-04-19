@@ -3,6 +3,7 @@ package no.hiof.android.ambiguous.layouts;
 import java.util.HashMap;
 import java.util.List;
 
+import no.hiof.android.ambiguous.Helper;
 import no.hiof.android.ambiguous.R;
 import no.hiof.android.ambiguous.model.Card;
 import no.hiof.android.ambiguous.model.Effect;
@@ -58,19 +59,22 @@ public class CardLayout {
 
 		LayoutInflater inflater = (LayoutInflater) parent.getContext()
 				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+
+		// If the card has been created before we return it from the cache.
+		if (card != null && bitmaps.containsKey(card.name)) {
+			ImageView v = (ImageView) inflater.inflate(R.layout.card_game2,
+					parent, false);
+
+			// Pass 0 in tag here since it will be initialized here.
+			v.setTag(Helper.putIdInTag(0, card.id));
+			v.setImageBitmap(bitmaps.get(card.name));
+			return v;
+		}
+
 		View view = inflater.inflate(R.layout.card_game, parent, false);
 		// Return a empty view if no card.
 		if (card == null) {
 			return view;
-		}
-
-		// If the card has been created before we return it from the cache.
-		if (bitmaps.containsKey(card.name)) {
-			ImageView v = (ImageView) inflater.inflate(R.layout.card_game2,
-					parent, false);
-			v.setTag(card.image);
-			v.setImageBitmap(bitmaps.get(card.name));
-			return v;
 		}
 
 		View cardView = createCardView(view, card, parent);
@@ -82,7 +86,10 @@ public class CardLayout {
 		// Build the simple ImageView to use for the bitmap of the Card View.
 		ImageView v = (ImageView) inflater.inflate(R.layout.card_game2, parent,
 				false);
-		v.setTag(card.image);
+
+		// Pass 0 in tag here since it will be initialized here.
+		v.setTag(Helper.putIdInTag(0, card.id));
+
 		v.setImageBitmap(b);
 
 		return v;
@@ -123,7 +130,7 @@ public class CardLayout {
 			image.setImageResource(imageId);
 		}
 
-		//Add the effects to the card.
+		// Add the effects to the card.
 		List<Effect> e = card.effects;
 		LinearLayout l = (LinearLayout) view.findViewById(R.id.card_effects);
 		l.removeAllViews();// For fixing double effects when resume activity
@@ -137,11 +144,12 @@ public class CardLayout {
 
 	/**
 	 * Converts a view to a bitmap.
+	 * 
 	 * @param view
 	 * @return
 	 */
 	private static Bitmap viewToBitmap(View view) {
-		//Without this the bitmap is blank.
+		// Without this the bitmap is blank.
 		view.measure(MeasureSpec.makeMeasureSpec(view.getLayoutParams().width,
 				MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(
 				view.getLayoutParams().height, MeasureSpec.EXACTLY));
@@ -153,6 +161,7 @@ public class CardLayout {
 
 	/**
 	 * Creates a View from an Effect.
+	 * 
 	 * @param e
 	 * @param context
 	 * @return
@@ -164,7 +173,7 @@ public class CardLayout {
 		String max = Integer.toString(e.maxValue);
 		String crit = Integer.toString(e.crit);
 
-		//Textview that shows the effects min/max/crit
+		// Textview that shows the effects min/max/crit
 		TextView t = new TextView(context);
 		t.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
 		t.setTextColor(Color.WHITE);
@@ -176,7 +185,7 @@ public class CardLayout {
 		t.setLayoutParams(layout);
 		t.setPadding(3, 0, 3, 0);
 
-		//Change the color and layout depending on which effect type.
+		// Change the color and layout depending on which effect type.
 		switch (e.type) {
 		case ARMOR:
 			text = min;

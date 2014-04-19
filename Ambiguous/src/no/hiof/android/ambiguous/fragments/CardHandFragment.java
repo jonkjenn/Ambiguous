@@ -1,6 +1,7 @@
 package no.hiof.android.ambiguous.fragments;
 
 import no.hiof.android.ambiguous.EmptyDragShadowBuilder;
+import no.hiof.android.ambiguous.Helper;
 import no.hiof.android.ambiguous.R;
 import no.hiof.android.ambiguous.adapter.PlayerHandAdapter;
 import no.hiof.android.ambiguous.model.Card;
@@ -46,7 +47,7 @@ public class CardHandFragment extends Fragment implements OnTouchListener {
 
 		Object tag = v.getTag();
 		if (tag != null) {
-			int position = (Integer) v.getTag();
+			int position = Helper.getPositionFromTag(tag);
 
 			if (listener != null) {
 

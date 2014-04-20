@@ -1,14 +1,15 @@
 package no.hiof.android.ambiguous;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import no.hiof.android.ambiguous.OpponentController.OpponentListener;
+import no.hiof.android.ambiguous.datasource.CardDataSource;
 import no.hiof.android.ambiguous.model.Card;
 import no.hiof.android.ambiguous.model.Effect;
 import no.hiof.android.ambiguous.model.Effect.EffectType;
 import no.hiof.android.ambiguous.model.Player;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Handler;
 import android.os.SystemClock;
 
@@ -23,7 +24,11 @@ public class GameMachine implements OpponentListener {
 	public Player player;
 	public Player opponent;
 
-	private int delay;
+	
+	public Card currentOpponentCard;
+	public boolean opponentCardIsDiscarded;
+
+	public int delay;
 
 	public enum State {
 		PLAYER_TURN, PLAYER_DONE, OPPONENT_TURN, GAME_OVER
@@ -37,52 +42,32 @@ public class GameMachine implements OpponentListener {
 	 * 
 	 * @param builder
 	 */
-	private GameMachine(Builder builder) {
-		this.player = builder.player;
-		this.opponent = builder.opponent;
-		this.delay = builder.delay;
-		this.state = builder.state;
-
-		// Randomly pick if player or opponent should start game.
-		if (state == null) {
-			state = (new Random().nextInt(2) == 0 ? State.PLAYER_TURN
-					: State.OPPONENT_TURN);
-		}
-	}
-
-	public static class Builder {
-		final SQLiteDatabase db;
-		final Player player;
-		final Player opponent;
-		int delay = 1000;;
-		GameMachine.State state;
-
-		public Builder(SQLiteDatabase db, Player player, Player opponent) {
-			this.db = db;
-			this.player = player;
-			this.opponent = opponent;
-		}
-
-		public GameMachine build() {
-			return new GameMachine(this);
-		}
-
-		public Builder setDelay(int delay) {
-			this.delay = delay;
-			return this;
-		}
-
-		public Builder setState(GameMachine.State state) {
-			this.state = state;
-			return this;
-		}
+	public GameMachine(List<Card> cards) {
+		player = new Player("Local player");
+		player.setDeck(DeckBuilder.StandardDeck(cards));
+		opponent = new Player("Opponent");
+		opponent.setDeck(DeckBuilder.StandardDeck(cards));
+		this.delay = 1000;
 	}
 
 	public boolean isPlayersTurn() {
 		return state == State.PLAYER_TURN;
 	}
 
-	public void startGame() {
+	public void startGame(State state) {
+		if (state == null) {
+			startRandom();
+			return;
+		}
+		this.state = state;
+		changeState();
+	}
+
+	public void startRandom() {
+		// Randomly pick if player or opponent should start game.
+		state = (new Random().nextInt(2) == 0 ? State.PLAYER_TURN
+				: State.OPPONENT_TURN);
+
 		changeState();
 	}
 
@@ -99,7 +84,7 @@ public class GameMachine implements OpponentListener {
 			}
 		}, SystemClock.uptimeMillis() + delay);
 	}
-	
+
 	/**
 	 * Changes the current game state.
 	 */
@@ -174,7 +159,7 @@ public class GameMachine implements OpponentListener {
 		if (!player.isAlive()) {
 			notifyPlayerDead();
 			state = State.GAME_OVER;
-		}else if (!opponent.isAlive()) {
+		} else if (!opponent.isAlive()) {
 			notifyOpponentDead();
 			state = State.GAME_OVER;
 		}
@@ -326,7 +311,7 @@ public class GameMachine implements OpponentListener {
 			break;
 		}
 	}
-
+	
 	// Listeners to changes happening in gamemachine
 	ArrayList<GameMachineListener> gameMachineListeners = new ArrayList<GameMachineListener>();
 	// Listeners to turn changes.
@@ -335,28 +320,24 @@ public class GameMachine implements OpponentListener {
 	public void setGameMachineListener(GameMachineListener listener) {
 		gameMachineListeners.add(listener);
 	}
-	
-	public void removeGameMachineListener(GameMachineListener listener)
-	{
+
+	public void removeGameMachineListener(GameMachineListener listener) {
 		gameMachineListeners.remove(listener);
 	}
-	
-	public void clearGameMachineListener()
-	{
+
+	public void clearGameMachineListener() {
 		gameMachineListeners.clear();
 	}
 
 	public void setTurnChangeListener(TurnChangeListener listener) {
 		turnChangeListeners.add(listener);
 	}
-	
-	public void removeTurnChangeListener(TurnChangeListener listener)
-	{
+
+	public void removeTurnChangeListener(TurnChangeListener listener) {
 		turnChangeListeners.remove(listener);
 	}
-	
-	public void clearTurnChangedListener()
-	{
+
+	public void clearTurnChangedListener() {
 		turnChangeListeners.clear();
 	}
 
@@ -420,7 +401,7 @@ public class GameMachine implements OpponentListener {
 			listener.onPlayerDiscardCard(card);
 		}
 	}
-
+	
 	public interface TurnChangeListener {
 		void turnChange(Player player);
 	}
@@ -463,13 +444,10 @@ public class GameMachine implements OpponentListener {
 			opponent.useResources(card.cost);
 		}
 
+		currentOpponentCard = card;
+		opponentCardIsDiscarded = false;
 	}
 
-	@Override
-	public void onOpponentDiscardCard(Card card) {
-		state = State.PLAYER_TURN;
-		doChangeState();
-	}
 
 	@Override
 	/**
@@ -504,6 +482,21 @@ public class GameMachine implements OpponentListener {
 			state = State.PLAYER_TURN;
 			changeState();
 		}
+	}
+
+	@Override
+	public void onOpponentDiscardCard(int card) {
+		state = State.PLAYER_TURN;
+		doChangeState();
+
+		currentOpponentCard = CardDataSource.getCard(card);
+		opponentCardIsDiscarded = false;
+	}
+
+	@Override
+	public void previousCardPlayed(Card card, boolean discarded) {
+		currentOpponentCard = card;
+		opponentCardIsDiscarded = discarded;
 	}
 
 }

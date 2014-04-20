@@ -34,6 +34,18 @@ public class Player implements Parcelable {
 		this.deck = deck;
 	}
 
+	public void updatePlayer(String name, int health, int armor, int resources, Card[] hand, List<Card> deck){
+		this.name = name;
+		this.health = health;
+		this.armor = armor;
+		this.resources = resources;
+		this.hand = hand;
+		this.deck = deck;
+		
+		notifyStatsUpdateListeners();
+		notifyCardsUpdateListeners();
+	}
+
 	public Player(String name) {
 		this.name = name;
 		hand = new Card[NUMBER_OF_CARDS];

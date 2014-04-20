@@ -142,7 +142,7 @@ public class NetworkOpponent implements GameMachineListener {
 
 					@Override
 					public void run() {
-						oc.DiscardCard(dataBuffer.poll());
+						oc.discardCard(dataBuffer.poll());
 					}
 				});
 				break;
@@ -153,7 +153,7 @@ public class NetworkOpponent implements GameMachineListener {
 
 					@Override
 					public void run() {
-						oc.PlayCard(card, false);
+						oc.playCard(card, false);
 
 					}
 				});
@@ -168,7 +168,7 @@ public class NetworkOpponent implements GameMachineListener {
 
 					@Override
 					public void run() {
-						oc.UseEffect(type, target, amount, false);
+						oc.useEffect(type, target, amount, false);
 					}
 				});
 				break;
@@ -185,7 +185,7 @@ public class NetworkOpponent implements GameMachineListener {
 
 					@Override
 					public void run() {
-						oc.TurnDone();
+						oc.turnDone();
 					}
 				});
 				break;

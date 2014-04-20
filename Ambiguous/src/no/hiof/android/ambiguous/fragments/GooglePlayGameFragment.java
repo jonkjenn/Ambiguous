@@ -349,7 +349,6 @@ public class GooglePlayGameFragment extends Fragment implements
 			// Sort of a hack to correctly apply opponents actions before we
 			// change to players turn.
 			state = State.OPPONENT_TURN;
-			((GameActivity) getActivity()).setupGameMachine(state);
 			readGameState(match);// Loads the data from the bytes passed in
 									// the intent/match into our actual game
 									// objects in game.
@@ -365,7 +364,7 @@ public class GooglePlayGameFragment extends Fragment implements
 				// turn}
 		} else {
 			state = State.OPPONENT_TURN;
-			((GameActivity) getActivity()).setupGameMachine(state);
+			//((GameActivity) getActivity()).setupGameMachine(state);
 			readGameState(match);// Loads the data from the bytes passed in
 									// the intent/match into our actual game
 									// objects ingame.
@@ -381,7 +380,7 @@ public class GooglePlayGameFragment extends Fragment implements
 			break;
 		case TurnBasedMatch.MATCH_STATUS_COMPLETE:
 			if (gameMachine.state != GameMachine.State.GAME_OVER) {
-				gameMachine.startGame();
+				//gameMachine.startGame();
 			}
 			break;
 		}
@@ -393,12 +392,12 @@ public class GooglePlayGameFragment extends Fragment implements
 			// should have the starting turn.
 			startNewGame(match);
 		} else {
-			gameMachine.startGame();// Start the actual game.
+			//gameMachine.startGame();// Start the actual game.
 		}
 	}
 
 	void startNewGame(TurnBasedMatch match) {
-		((GameActivity) getActivity()).setupGameMachine(null);// We start a new
+		//((GameActivity) getActivity()).setupGameMachine(null);// We start a new
 																// game and
 																// randomly
 		// decides who will start.
@@ -479,10 +478,10 @@ public class GooglePlayGameFragment extends Fragment implements
 			// 1. Read action type and card 2bytes
 			switch (r.readByte()) {
 			case PLAYED_CARD:
-				oc.PlayCard(r.readByte(), false);
+				oc.playCard(r.readByte(), false);
 				break;
 			case DISCARDED_CARD:
-				oc.DiscardCard(r.readByte());
+				oc.discardCard(r.readByte());
 				break;
 			case NO_ACTION:
 				r.skipBytes(1);
@@ -500,7 +499,7 @@ public class GooglePlayGameFragment extends Fragment implements
 			// 2. read number of effects 1 int
 			for (int i = 0; i < numEffects; i++) {
 				// 3. Read effects, id, which player and amount 3 ints
-				oc.UseEffect(Effect.EffectType.values()[r.readInt()], (r
+				oc.useEffect(Effect.EffectType.values()[r.readInt()], (r
 						.readInt() == 1 ? gameMachine.opponent
 						: gameMachine.player), r.readInt(), true);
 			}
@@ -934,4 +933,5 @@ public class GooglePlayGameFragment extends Fragment implements
 		Log.d("test", "Log in fail");
 		showDisconnected();
 	}
+
 }

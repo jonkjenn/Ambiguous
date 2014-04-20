@@ -27,6 +27,7 @@ import android.widget.ImageView;
 public class CardHandFragment extends Fragment implements OnTouchListener {
 	GridView hand;
 	PlayerHandAdapter adapter;
+	boolean isDisabled = false;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -40,9 +41,9 @@ public class CardHandFragment extends Fragment implements OnTouchListener {
 
 		hand = (GridView) view.findViewById(R.id.game_grid);
 
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+		/*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
 			view.setOnTouchListener(this);
-		}
+		}*/
 	}
 
 	public void updateCards(Card[] cards) {
@@ -54,6 +55,7 @@ public class CardHandFragment extends Fragment implements OnTouchListener {
 	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 	@Override
 	public boolean onTouch(View v, MotionEvent me) {
+		if(isDisabled){return false;}
 
 		Object tag = v.getTag();
 		if (tag != null) {
@@ -170,10 +172,12 @@ public class CardHandFragment extends Fragment implements OnTouchListener {
 
 	public void enableUseCards() {
 		registerForContextMenu(hand);
+		isDisabled = false;
 	}
 
 	public void disableUseCards() {
 		unregisterForContextMenu(hand);
+		isDisabled = true;
 	}
 
 	@Override

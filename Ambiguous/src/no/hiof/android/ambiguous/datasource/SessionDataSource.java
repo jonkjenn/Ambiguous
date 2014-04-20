@@ -163,5 +163,10 @@ public class SessionDataSource {
 		c.close();
 		return true;
 	}
+	
+	public void deleteAllSessions()
+	{
+			db.delete("Session", null, null);
+	}
 
 }

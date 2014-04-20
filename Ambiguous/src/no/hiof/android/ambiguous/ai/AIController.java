@@ -54,10 +54,10 @@ public class AIController implements GameMachine.TurnChangeListener {
 				pos = computerRandom.nextInt(computer.getHand().length - 1);
 			} while (computer.getCard(pos).effects.get(0).type == Effect.EffectType.RESOURCE);
 
-			oc.DiscardCard(computer.getCard(pos));
+			oc.discardCard(computer.getCard(pos).id);
 			computer.cardUsed(pos);
 		} else {
-			oc.PlayCard(computer.getCard(pos), true);
+			oc.playCard(computer.getCard(pos), true);
 			computer.cardUsed(pos);
 		}
 		computer.modResource(5);

@@ -12,34 +12,29 @@ import no.hiof.android.ambiguous.model.Player;
  */
 public class OpponentController {
 
-	CardDataSource cs;
-
-	public OpponentController(CardDataSource cs) {
-		this.cs = cs;
+	public void playCard(int card, boolean generateDamage) {
+		playCard(CardDataSource.getCard(card), generateDamage);
 	}
 
-	public void PlayCard(int card, boolean generateDamage) {
-		PlayCard(CardDataSource.getCard(card), generateDamage);
-	}
-
-	public void UseEffect(EffectType type, Player target, int amount, boolean onlyDisplay) {
+	public void useEffect(EffectType type, Player target, int amount, boolean onlyDisplay) {
 		notifyUsedEffect(type, target, amount, onlyDisplay);
 	}
 	
-	public void PlayCard(Card card, boolean generateDamage) {
+	public void playCard(Card card, boolean generateDamage) {
 		notifyPlayCard(card, generateDamage);
 	}
 
-	public void TurnDone() {
+	public void turnDone() {
 		notifyTurnDone();
 	}
 
-	public void DiscardCard(int card) {
-		DiscardCard(cs.getCard(card));
+	public void discardCard(int card) {
+		discardCard(card);
 	}
-
-	public void DiscardCard(Card card) {
-		notifyDiscardCard(card);
+	
+	public void previousCardPlayed(Card card, boolean discarded)
+	{
+		notifyPreviousCardPlayed(card, discarded);
 	}
 
 	private void notifyPlayCard(Card card, boolean generateDamage) {
@@ -54,15 +49,16 @@ public class OpponentController {
 		}
 	}
 
-	private void notifyDiscardCard(Card card) {
-		for (OpponentListener listener : listeners) {
-			listener.onOpponentDiscardCard(card);
-		}
-	}
-
 	private void notifyTurnDone() {
 		for (OpponentListener listener : listeners) {
 			listener.onOpponentTurnDone();
+		}
+	}
+	
+	void notifyPreviousCardPlayed(Card card, boolean discarded){
+		for(OpponentListener l : listeners)
+		{
+			l.previousCardPlayed(card, discarded);
 		}
 	}
 
@@ -70,6 +66,11 @@ public class OpponentController {
 
 	public void setOpponentListener(OpponentListener listener) {
 		listeners.add(listener);
+	}
+	
+	public void removeOpponentListener(OpponentListener listener)
+	{
+		listeners.remove(listener);
 	}
 	
 	/**
@@ -85,9 +86,11 @@ public class OpponentController {
 
 		void onOpponentUsedEffect(EffectType type, Player target, int amount, boolean onlyDisplay);
 
-		void onOpponentDiscardCard(Card card);
+		void onOpponentDiscardCard(int card);
 
 		void onOpponentTurnDone();
+		
+		void previousCardPlayed(Card card, boolean discarded);
 	}
 
 }

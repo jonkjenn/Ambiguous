@@ -509,7 +509,9 @@ public class GameActivity extends ActionBarActivity implements
 		// To make winning easier while testing, opponent will take 50 dmg each turn
 		// For later reference simply search the tag below to jump here directly
 		// TAG: damage CHEAT
-		gameMachine.opponent.damage(50);
+		if((!useGPGS) && (!isNetwork)){
+			gameMachine.opponent.damage(50);
+		}
 		playerStats.notMyTurn();
 		opponentStats.myTurn();
 	}

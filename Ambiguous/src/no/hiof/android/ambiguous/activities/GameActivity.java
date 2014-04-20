@@ -506,6 +506,10 @@ public class GameActivity extends ActionBarActivity implements
 	@Override
 	public void onPlayerDoneListener() {
 		disableUseCards();
+		// To make winning easier while testing, opponent will take 50 dmg each turn
+		// For later reference simply search the tag below to jump here directly
+		// TAG: damage CHEAT
+		gameMachine.opponent.damage(50);
 		playerStats.notMyTurn();
 		opponentStats.myTurn();
 	}
@@ -573,14 +577,7 @@ public class GameActivity extends ActionBarActivity implements
 		} finally {
 			db.endTransaction();
 		}
-		Cursor c = db.rawQuery("SELECT * FROM Statistics", null);
-		c.moveToFirst();
-		while (!c.isAfterLast()) {
-			System.out.println(c.getInt(c.getColumnIndex("id")) + " | "
-					+ c.getColumnIndex("win"));
-			c.moveToNext();
-		}
-		c.close();
+		
 
 	}
 

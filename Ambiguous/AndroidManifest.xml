@@ -81,6 +81,20 @@
 
         <service android:name="no.hiof.android.ambiguous.GPGService" >
         </service>
+        <service android:name="no.hiof.android.ambiguous.UpdateWidgetService"></service> 
+        <receiver
+       android:icon="@drawable/ic_launcher"
+       android:label="Ambiguous Widget"
+       android:name="MyWidgetProvider" >
+       <intent-filter >
+            <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+       </intent-filter>
+
+       <meta-data
+          android:name="android.appwidget.provider"
+          android:resource="@xml/widget_info" />
+	</receiver> 
+
     </application>
 
 </manifest>

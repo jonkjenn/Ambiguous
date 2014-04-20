@@ -29,7 +29,7 @@ public class OpponentController {
 	}
 
 	public void discardCard(int card) {
-		discardCard(card);
+		notifyOpponentDiscardCard(card);
 	}
 	
 	public void previousCardPlayed(Card card, boolean discarded)
@@ -52,6 +52,12 @@ public class OpponentController {
 	private void notifyTurnDone() {
 		for (OpponentListener listener : listeners) {
 			listener.onOpponentTurnDone();
+		}
+	}
+
+	private void notifyOpponentDiscardCard(int card) {
+		for (OpponentListener listener : listeners) {
+			listener.onOpponentDiscardCard(card);;
 		}
 	}
 	

@@ -79,7 +79,7 @@
             android:label="settings" >
         </activity>
 
-        <service android:name="no.hiof.android.ambiguous.DataService" >
+        <service android:name="no.hiof.android.ambiguous.GPGService" >
         </service>
     </application>
 

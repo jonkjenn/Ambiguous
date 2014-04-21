@@ -6,12 +6,11 @@ import java.util.List;
 import no.hiof.android.ambiguous.AlarmReceiver;
 import no.hiof.android.ambiguous.Db;
 import no.hiof.android.ambiguous.GameMachine;
+import no.hiof.android.ambiguous.GameMachine.OnStateChangeListener;
 import no.hiof.android.ambiguous.GameMachine.State;
 import no.hiof.android.ambiguous.LayoutHelper;
 import no.hiof.android.ambiguous.MyWidgetProvider;
 import no.hiof.android.ambiguous.OpponentController;
-import no.hiof.android.ambiguous.GameMachine.OnStateChangeListener;
-import no.hiof.android.ambiguous.UpdateWidgetService;
 import no.hiof.android.ambiguous.OpponentController.OpponentListener;
 import no.hiof.android.ambiguous.R;
 import no.hiof.android.ambiguous.datasource.CardDataSource;
@@ -37,8 +36,8 @@ import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.AlarmManager;
 import android.app.AlertDialog.Builder;
-import android.appwidget.AppWidgetManager;
 import android.app.PendingIntent;
+import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -119,7 +118,8 @@ public class GameActivity extends ActionBarActivity implements
 
 		gameMachine = new GameMachine(cards);
 		opponentController = new OpponentController();
-		
+		setupUIListeners();
+
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
 			setupDragFragment();
 		}
@@ -127,7 +127,6 @@ public class GameActivity extends ActionBarActivity implements
 
 		loadPlayerStatsFragments();
 
-		setupUIListeners();
 		// TODO: What?
 		setBackground(PreferenceManager.getDefaultSharedPreferences(this));
 
@@ -541,10 +540,11 @@ public class GameActivity extends ActionBarActivity implements
 	// We check in code
 	@Override
 	public void onPlayerDoneListener() {
-		// To make winning easier while testing, opponent will take 50 dmg each turn
+		// To make winning easier while testing, opponent will take 50 dmg each
+		// turn
 		// For later reference simply search the tag below to jump here directly
 		// TAG: damage CHEAT
-		if((!useGPGS) && (!isNetwork)){
+		if ((!useGPGS) && (!isNetwork)) {
 			gameMachine.opponent.damage(50);
 		}
 	}
@@ -606,30 +606,32 @@ public class GameActivity extends ActionBarActivity implements
 		try {
 			String whereClause = "WHERE id = (SELECT id FROM Statistics ORDER BY id DESC LIMIT 1)";
 			db.beginTransaction();
-			Cursor c = db.rawQuery("SELECT win FROM Statistics " +
-					whereClause, null);
-			if(c.moveToFirst()){
+			Cursor c = db.rawQuery("SELECT win FROM Statistics " + whereClause,
+					null);
+			if (c.moveToFirst()) {
 				victory = c.getInt(c.getColumnIndex("win"));
 				victory++;
 			}
 			c.close();
-			db.execSQL("UPDATE Statistics SET win = "+ String.valueOf(victory) + " "
-					+ whereClause);
-			
-			
+			db.execSQL("UPDATE Statistics SET win = " + String.valueOf(victory)
+					+ " " + whereClause);
+
 			db.setTransactionSuccessful();
 		} finally {
 			db.endTransaction();
 		}
 		// Store the amount of victories in sharedpreferences for ease of access
-		PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).edit().putInt("WIN", victory);
-		
+		PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
+				.edit().putInt("WIN", victory);
+
 		AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(this);
-		RemoteViews remoteViews = new RemoteViews(this.getPackageName(), R.layout.widget_layout);
-		ComponentName thisWidget = new ComponentName(this, MyWidgetProvider.class);
-		remoteViews.setTextViewText(R.id.widget_layout_textview, "Total victories: "+String.valueOf(victory));
+		RemoteViews remoteViews = new RemoteViews(this.getPackageName(),
+				R.layout.widget_layout);
+		ComponentName thisWidget = new ComponentName(this,
+				MyWidgetProvider.class);
+		remoteViews.setTextViewText(R.id.widget_layout_textview,
+				"Total victories: " + String.valueOf(victory));
 		appWidgetManager.updateAppWidget(thisWidget, remoteViews);
-		
 
 	}
 
@@ -663,6 +665,9 @@ public class GameActivity extends ActionBarActivity implements
 
 	@Override
 	public void onStatsUpdateListener(Player player) {
+		if (playerStats == null || opponentStats == null) {
+			return;
+		}
 		if (player == gameMachine.player) {
 
 			// playerName.setText(player.name);
@@ -836,6 +841,7 @@ public class GameActivity extends ActionBarActivity implements
 			enableUseCards();
 			playerStats.myTurn();
 			opponentStats.notMyTurn();
+
 		} else {
 			disableUseCards();
 			playerStats.notMyTurn();

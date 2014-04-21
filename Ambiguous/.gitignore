@@ -3,6 +3,7 @@
 .gradle
 bin/
 tmp/
+*.orig
 *.tmp
 *.bak
 *.swp

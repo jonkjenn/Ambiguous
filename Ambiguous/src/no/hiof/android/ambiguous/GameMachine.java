@@ -126,6 +126,7 @@ public class GameMachine implements OpponentListener {
 			changeState();
 			break;
 		case GAME_OVER:
+			
 			break;
 		default:
 			break;

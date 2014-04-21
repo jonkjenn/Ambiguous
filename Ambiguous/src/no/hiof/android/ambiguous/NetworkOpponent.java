@@ -76,6 +76,8 @@ public class NetworkOpponent implements GameMachineListener {
 	private Handler handler;
 	private DataOutputStream out;
 
+		Byte peek;
+
 	/**
 	 * The buffer where we will put incoming packets.
 	 */
@@ -134,26 +136,28 @@ public class NetworkOpponent implements GameMachineListener {
 	 * to the OpponentController.
 	 */
 	private void readPacketsFromBuffer() {
+
 		while (dataBuffer.size() >= 1) {
 			switch (Packets.getPacket(dataBuffer.peek())) {
 			case DISCARD_CARD:
-				dataBuffer.poll();
-				handler.post(new Runnable() {
-
-					@Override
-					public void run() {
-						oc.discardCard(dataBuffer.poll());
-					}
-				});
-				break;
-			case PLAYED_CARD:
 				dataBuffer.poll();
 				final int card = dataBuffer.poll();
 				handler.post(new Runnable() {
 
 					@Override
 					public void run() {
-						oc.playCard(card, false);
+						oc.discardCard(card);
+					}
+				});
+				break;
+			case PLAYED_CARD:
+				dataBuffer.poll();
+				final int playedcard = dataBuffer.poll();
+				handler.post(new Runnable() {
+
+					@Override
+					public void run() {
+						oc.playCard(playedcard, false);
 
 					}
 				});

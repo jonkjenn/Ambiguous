@@ -70,5 +70,10 @@
       <string name="gpg_header">Pick an option to continue:</string>
       <string name="victory">Victory!</string>
       <string name="defeat">Defeat!</string>
+      <string name="close_service">Close Ambiguous</string>
+      <string name="got_invite_from">Got match invitation from %1s</string>
+      <string name="match_waiting_for_turn">A match is waiting for your turn</string>
+      <string name="accept">Accept</string>
+      <string name="denie">Denie</string>
 
 </resources>

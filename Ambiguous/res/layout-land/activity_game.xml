@@ -5,19 +5,22 @@
     android:layout_height="match_parent"
     android:background="#0F7F0F" >
 
+    <Button
+        android:id="@+id/showTutorialButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="showTutorialButton"
+        android:padding="0dp"
+        android:text="@string/tutorial_button_show"
+        android:textSize="12sp" />
 
     <LinearLayout
         android:id="@+id/opponent_card_container"
-        android:layout_centerHorizontal="true"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
         android:gravity="center_horizontal"
         android:orientation="vertical" >
-        <TextView 
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/opponents_actions"
-            />
 
         <ImageView
             android:id="@+id/opponent_card"
@@ -27,270 +30,58 @@
             android:gravity="center"
             android:orientation="horizontal" >
         </ImageView>
-
+     
     <TextView
         android:id="@+id/discard"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="80dp"
+        android:layout_gravity="center"
         android:background="#FF0000"
         android:gravity="center"
         android:text="DISCARDED"
         android:textColor="#000000"
         android:visibility="gone" >
     </TextView>
-    </LinearLayout>
-
-        <TextView
-            android:id="@+id/main_result_text"
-            android:layout_below="@id/opponent_card_container"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:includeFontPadding="false"
-            android:textColor="#00FF00"
-            android:textSize="60sp"
-            android:textStyle="bold" />
-
-
+   </LinearLayout>
 
     <fragment android:name="no.hiof.android.ambiguous.fragments.CardHandFragment"
-        class="no.hiof.android.ambiguous.fragments.CardHandFragment"
         android:id="@+id/cardhand_fragment"
         android:layout_alignParentBottom="true"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
          />
 
-    <TextView
-        android:id="@+id/turnIndicator"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" 
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:textSize="12sp"
-        />
-
-    <TextView
-        android:id="@+id/stats_player"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-
-    <TableLayout
-        android:id="@+id/stat_layout_opponent"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@id/cardhand_fragment"
-        android:layout_alignParentRight="true"
-        android:paddingRight="5dp">
-
-        <TableRow>
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                />
-
-            <TextView
-                android:id="@+id/stat_opponent_name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_span="2"
-                android:gravity="right"
-                android:paddingRight="5dp"
-                android:lines="1"
-                android:text="0" />
-        </TableRow>
-
-        <TableRow>
-            <LinearLayout
-                android:id="@+id/floating_health_opponent"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal" >
-                <include layout="@layout/floatingtextview"/>
-                <include layout="@layout/floatingtextview"/>
-                <include layout="@layout/floatingtextview"></include>
-            </LinearLayout>
-
-            <ImageView
-                android:id="@+id/image_stat_health"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:contentDescription="@string/health"
-                android:src="@android:drawable/ic_input_add" />
-
-            <TextView
-                android:id="@+id/stat_opponent_health"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="22sp"
-                android:text="0" />
-
-        </TableRow>
-
-        <TableRow>
-            <LinearLayout
-                android:id="@+id/floating_armor_opponent"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal" >
-                <include layout="@layout/floatingtextview"/>
-                <include layout="@layout/floatingtextview"/>
-                <include layout="@layout/floatingtextview"/>
-            </LinearLayout>
-
-            <ImageView
-                android:id="@+id/image_stat_armor"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:contentDescription="@string/armor"
-                android:src="@android:drawable/ic_lock_lock" />
-
-            <TextView
-                android:id="@+id/stat_opponent_armor"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="22sp"
-                android:text="0" />
-
-        </TableRow>
-
-        <TableRow>
-            <LinearLayout
-                android:id="@+id/floating_resource_opponent"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal" >
-                <include layout="@layout/floatingtextview"/>
-                <include layout="@layout/floatingtextview"/>
-                <include layout="@layout/floatingtextview"/>
-            </LinearLayout>
-
-            <ImageView
-                android:id="@+id/image_stat_resource"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:contentDescription="@string/resource"
-                android:src="@android:drawable/ic_lock_idle_charging" />
-
-            <TextView
-                android:id="@+id/stat_opponent_resource"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="22sp"
-                android:text="0" />
-
-        </TableRow>
-    </TableLayout>
-
-    <TableLayout
-        android:id="@+id/stat_layout_player"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@id/cardhand_fragment"
+    <FrameLayout
         android:layout_alignParentLeft="true"
-        android:orientation="horizontal" >
+        android:layout_marginLeft="5dp"
+        android:id="@+id/playerstats_fragment"
+        android:layout_above="@id/cardhand_fragment"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
 
-        <TableRow
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" >
-
-            <TextView
-                android:id="@+id/stat_player_name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:lines="1"
-                android:layout_span="2"
-                android:paddingLeft="5dp"
-                
-                android:text="0" />
-        </TableRow>
-
-        <TableRow>
-
-            <ImageView
-                android:id="@+id/image_stat_health"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:contentDescription="@string/health"
-                android:src="@android:drawable/ic_input_add" />
-
-            <TextView
-                android:id="@+id/stat_player_health"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="0"
-                android:textSize="22sp"
-                android:textStyle="bold" />
-
-            <LinearLayout
-                android:id="@+id/floating_health_player"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal" >
-                <include layout="@layout/floatingtextview"/>
-                <include layout="@layout/floatingtextview"/>
-                <include layout="@layout/floatingtextview"></include>
-            </LinearLayout>
-        </TableRow>
-
-        <TableRow>
-
-            <ImageView
-                android:id="@+id/image_stat_armor"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:contentDescription="@string/armor"
-                android:src="@android:drawable/ic_lock_lock" />
-
-            <TextView
-                android:id="@+id/stat_player_armor"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="0"
-                android:textSize="22sp" />
-
-            <LinearLayout
-                android:id="@+id/floating_armor_player"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal" >
-                <include layout="@layout/floatingtextview"/>
-                <include layout="@layout/floatingtextview"/>
-                <include layout="@layout/floatingtextview"/>
-            </LinearLayout>
-        </TableRow>
-
-        <TableRow>
-
-            <ImageView
-                android:id="@+id/image_stat_resource"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:contentDescription="@string/resource"
-                android:src="@android:drawable/ic_lock_idle_charging" />
-
-            <TextView
-                android:id="@+id/stat_player_resource"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="0"
-                android:textSize="22sp" />
-
-            <LinearLayout
-                android:id="@+id/floating_resource_player"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal" >
-                <include layout="@layout/floatingtextview"/>
-                <include layout="@layout/floatingtextview"/>
-                <include layout="@layout/floatingtextview"/>
-            </LinearLayout>
-        </TableRow>
-    </TableLayout>
+    <FrameLayout
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="5dp"
+        android:id="@+id/opponentstats_fragment"
+        android:layout_above="@id/cardhand_fragment"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+    
+    <TextView
+        android:id="@+id/main_result_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/opponent_card_container"
+        android:layout_centerHorizontal="true"
+        android:includeFontPadding="false"
+        android:textColor="#00FF00"
+        android:textSize="60sp"
+        android:textStyle="bold" />
+    
+    <FrameLayout 
+        android:id="@+id/drag_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        ></FrameLayout>
 
 </RelativeLayout>

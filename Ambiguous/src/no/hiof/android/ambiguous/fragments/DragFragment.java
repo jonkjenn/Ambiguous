@@ -54,42 +54,41 @@ public class DragFragment extends Fragment implements OnDragListener {
 					.getLocalState();
 		}
 
-		switch (event.getAction()) {
-		case DragEvent.ACTION_DRAG_STARTED:
-			if (enabled) {
+		if (enabled) {
+			switch (event.getAction()) {
+			case DragEvent.ACTION_DRAG_STARTED:
 				if (event.getLocalState() != null) {
 					startDrag(cardTouchData.bitmap, cardTouchData.position);
 					return true;
 				}
-			} else {
-				return true;
-			}
-			return false;
+				return false;
 
-		case DragEvent.ACTION_DRAG_LOCATION:
-			if (event.getLocalState() != null) {
-				handleDragToLocation(cardTouchData, (int) event.getX(),
-						(int) event.getY());
-				return true;
-			}
-			return false;
+			case DragEvent.ACTION_DRAG_LOCATION:
+				if (event.getLocalState() != null) {
+					handleDragToLocation(cardTouchData, (int) event.getX(),
+							(int) event.getY());
+					return true;
+				}
+				return false;
 
-		case DragEvent.ACTION_DROP:
-			if (event.getLocalState() != null) {
+			case DragEvent.ACTION_DROP:
+				if (event.getLocalState() != null) {
+					handleDropEvent(cardTouchData, (int) event.getX(),
+							(int) event.getY());
+				}
+				return true;
+			case DragEvent.ACTION_DRAG_EXITED:
+
+				// If we drag outside of the activity we reset the drag, BUT we
+				// also
+				// use the coordinates as a drop location
+				// For example Dragging card out at the top will use the card.
+				useCardNotificationView.setVisibility(View.GONE);
+				discardCardNotificationView.setVisibility(View.GONE);
+				stopDrag(cardTouchData.position);
 				handleDropEvent(cardTouchData, (int) event.getX(),
 						(int) event.getY());
 			}
-			return true;
-		case DragEvent.ACTION_DRAG_EXITED:
-
-			// If we drag outside of the activity we reset the drag, BUT we also
-			// use the coordinates as a drop location
-			// For example Dragging card out at the top will use the card.
-			useCardNotificationView.setVisibility(View.GONE);
-			discardCardNotificationView.setVisibility(View.GONE);
-			stopDrag(cardTouchData.position);
-			handleDropEvent(cardTouchData, (int) event.getX(),
-					(int) event.getY());
 		}
 
 		return false;

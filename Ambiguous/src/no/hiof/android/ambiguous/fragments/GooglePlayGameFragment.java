@@ -8,11 +8,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import no.hiof.android.ambiguous.BuildConfig;
+import no.hiof.android.ambiguous.GPGService.GPGServiceListner;
 import no.hiof.android.ambiguous.GameMachine;
 import no.hiof.android.ambiguous.GameMachine.GameMachineListener;
+import no.hiof.android.ambiguous.GameMachine.OnStateChangeListener;
 import no.hiof.android.ambiguous.GameMachine.State;
 import no.hiof.android.ambiguous.LayoutHelper;
-import no.hiof.android.ambiguous.OpponentController;
 import no.hiof.android.ambiguous.R;
 import no.hiof.android.ambiguous.activities.GameActivity;
 import no.hiof.android.ambiguous.datasource.CardDataSource;
@@ -36,6 +37,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.games.Games;
 import com.google.android.gms.games.GamesStatusCodes;
@@ -58,9 +60,8 @@ import com.google.example.games.basegameutils.GameHelper.GameHelperListener;
  * was introduced very late and we want to avoid more clutter in GameActivity.
  */
 public class GooglePlayGameFragment extends Fragment implements
-		GameMachineListener, GameHelperListener, OnClickListener {
+		GameMachineListener, GameHelperListener, OnClickListener, OnStateChangeListener, GPGServiceListner, OnTurnBasedMatchUpdateReceivedListener {
 
-	GameMachine gameMachine;
 	boolean useGPGS;
 	GameHelper gameHelper;
 
@@ -80,8 +81,6 @@ public class GooglePlayGameFragment extends Fragment implements
 
 	ConnectionResult connectionResult;
 
-	OpponentController oc;
-
 	final byte PLAYED_CARD = 100;
 	final byte DISCARDED_CARD = 101;
 	final byte DEAD = 102;
@@ -99,12 +98,15 @@ public class GooglePlayGameFragment extends Fragment implements
 
 	@Override
 	public void onViewCreated(View view, Bundle savedInstanceState) {
-		// TODO Auto-generated method stub
 		super.onViewCreated(view, savedInstanceState);
 
 		if (savedInstanceState != null) {
 			match = (TurnBasedMatch) savedInstanceState.getParcelable("match");
 		}
+
+		// Prevent duplicate listener
+		GameActivity.gameMachine.removeGameMachineListener(this);
+		GameActivity.gameMachine.setGameMachineListener(this);
 
 		// Google created helper class for helping with signing into the Google
 		// service etc
@@ -161,7 +163,7 @@ public class GooglePlayGameFragment extends Fragment implements
 	@Override
 	public void onStop() {
 		super.onStop();
-		gameHelper.onStop();
+		// gameHelper.onStop();
 	}
 
 	@Override
@@ -342,69 +344,58 @@ public class GooglePlayGameFragment extends Fragment implements
 
 		LayoutHelper.hideResult(resultTextView);
 
-		State state;
-		// Find out if its our turn or opponents turn.
-		if (match.getTurnStatus() == TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN) {
-
-			// Sort of a hack to correctly apply opponents actions before we
-			// change to players turn.
-			state = State.OPPONENT_TURN;
-			readGameState(match);// Loads the data from the bytes passed in
-									// the intent/match into our actual game
-									// objects in game.
-			// gameMachine.startGame();// First start the game with opponent
-			// having
-			// turn.
-
-			if (gameMachine.state != GameMachine.State.GAME_OVER) {
-				gameMachine.state = State.PLAYER_TURN;
-			}// Game will now later be
-				// started again as
-				// player's
-				// turn}
-		} else {
-			state = State.OPPONENT_TURN;
-			//((GameActivity) getActivity()).setupGameMachine(state);
-			readGameState(match);// Loads the data from the bytes passed in
-									// the intent/match into our actual game
-									// objects ingame.
+		if (match.getData() == null) {
+			// The game has not started so we set it up and decides who
+			// should have the starting turn.
+			startNewGame(match);
+			return;
 		}
 
-		// Prevent duplicate listener
-		this.gameMachine.removeGameMachineListener(this);
-		this.gameMachine.setGameMachineListener(this);
+		GameActivity.gameMachine.state = State.OPPONENT_TURN;
+		readGameState(match);// Loads the data from the bytes passed in
+								// the intent/match into our actual game
+								// objects in game.
+
+		// Find out if its our turn or opponents turn.
+		if (match.getTurnStatus() == TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN) {
+			// Sort of a hack to correctly apply opponents actions before we
+			// change to players turn.
+			GameActivity.gameMachine.startGame();
+			
+			if(GameActivity.gameMachine.state != State.GAME_OVER)
+			{
+				GameActivity.gameMachine.state = State.PLAYER_TURN;
+			}
+		}
+		else
+		{
+			GameActivity.gameMachine.state = State.OPPONENT_TURN;
+		}
 
 		switch (match.getStatus()) {
 		case TurnBasedMatch.MATCH_STATUS_ACTIVE:
-			handleActiveMatch(match);
+			GameActivity.gameMachine.startGame();
 			break;
 		case TurnBasedMatch.MATCH_STATUS_COMPLETE:
-			if (gameMachine.state != GameMachine.State.GAME_OVER) {
-				//gameMachine.startGame();
+			if (GameActivity.gameMachine.state != GameMachine.State.GAME_OVER) {
+				GameActivity.gameMachine.startGame();
 			}
 			break;
 		}
 	}
 
-	void handleActiveMatch(TurnBasedMatch match) {
-		if (match.getData() == null) {
-			// The game has not started so we set it up and decides who
-			// should have the starting turn.
-			startNewGame(match);
-		} else {
-			//gameMachine.startGame();// Start the actual game.
-		}
-	}
-
 	void startNewGame(TurnBasedMatch match) {
-		//((GameActivity) getActivity()).setupGameMachine(null);// We start a new
-																// game and
-																// randomly
+		GameActivity.gameMachine.startRandom();
+		// new
+		// game and
+		// randomly
 		// decides who will start.
-		if (gameMachine.state == State.OPPONENT_TURN) {// In this case we skip
-														// our turn since the
-														// creator always will
-														// have first turn.
+		if (GameActivity.gameMachine.state == State.OPPONENT_TURN) {// In this
+																	// case we
+																	// skip
+			// our turn since the
+			// creator always will
+			// have first turn.
 			completeTurn();
 		}
 	}
@@ -442,14 +433,6 @@ public class GooglePlayGameFragment extends Fragment implements
 		return null;
 	}
 
-	public void setOpponentController(OpponentController oc) {
-		this.oc = oc;
-	}
-
-	public void setGameMachine(GameMachine gameMachine) {
-		this.gameMachine = gameMachine;
-	}
-
 	void readGameState(TurnBasedMatch match) {
 		// If empty we assume it is our turn to play. Can happen if the host has
 		// to pass the turn to the other player at first turn.
@@ -478,10 +461,10 @@ public class GooglePlayGameFragment extends Fragment implements
 			// 1. Read action type and card 2bytes
 			switch (r.readByte()) {
 			case PLAYED_CARD:
-				oc.playCard(r.readByte(), false);
+				GameActivity.opponentController.playCard(r.readByte(), false);
 				break;
 			case DISCARDED_CARD:
-				oc.discardCard(r.readByte());
+				GameActivity.opponentController.discardCard(r.readByte());
 				break;
 			case NO_ACTION:
 				r.skipBytes(1);
@@ -499,9 +482,11 @@ public class GooglePlayGameFragment extends Fragment implements
 			// 2. read number of effects 1 int
 			for (int i = 0; i < numEffects; i++) {
 				// 3. Read effects, id, which player and amount 3 ints
-				oc.useEffect(Effect.EffectType.values()[r.readInt()], (r
-						.readInt() == 1 ? gameMachine.opponent
-						: gameMachine.player), r.readInt(), true);
+				GameActivity.opponentController.useEffect(Effect.EffectType
+						.values()[r.readInt()],
+						(r.readInt() == 1 ? GameActivity.gameMachine.opponent
+								: GameActivity.gameMachine.player),
+						r.readInt(), true);
 			}
 
 			Card[] hand = new Card[8];
@@ -512,9 +497,9 @@ public class GooglePlayGameFragment extends Fragment implements
 			}
 
 			if (isCreator) {
-				gameMachine.opponent.setHand(hand);
+				GameActivity.gameMachine.opponent.setHand(hand);
 			} else {
-				gameMachine.player.setHand(hand);
+				GameActivity.gameMachine.player.setHand(hand);
 			}
 
 			hand = new Card[8];
@@ -528,13 +513,13 @@ public class GooglePlayGameFragment extends Fragment implements
 			Player other;
 
 			if (isCreator) {
-				gameMachine.player.setHand(hand);
-				creator = gameMachine.opponent;
-				other = gameMachine.player;
+				GameActivity.gameMachine.player.setHand(hand);
+				creator = GameActivity.gameMachine.opponent;
+				other = GameActivity.gameMachine.player;
 			} else {
-				gameMachine.opponent.setHand(hand);
-				creator = gameMachine.player;
-				other = gameMachine.opponent;
+				GameActivity.gameMachine.opponent.setHand(hand);
+				creator = GameActivity.gameMachine.player;
+				other = GameActivity.gameMachine.opponent;
 			}
 
 			// 6. read stats. 6 ints.
@@ -595,15 +580,15 @@ public class GooglePlayGameFragment extends Fragment implements
 			// We always write the creator stats/cards first so check
 			// who is the creator
 			if (isCreator) {
-				creator = gameMachine.opponent.getHand();
-				other = gameMachine.player.getHand();
-				pCreator = gameMachine.opponent;
-				pOther = gameMachine.player;
+				creator = GameActivity.gameMachine.opponent.getHand();
+				other = GameActivity.gameMachine.player.getHand();
+				pCreator = GameActivity.gameMachine.opponent;
+				pOther = GameActivity.gameMachine.player;
 			} else {
-				creator = gameMachine.player.getHand();
-				other = gameMachine.opponent.getHand();
-				pCreator = gameMachine.player;
-				pOther = gameMachine.opponent;
+				creator = GameActivity.gameMachine.player.getHand();
+				other = GameActivity.gameMachine.opponent.getHand();
+				pCreator = GameActivity.gameMachine.player;
+				pOther = GameActivity.gameMachine.opponent;
 			}
 
 			// 4. write 8 cards, 8 ints
@@ -663,7 +648,7 @@ public class GooglePlayGameFragment extends Fragment implements
 	 */
 	void playerUsedEffect(EffectType e, Player target, int amount) {
 		effects.add(e.ordinal());
-		effects.add(target == gameMachine.opponent ? 0 : 1);
+		effects.add(target == GameActivity.gameMachine.opponent ? 0 : 1);
 		effects.add(amount);
 	}
 
@@ -772,11 +757,11 @@ public class GooglePlayGameFragment extends Fragment implements
 		int playerResult = ParticipantResult.MATCH_RESULT_NONE;
 		int opponentResult = ParticipantResult.MATCH_RESULT_NONE;
 
-		if (!gameMachine.player.isAlive()) {
+		if (!GameActivity.gameMachine.player.isAlive()) {
 			LayoutHelper.showResult(resultTextView, false);
 			playerResult = ParticipantResult.MATCH_RESULT_LOSS;
 			opponentResult = ParticipantResult.MATCH_RESULT_WIN;
-		} else if (!gameMachine.opponent.isAlive()) {
+		} else if (!GameActivity.gameMachine.opponent.isAlive()) {
 			LayoutHelper.showResult(resultTextView, true);
 			playerResult = ParticipantResult.MATCH_RESULT_WIN;
 			opponentResult = ParticipantResult.MATCH_RESULT_LOSS;
@@ -872,6 +857,9 @@ public class GooglePlayGameFragment extends Fragment implements
 
 	@Override
 	public void onSignInSucceeded() {
+
+		onGPGConnectedListener.onGPGPConnected(gameHelper.getApiClient());
+
 		showConnected();
 		View signin = (View) getView().findViewById(R.id.sign_in_button);
 		signin.setOnClickListener(this);
@@ -908,21 +896,6 @@ public class GooglePlayGameFragment extends Fragment implements
 							}
 						});
 
-		Games.TurnBasedMultiplayer.registerMatchUpdateListener(
-				gameHelper.getApiClient(),
-				new OnTurnBasedMatchUpdateReceivedListener() {
-
-					@Override
-					public void onTurnBasedMatchRemoved(String arg0) {
-						// TODO Handle this.
-					}
-
-					@Override
-					public void onTurnBasedMatchReceived(TurnBasedMatch match) {
-						startGame(match);
-					}
-				});
-
 		if (match != null) {
 			startGame(match);
 		}
@@ -932,6 +905,40 @@ public class GooglePlayGameFragment extends Fragment implements
 	public void onSignInFailed() {
 		Log.d("test", "Log in fail");
 		showDisconnected();
+	}
+
+	OnGPGConnectedListener onGPGConnectedListener;
+
+	public void setGPGConnectedListener(OnGPGConnectedListener listener) {
+		this.onGPGConnectedListener = listener;
+
+	}
+
+	public interface OnGPGConnectedListener {
+		void onGPGPConnected(GoogleApiClient client);
+	}
+
+	@Override
+	public void onStateChanged(State state) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onTurnBasedMatchReceived(TurnBasedMatch match) {
+		if(this.match != null)
+		{
+			if(this.match.getMatchId().equals(match.getMatchId()))
+			{
+				startGame(match);
+			}
+		}
+	}
+
+	@Override
+	public void onTurnBasedMatchRemoved(String arg0) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

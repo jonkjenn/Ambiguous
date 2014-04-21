@@ -6,8 +6,10 @@ import java.util.List;
 import no.hiof.android.ambiguous.AlarmReceiver;
 import no.hiof.android.ambiguous.Db;
 import no.hiof.android.ambiguous.GameMachine;
+import no.hiof.android.ambiguous.GameMachine.State;
 import no.hiof.android.ambiguous.LayoutHelper;
 import no.hiof.android.ambiguous.OpponentController;
+import no.hiof.android.ambiguous.GameMachine.OnStateChangeListener;
 import no.hiof.android.ambiguous.OpponentController.OpponentListener;
 import no.hiof.android.ambiguous.R;
 import no.hiof.android.ambiguous.datasource.CardDataSource;
@@ -63,7 +65,7 @@ import android.widget.TextView;
 public class GameActivity extends ActionBarActivity implements
 		GameMachine.GameMachineListener, OpponentListener,
 		PlayerUpdateListener, MinigameListener, OnPlayerUsedCardListener,
-		OnDragStatusChangedListener {
+		OnDragStatusChangedListener, OnStateChangeListener {
 	private SQLiteDatabase db;
 
 	public static OpponentController opponentController;
@@ -104,7 +106,7 @@ public class GameActivity extends ActionBarActivity implements
 		setContentView(R.layout.activity_game);
 
 		loadDb();
-		
+
 		cancelAnnoyingNotification();
 
 		// Find all the views we use so we only have to find them once
@@ -112,13 +114,12 @@ public class GameActivity extends ActionBarActivity implements
 
 		gameMachine = new GameMachine(cards);
 		opponentController = new OpponentController();
-
-
+		
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
 			setupDragFragment();
 		}
 		cardHandFragment.setOnPlayerUsedCardListener(this);
-		
+
 		loadPlayerStatsFragments();
 
 		setupUIListeners();
@@ -146,7 +147,7 @@ public class GameActivity extends ActionBarActivity implements
 		} else if (useGPGS) {// We start a game with Google Play Game Service
 			startGPGFragment();
 
-		} else {//Single player against AI
+		} else {// Single player against AI
 			startSinglePlayerFragment();
 		}
 
@@ -154,56 +155,68 @@ public class GameActivity extends ActionBarActivity implements
 			showTutorialFragment(false);
 		}
 	}
-	
-	void loadPlayerStatsFragments()
-	{
-		// The stats window showing player's stats.
-		playerStats = new PlayerStatsFragment();
 
-		// So we can update stats as soon as the fragment is done loading.
-		playerStats.setOnLoadedListener(new OnLoadedListener() {
-			@Override
-			public void onLoaded() {
-				onStatsUpdateListener(gameMachine.player);
-			}
-		});
+	void loadPlayerStatsFragments() {
+		playerStats = (PlayerStatsFragment) getSupportFragmentManager()
+				.findFragmentByTag("playerStatsFragment");
 
-		Bundle args = new Bundle();
-		args.putBoolean("reverse", true);
-		playerStats.setArguments(args);
+		// We create new fragments.
+		if (playerStats == null) {
 
-		getSupportFragmentManager()
-				.beginTransaction()
-				.add(R.id.playerstats_fragment, playerStats,
-						"playerstatsFragment").commit();
+			// The stats window showing player's stats.
+			playerStats = new PlayerStatsFragment();
 
-		// The stats window showing opponent's stats.
-		opponentStats = new PlayerStatsFragment();
+			// So we can update stats as soon as the fragment is done loading.
+			playerStats.setOnLoadedListener(new OnLoadedListener() {
+				@Override
+				public void onLoaded() {
+					onStatsUpdateListener(gameMachine.player);
+				}
+			});
 
-		// So we can update stats as soon as the fragment is done loading.
-		opponentStats.setOnLoadedListener(new OnLoadedListener() {
-			@Override
-			public void onLoaded() {
-				onStatsUpdateListener(gameMachine.opponent);
-			}
-		});
+			Bundle args = new Bundle();
+			args.putBoolean("reverse", true);
+			playerStats.setArguments(args);
 
-		getSupportFragmentManager()
-				.beginTransaction()
-				.add(R.id.opponentstats_fragment, opponentStats,
-						"opponentStatsFragment").commit();
+			getSupportFragmentManager()
+					.beginTransaction()
+					.add(R.id.playerstats_fragment, playerStats,
+							"playerStatsFragment").commit();
+
+			// The stats window showing opponent's stats.
+			opponentStats = new PlayerStatsFragment();
+
+			// So we can update stats as soon as the fragment is done loading.
+			opponentStats.setOnLoadedListener(new OnLoadedListener() {
+				@Override
+				public void onLoaded() {
+					onStatsUpdateListener(gameMachine.opponent);
+				}
+			});
+
+			getSupportFragmentManager()
+					.beginTransaction()
+					.add(R.id.opponentstats_fragment, opponentStats,
+							"opponentStatsFragment").commit();
+		} else {// We use the fragments that already exists
+			opponentStats = (PlayerStatsFragment) getSupportFragmentManager()
+					.findFragmentByTag("opponentStatsFragment");
+		}
 	}
-	
-	void loadDb()
-	{
+
+	void loadDb() {
 		// Gets the db that will be reused throughout the game.
 		this.db = Db.getDb(getApplicationContext()).getWritableDatabase();
 		cs = new CardDataSource(db);
 		cards = cs.getCards();
 	}
-	
-	void setupDragFragment()
-	{
+
+	void setupDragFragment() {
+
+		dragFragment = (DragFragment) getSupportFragmentManager()
+				.findFragmentByTag("dragFragment");
+
+		if (dragFragment == null) {
 			// Have to start fragment in code since older version cant seem to
 			// handle it being in xml
 			dragFragment = new DragFragment();
@@ -211,8 +224,10 @@ public class GameActivity extends ActionBarActivity implements
 					.add(R.id.drag_container, dragFragment, "dragFragment")
 					.commit();
 
-			dragFragment.setPlayerUsedCardListener(this);
-			dragFragment.setOnDragStatusChanged(this);
+		}
+
+		dragFragment.setPlayerUsedCardListener(this);
+		dragFragment.setOnDragStatusChanged(this);
 	}
 
 	// TODO: Could be better type testing.
@@ -221,28 +236,47 @@ public class GameActivity extends ActionBarActivity implements
 	 * 
 	 */
 	private void startNetworkFragment() {
-		if (!getIntent().hasExtra("address") || !getIntent().hasExtra("port")
-				|| !getIntent().hasExtra("isServer")) {
-			return;
-		}
 
-		LANFragment lf = new LANFragment();
-		lf.setArguments(getIntent().getExtras());
-		getSupportFragmentManager().beginTransaction().add(lf, "LANFragment")
-				.commit();
+		LANFragment lf = (LANFragment) getSupportFragmentManager()
+				.findFragmentByTag("LANFragment");
+
+		if (lf == null) {
+
+			if (!getIntent().hasExtra("address")
+					|| !getIntent().hasExtra("port")
+					|| !getIntent().hasExtra("isServer")) {
+				return;
+			}
+
+			lf = new LANFragment();
+			lf.setArguments(getIntent().getExtras());
+			getSupportFragmentManager().beginTransaction()
+					.add(lf, "LANFragment").commit();
+		}
 	}
 
 	void startGPGFragment() {
-		GPGControllerFragment f = new GPGControllerFragment();
-		getSupportFragmentManager().beginTransaction()
-				.add(f, "GPGControllerFragment").commit();
+		GPGControllerFragment f = (GPGControllerFragment) getSupportFragmentManager()
+				.findFragmentByTag("GPGControllerFragment");
+		if (f == null) {
+			f = new GPGControllerFragment();
+			f.setArguments(getIntent().getExtras());
+			getSupportFragmentManager().beginTransaction()
+					.add(f, "GPGControllerFragment").commit();
+		}
 	}
 
 	void startSinglePlayerFragment() {
-		SinglePlayerFragment f = new SinglePlayerFragment();
-		f.setArguments(getIntent().getExtras());
-		getSupportFragmentManager().beginTransaction()
-				.add(f, "SinglePlayerFragment").commit();
+
+		SinglePlayerFragment f = (SinglePlayerFragment) getSupportFragmentManager()
+				.findFragmentByTag("singlePlayerFragment");
+		if (f == null) {
+
+			f = new SinglePlayerFragment();
+			f.setArguments(getIntent().getExtras());
+			getSupportFragmentManager().beginTransaction()
+					.add(f, "singlePlayerFragment").commit();
+		}
 	}
 
 	/**
@@ -260,6 +294,7 @@ public class GameActivity extends ActionBarActivity implements
 	void setupUIListeners() {
 		// Listen to gamemachine for changes that should be reflect in UI.
 		gameMachine.setGameMachineListener(this);
+		gameMachine.setOnStateChangeListener(this);
 
 		// Listen to player and opponent for changes that should be reflected in
 		// UI.
@@ -346,7 +381,7 @@ public class GameActivity extends ActionBarActivity implements
 		t.commitAllowingStateLoss();// Since its only a
 									// tutorial.
 
-		enableUseCards();
+		onStateChanged(gameMachine.state);
 	}
 
 	/**
@@ -495,19 +530,12 @@ public class GameActivity extends ActionBarActivity implements
 	@SuppressLint("NewApi")
 	@Override
 	public void onPlayerTurnListener() {
-		enableUseCards();
-
-		playerStats.myTurn();
-		opponentStats.notMyTurn();
 	}
 
 	@SuppressLint("NewApi")
 	// We check in code
 	@Override
 	public void onPlayerDoneListener() {
-		disableUseCards();
-		playerStats.notMyTurn();
-		opponentStats.myTurn();
 	}
 
 	/**
@@ -546,8 +574,6 @@ public class GameActivity extends ActionBarActivity implements
 
 	@Override
 	public void onOpponentTurnListener() {
-		playerStats.notMyTurn();
-		opponentStats.myTurn();
 	}
 
 	@Override
@@ -778,6 +804,19 @@ public class GameActivity extends ActionBarActivity implements
 			opponentPlayCard(card);
 		} else {
 			opponentDiscardCard(card);
+		}
+	}
+
+	@Override
+	public void onStateChanged(State state) {
+		if (state == State.PLAYER_TURN) {
+			enableUseCards();
+			playerStats.myTurn();
+			opponentStats.notMyTurn();
+		} else {
+			disableUseCards();
+			playerStats.notMyTurn();
+			opponentStats.myTurn();
 		}
 	}
 }

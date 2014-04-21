@@ -53,7 +53,20 @@ public class GameMachine implements OpponentListener {
 	public boolean isPlayersTurn() {
 		return state == State.PLAYER_TURN;
 	}
+	
+	/**
+	 * Uses the state the GameMachine currently has.
+	 */
+	public void startGame()
+	{
+		changeState();
+	}
 
+	/**
+	 * Starts with the state passed.
+	 * 
+	 * @param state If null generates a state by random.
+	 */
 	public void startGame(State state) {
 		if (state == null) {
 			startRandom();
@@ -63,6 +76,9 @@ public class GameMachine implements OpponentListener {
 		changeState();
 	}
 
+	/**
+	 * Starts with a random state.
+	 */
 	public void startRandom() {
 		// Randomly pick if player or opponent should start game.
 		state = (new Random().nextInt(2) == 0 ? State.PLAYER_TURN
@@ -89,6 +105,7 @@ public class GameMachine implements OpponentListener {
 	 * Changes the current game state.
 	 */
 	private void doChangeState() {
+		notifyStateChange();
 		checkDead();
 
 		switch (state) {
@@ -406,8 +423,9 @@ public class GameMachine implements OpponentListener {
 		void turnChange(Player player);
 	}
 
+	//TODO: Split into different interfaces
 	/**
-	 * Changes emerging from gamemachine
+	 * Changes emerging from GameMachine
 	 */
 	public interface GameMachineListener {
 		void onCouldNotPlayCardListener(int position);
@@ -427,6 +445,31 @@ public class GameMachine implements OpponentListener {
 		void onPlayerUsedeffect(EffectType type, Player target, int amount);
 
 		void onPlayerDiscardCard(Card card);
+	}
+	
+	public interface OnStateChangeListener
+	{
+		void onStateChanged(State state);
+	}
+	
+	final ArrayList<OnStateChangeListener> onStateChangedListeners = new ArrayList<GameMachine.OnStateChangeListener>();
+	
+	public void setOnStateChangeListener(OnStateChangeListener listener)
+	{
+		onStateChangedListeners.add(listener);
+	}
+	
+	public void removeOnStateChangedListener(OnStateChangeListener listener)
+	{
+		onStateChangedListeners.remove(listener);
+	}
+	
+	void notifyStateChange()
+	{
+		for(OnStateChangeListener l: onStateChangedListeners)
+		{
+			l.onStateChanged(state);
+		}
 	}
 
 	// TODO:Do something else with the bool

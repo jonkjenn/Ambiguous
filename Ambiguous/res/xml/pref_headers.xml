@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Preference-headers xmlns:android="http://schemas.android.com/apk/res/android" >
+    
+	<header android:fragment="no.hiof.android.ambiguous.fragments.SettingsFragment"
+	    android:icon="@android:drawable/ic_menu_sort_by_size"
+	    android:title="Category 1" >
+	    <extra android:name="pref-resource" android:value="preferences" />
+	</header>  
+
+</Preference-headers>

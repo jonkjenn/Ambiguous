@@ -76,7 +76,11 @@
         </activity>
         <activity
             android:name="no.hiof.android.ambiguous.activities.SettingsActivity"
-            android:label="settings" >
+            android:label="settings"
+            android:enabled="true" >
+            <intent-filter >
+                <category android:name="android.intent.category.PREFERENCE" />
+            </intent-filter>
         </activity>
 
         <service android:name="no.hiof.android.ambiguous.GPGService" >

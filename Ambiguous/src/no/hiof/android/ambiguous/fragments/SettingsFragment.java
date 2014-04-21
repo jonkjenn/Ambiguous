@@ -20,13 +20,18 @@ public class SettingsFragment extends PreferenceFragment implements
 		super.onCreate(savedInstanceState);
 
 		// Load the preferences from an XML resource
-		addPreferencesFromResource(R.xml.preferences);
+//		Context anAct = getActivity().getApplicationContext();
+//        int thePrefRes = anAct.getResources().getIdentifier(getArguments().getString("pref-resource"),
+//                "xml",anAct.getPackageName());
+		//addPreferencesFromResource(thePrefRes);
+        addPreferencesFromResource(R.xml.preferences);
+		
 		
 		Preference usPref = findPreference(KEY_PREF_USER);
 		usPref.setSummary(getPreferenceManager().getSharedPreferences().getString(KEY_PREF_USER, ""));
 		Preference bgPref = findPreference(KEY_PREF_BGColor);
 		bgPref.setSummary(((ListPreference)bgPref).getEntry());
-		//getPreferenceScreen().getSharedPreferences();
+		getPreferenceScreen().getSharedPreferences();
 	}
 
 	@Override

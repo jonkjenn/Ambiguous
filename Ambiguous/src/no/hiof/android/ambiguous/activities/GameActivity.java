@@ -8,8 +8,10 @@ import no.hiof.android.ambiguous.Db;
 import no.hiof.android.ambiguous.GameMachine;
 import no.hiof.android.ambiguous.GameMachine.State;
 import no.hiof.android.ambiguous.LayoutHelper;
+import no.hiof.android.ambiguous.MyWidgetProvider;
 import no.hiof.android.ambiguous.OpponentController;
 import no.hiof.android.ambiguous.GameMachine.OnStateChangeListener;
+import no.hiof.android.ambiguous.UpdateWidgetService;
 import no.hiof.android.ambiguous.OpponentController.OpponentListener;
 import no.hiof.android.ambiguous.R;
 import no.hiof.android.ambiguous.datasource.CardDataSource;
@@ -35,7 +37,9 @@ import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.AlarmManager;
 import android.app.AlertDialog.Builder;
+import android.appwidget.AppWidgetManager;
 import android.app.PendingIntent;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -57,6 +61,7 @@ import android.view.Surface;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.RemoteViews;
 import android.widget.TextView;
 
 /**
@@ -536,6 +541,12 @@ public class GameActivity extends ActionBarActivity implements
 	// We check in code
 	@Override
 	public void onPlayerDoneListener() {
+		// To make winning easier while testing, opponent will take 50 dmg each turn
+		// For later reference simply search the tag below to jump here directly
+		// TAG: damage CHEAT
+		if((!useGPGS) && (!isNetwork)){
+			gameMachine.opponent.damage(50);
+		}
 	}
 
 	/**
@@ -591,22 +602,34 @@ public class GameActivity extends ActionBarActivity implements
 	}
 
 	private void saveVictory() {
+		int victory = -1;
 		try {
+			String whereClause = "WHERE id = (SELECT id FROM Statistics ORDER BY id DESC LIMIT 1)";
 			db.beginTransaction();
-			db.execSQL("UPDATE Statistics SET win = (win + 1) "
-					+ "WHERE id = (SELECT id FROM Statistics ORDER BY id DESC LIMIT 1)");
+			Cursor c = db.rawQuery("SELECT win FROM Statistics " +
+					whereClause, null);
+			if(c.moveToFirst()){
+				victory = c.getInt(c.getColumnIndex("win"));
+				victory++;
+			}
+			c.close();
+			db.execSQL("UPDATE Statistics SET win = "+ String.valueOf(victory) + " "
+					+ whereClause);
+			
+			
 			db.setTransactionSuccessful();
 		} finally {
 			db.endTransaction();
 		}
-		Cursor c = db.rawQuery("SELECT * FROM Statistics", null);
-		c.moveToFirst();
-		while (!c.isAfterLast()) {
-			System.out.println(c.getInt(c.getColumnIndex("id")) + " | "
-					+ c.getColumnIndex("win"));
-			c.moveToNext();
-		}
-		c.close();
+		// Store the amount of victories in sharedpreferences for ease of access
+		PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).edit().putInt("WIN", victory);
+		
+		AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(this);
+		RemoteViews remoteViews = new RemoteViews(this.getPackageName(), R.layout.widget_layout);
+		ComponentName thisWidget = new ComponentName(this, MyWidgetProvider.class);
+		remoteViews.setTextViewText(R.id.widget_layout_textview, "Total victories: "+String.valueOf(victory));
+		appWidgetManager.updateAppWidget(thisWidget, remoteViews);
+		
 
 	}
 

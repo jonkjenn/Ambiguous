@@ -386,6 +386,7 @@ public class GameActivity extends ActionBarActivity implements
 									// tutorial.
 
 		onStateChanged(gameMachine.state);
+
 	}
 
 	/**

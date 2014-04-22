@@ -105,8 +105,8 @@ public class GameMachine implements OpponentListener {
 	 * Changes the current game state.
 	 */
 	private void doChangeState() {
-		notifyStateChange();
 		checkDead();
+		notifyStateChange();
 
 		switch (state) {
 		case OPPONENT_TURN:
@@ -493,10 +493,10 @@ public class GameMachine implements OpponentListener {
 	}
 
 
-	@Override
 	/**
 	 * Applies effect directly on target.
 	 */
+	@Override
 	public void onOpponentUsedEffect(EffectType type, Player target,
 			int amount, boolean onlyDisplay) {
 		if (onlyDisplay) {
@@ -518,6 +518,7 @@ public class GameMachine implements OpponentListener {
 		default:
 			break;
 		}
+		checkDead();
 	}
 
 	@Override

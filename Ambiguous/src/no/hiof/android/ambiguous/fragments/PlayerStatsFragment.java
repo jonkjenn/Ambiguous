@@ -129,11 +129,16 @@ public class PlayerStatsFragment extends Fragment {
 		};
 		new Handler().postDelayed(r, 2000);
 	}
-
+/**
+ * Sets the background color to red to indicate player's turn.
+ */
 	public void myTurn() {
 		name.setBackgroundColor(Color.RED);
 	}
 
+/**
+ * Sets the background color to transparent to indicate that it's player's turn.
+ */
 	public void notMyTurn() {
 		name.setBackgroundColor(Color.TRANSPARENT);
 	}

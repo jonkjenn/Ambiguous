@@ -3,6 +3,7 @@ package no.hiof.android.ambiguous.fragments;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import no.hiof.android.ambiguous.GameMachine.State;
 import no.hiof.android.ambiguous.NetworkOpponent;
 import no.hiof.android.ambiguous.R;
 import no.hiof.android.ambiguous.activities.GameActivity;
@@ -121,6 +122,10 @@ public class LANFragment extends Fragment implements OpenSocketListener {
 		if(isServer)
 		{
 			GameActivity.gameMachine.startRandom();
+		}
+		else
+		{
+			GameActivity.gameMachine.startGame(State.OPPONENT_TURN);
 		}
 	}
 	

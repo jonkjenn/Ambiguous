@@ -545,7 +545,7 @@ public class GameActivity extends ActionBarActivity implements
 		// For later reference simply search the tag below to jump here directly
 		// TAG: damage CHEAT
 		if ((!useGPGS) && (!isNetwork)) {
-			gameMachine.opponent.damage(50);
+			//gameMachine.opponent.damage(50);
 		}
 	}
 

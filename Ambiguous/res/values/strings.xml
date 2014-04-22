@@ -75,5 +75,6 @@
       <string name="match_waiting_for_turn">A match is waiting for your turn</string>
       <string name="accept">Accept</string>
       <string name="denie">Denie</string>
+      <string name="discarded">DISCARDED</string>
 
 </resources>

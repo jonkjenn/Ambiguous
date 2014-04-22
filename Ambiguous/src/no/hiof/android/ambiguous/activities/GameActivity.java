@@ -540,12 +540,18 @@ public class GameActivity extends ActionBarActivity implements
 	// We check in code
 	@Override
 	public void onPlayerDoneListener() {
-		// To make winning easier while testing, opponent will take 50 dmg each
-		// turn
+		// To make winning easier while testing, opponent can be set to take
+		// additional dmg each turn
 		// For later reference simply search the tag below to jump here directly
 		// TAG: damage CHEAT
 		if ((!useGPGS) && (!isNetwork)) {
-			//gameMachine.opponent.damage(50);
+			SharedPreferences sp = PreferenceManager
+					.getDefaultSharedPreferences(this);
+			int dmg = sp.getInt(SettingsActivity.KEY_PREF_CHEAT, -1);
+			// Only enable cheat if we are in a local game, and the damage is set to a positive number of significance
+			if(dmg > 0){
+				gameMachine.opponent.damage(dmg);
+			}
 		}
 	}
 

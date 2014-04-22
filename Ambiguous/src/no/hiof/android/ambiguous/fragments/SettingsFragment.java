@@ -1,5 +1,6 @@
 package no.hiof.android.ambiguous.fragments;
 
+import no.hiof.android.ambiguous.NumberPickerDialogPreference;
 import no.hiof.android.ambiguous.R;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
@@ -14,6 +15,7 @@ public class SettingsFragment extends PreferenceFragment implements
 
 	public static final String KEY_PREF_USER = "pref_user";
 	public static final String KEY_PREF_BGColor = "pref_bgcolor";
+	public static final String KEY_PREF_CHEAT = "pref_cheat";
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -26,12 +28,15 @@ public class SettingsFragment extends PreferenceFragment implements
 		//addPreferencesFromResource(thePrefRes);
         addPreferencesFromResource(R.xml.preferences);
 		
-		
+		SharedPreferences sp = getPreferenceManager().getSharedPreferences();
 		Preference usPref = findPreference(KEY_PREF_USER);
-		usPref.setSummary(getPreferenceManager().getSharedPreferences().getString(KEY_PREF_USER, ""));
+		usPref.setSummary(sp.getString(KEY_PREF_USER, ""));
 		Preference bgPref = findPreference(KEY_PREF_BGColor);
 		bgPref.setSummary(((ListPreference)bgPref).getEntry());
-		getPreferenceScreen().getSharedPreferences();
+		NumberPickerDialogPreference chtPref = (NumberPickerDialogPreference)findPreference(KEY_PREF_CHEAT);
+		int nind = sp.getInt(KEY_PREF_CHEAT, 0);
+		chtPref.setSummary(String.valueOf(nind));
+		
 	}
 
 	@Override
@@ -67,6 +72,10 @@ public class SettingsFragment extends PreferenceFragment implements
 		if (pref instanceof ListPreference){
 			ListPreference listPref = (ListPreference) pref;
 			pref.setSummary(listPref.getEntry());
+		}
+		if(pref instanceof NumberPickerDialogPreference){
+			NumberPickerDialogPreference numberPref = (NumberPickerDialogPreference) pref;
+			pref.setSummary(String.valueOf(numberPref.getValue()));
 		}
 
 	}

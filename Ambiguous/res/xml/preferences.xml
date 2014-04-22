@@ -1,22 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" 
+    xmlns:custom="http://schemas.android.com/apk/res-auto" >
 
     <EditTextPreference
         android:defaultValue="@string/pref_user_default"
         android:key="pref_user"
+        android:persistent="true"
         android:summary="@string/pref_user_default"
-        android:title="@string/pref_user"
-        android:persistent="true" />
+        android:title="@string/pref_user" />
 
     <ListPreference
+        android:defaultValue="@string/pref_bgcolor_default"
         android:dialogTitle="@string/pref_bgcolor"
         android:entries="@array/entries_bgcolor_preference"
         android:entryValues="@array/entryvalues_bgcolor_preference"
         android:key="pref_bgcolor"
         android:summary="@string/pref_bgcolor"
-        android:defaultValue="@string/pref_bgcolor_default"
-        android:title="@string/pref_bgcolor"
-         />
+        android:title="@string/pref_bgcolor" />
+
+    <no.hiof.android.ambiguous.NumberPickerDialogPreference
+        android:enabled="@bool/show_cheat_settings"
+        android:defaultValue="0"
+        android:dialogMessage="Please select the amount of extra damage:"
+        android:max="250"
+        android:title="Total additional damage"
+        android:key="pref_cheat"
+        android:summary="This feature is not supported for your device"
+        custom:min="0" />
 
     <Preference android:title="khadooop" >
         <intent

@@ -18,6 +18,7 @@ public class SettingsActivity extends PreferenceActivity implements
 	
 	public static final String KEY_PREF_USER = "pref_user";
 	public static final String KEY_PREF_BGColor = "pref_bgcolor";
+	public static final String KEY_PREF_CHEAT = "pref_cheat";
 	protected SettingsFragment settingsFragment;
 	private OnSharedPreferenceChangeListener listener;
 	protected Method mLoadHeaders = null;

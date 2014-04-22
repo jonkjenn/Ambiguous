@@ -19,7 +19,7 @@ import android.util.Log;
 /**
  * Handles the packet read and write against a network opponent.
  */
-public class NetworkOpponent implements GameMachineListener {
+public class NetworkOpponent implements GameMachineListener{
 
 	/**
 	 * Enumeration of different packet types each with an unique id.
@@ -76,7 +76,7 @@ public class NetworkOpponent implements GameMachineListener {
 	private Handler handler;
 	private DataOutputStream out;
 
-		Byte peek;
+	Byte peek;
 
 	/**
 	 * The buffer where we will put incoming packets.
@@ -112,7 +112,7 @@ public class NetworkOpponent implements GameMachineListener {
 					}
 
 				} catch (IOException e) {
-					// TODO: Do something about network errors
+					//If exception while reading we close and notify any listeners.
 					closeSilently();
 				}
 			}
@@ -318,5 +318,4 @@ public class NetworkOpponent implements GameMachineListener {
 			final int amount) {
 		sendUsedEffect(type, target, amount);
 	}
-
 }

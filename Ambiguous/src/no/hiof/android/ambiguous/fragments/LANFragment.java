@@ -19,6 +19,12 @@ import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.widget.Toast;
 
+/**
+ * 
+ * Handles setting up for network games. LAN network games are limited in that
+ * event changing screen orientation will break the game.
+ * 
+ */
 public class LANFragment extends Fragment implements OpenSocketListener {
 	private boolean isServer;
 	private Socket socket;
@@ -33,21 +39,34 @@ public class LANFragment extends Fragment implements OpenSocketListener {
 
 	private NetworkOpponent networkOpponent;
 
+	boolean die = false;
+
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		if (savedInstanceState != null) {
+			die = savedInstanceState.getBoolean("die", false);
+		}
+	}
+
 	@Override
 	public void onStart() {
 		super.onStart();
-		
+		if (die) {
+			return;
+		}
+
 		Bundle args = getArguments();
-		
-		if(!args.containsKey("address") || !args.containsKey("port") || !args.containsKey("isServer"))
-		{
+
+		if (!args.containsKey("address") || !args.containsKey("port")
+				|| !args.containsKey("isServer")) {
 			Log.e("ambiguous", "Need these arguments");
 		}
-		
+
 		address = args.getString("address");
 		port = args.getInt("port");
-		isServer = args.getBoolean("isServer",false);
-		
+		isServer = args.getBoolean("isServer", false);
+
 		startNetwork();
 	}
 
@@ -58,6 +77,10 @@ public class LANFragment extends Fragment implements OpenSocketListener {
 		openSocketTask = new OpenSocketTask().setup(address, port, isServer);
 		openSocketTask.execute(this);
 
+		lostConnectionDialog();
+	}
+
+	void lostConnectionDialog() {
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 		String connectMsg = String.format(
 				getResources().getString(
@@ -83,6 +106,13 @@ public class LANFragment extends Fragment implements OpenSocketListener {
 		super.onStop();
 		closeSockets();
 		removeListeners();
+		getActivity().finish();
+	}
+
+	@Override
+	public void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		outState.putBoolean("die", true);
 	}
 
 	@Override
@@ -113,48 +143,42 @@ public class LANFragment extends Fragment implements OpenSocketListener {
 		setupListeners();
 		startGameMachine();
 	}
-	
-	void startGameMachine()
-	{
+
+	void startGameMachine() {
 		GameActivity.gameMachine.delay = 50;
-		
-		//If not server we just wait for server.
-		if(isServer)
-		{
+
+		// If not server we just wait for server.
+		if (isServer) {
 			GameActivity.gameMachine.startRandom();
-		}
-		else
-		{
+		} else {
 			GameActivity.gameMachine.startGame(State.OPPONENT_TURN);
 		}
 	}
-	
+
 	/**
-	 * Sets up the generic OpponenController and the NetworkOpponent which handles network communication.
+	 * Sets up the generic OpponenController and the NetworkOpponent which
+	 * handles network communication.
 	 */
-	void setupOpponent()
-	{
+	void setupOpponent() {
 		networkOpponent = new NetworkOpponent(GameActivity.opponentController,
 				GameActivity.gameMachine.player,
 				GameActivity.gameMachine.opponent, socket);
 	}
-	
+
 	/**
 	 * Adds all the listeners
 	 */
-	void setupListeners()
-	{
+	void setupListeners() {
 		GameActivity.gameMachine.setGameMachineListener(networkOpponent);
 	}
-	
+
 	/**
 	 * Removes all the listeners
 	 */
-	void removeListeners()
-	{
+	void removeListeners() {
 		GameActivity.gameMachine.removeGameMachineListener(networkOpponent);
 	}
-	
+
 	/**
 	 * Close the network sockets.
 	 */
@@ -169,6 +193,10 @@ public class LANFragment extends Fragment implements OpenSocketListener {
 		if (server != null) {
 			new CloseServerSocketTask().execute(this.server);
 		}
+	}
+
+	void reconnect() {
+
 	}
 
 }

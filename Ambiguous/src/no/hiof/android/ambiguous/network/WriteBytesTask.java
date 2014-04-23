@@ -8,7 +8,7 @@ import android.os.AsyncTask;
 /**
  * Writes bytes to a DataOutpuStream. 
  */
-public class WriteBytesTask extends AsyncTask<byte[],Void,Void> {
+public class WriteBytesTask extends AsyncTask<byte[],Void,Boolean> {
 	
 	private DataOutputStream out;
 
@@ -19,13 +19,13 @@ public class WriteBytesTask extends AsyncTask<byte[],Void,Void> {
 	}
 	
 	@Override
-	protected Void doInBackground(byte[]... params) {
+	protected Boolean doInBackground(byte[]... params) {
 		try {
 			out.write(params[0]);
 		} catch (IOException e) {
 			//TODO: Handle network error.
+			return false;
 		}
-		return null;
+		return true;
 	}
-
 }

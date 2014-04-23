@@ -42,7 +42,7 @@ public class SessionDataSource {
 	 * @param cardWasDiscarded
 	 * @return
 	 */
-	public boolean saveSession(int turn, Player player, Player opponent, int opponentCardId, boolean cardWasDiscarded){
+	public boolean saveSession(int turn, Player player, Player opponent, int opponentCardId, boolean cardWasDiscarded, boolean cheatWasUsed){
 		int playerId = savePlayer(player);
 		int opponentId = savePlayer(opponent);
 		
@@ -57,6 +57,7 @@ public class SessionDataSource {
 		cv.put("turn", turn);
 		cv.put("opponentCard", opponentCardId);
 		cv.put("opponentDiscard", cardWasDiscarded);
+		cv.put("cheatUsed", cheatWasUsed);
 		
 		// if sessionId is -1 a new session should be created, otherwise update the given session
 		int workedFine;

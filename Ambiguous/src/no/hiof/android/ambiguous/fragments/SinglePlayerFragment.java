@@ -54,14 +54,28 @@ public class SinglePlayerFragment extends Fragment {
 		} else if (!(extras.getInt("SessionId") >= 0)) {
 			return;
 		} else {
+<<<<<<< HEAD
 			loadSessionStateBundle(extras);
+=======
+			savedSessionId = extras.getInt("SessionId");
+			loadPlayer(GameActivity.gameMachine.player, (Player)extras.get("SessionPlayer"));
+			loadPlayer(GameActivity.gameMachine.opponent, (Player) extras.get("SessionOpponent"));
+			GameActivity.gameMachine.state = 
+					GameMachine.State.values()[extras.getInt("SessionTurn")];
+			currentOpponentCard = extras.getParcelable("SessionOpponentCard");
+			opponentCardIsDiscarded = extras.getBoolean("SessionOpponentDiscard");
+>>>>>>> 2838c2c2f4aade373f90fd8efa331f74614dd1d8
 			if (currentOpponentCard != null) {
 				GameActivity.opponentController.previousCardPlayed(
 						currentOpponentCard, opponentCardIsDiscarded);
 			}
+			if(extras.getBoolean("CheatUsed")){
+				GameActivity.gameMachine.cheatUsed = extras.getBoolean("CheatUsed");
+			}
 		}
 	}
 
+<<<<<<< HEAD
 	void loadSessionStateBundle(Bundle extras) {
 		savedSessionId = extras.getInt("SessionId");
 		GameActivity.gameMachine.player.updatePlayer((Player) extras
@@ -72,6 +86,29 @@ public class SinglePlayerFragment extends Fragment {
 				.getInt("SessionTurn")];
 		currentOpponentCard = extras.getParcelable("SessionOpponentCard");
 		opponentCardIsDiscarded = extras.getBoolean("SessionOpponentDiscard");
+=======
+	@Override
+	public void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+
+		if (GameActivity.gameMachine != null) {
+			// We store stuff so that can resume later.
+			outState.putParcelable("Player", 
+					GameActivity.gameMachine.player);
+			outState.putParcelable("Opponent",
+					GameActivity.gameMachine.opponent);
+			outState.putInt("State", 
+					GameActivity.gameMachine.state.ordinal());
+			outState.putParcelable("OpponentCard",
+					GameActivity.gameMachine.currentOpponentCard);
+			outState.putBoolean("OpponentCardDiscarded",
+					GameActivity.gameMachine.opponentCardIsDiscarded);
+			outState.putInt("Session", 
+					savedSessionId);
+			outState.putBoolean("CheatUsed", 
+					GameActivity.gameMachine.cheatUsed);
+		}
+>>>>>>> 2838c2c2f4aade373f90fd8efa331f74614dd1d8
 	}
 
 	@Override
@@ -89,15 +126,15 @@ public class SinglePlayerFragment extends Fragment {
 			sds.deleteAllSessions();
 		} else {
 			// If gameMachine exists, and the game is not finished, attempt
-			// to save
-			// the current session in the database
+			// to save the current session in the database
 			Boolean saveSucessful = sds
 					.saveSession(
 							state.ordinal(),
 							GameActivity.gameMachine.player,
 							GameActivity.gameMachine.opponent,
 							(currentOpponentCard != null ? currentOpponentCard.id
-									: -1), opponentCardIsDiscarded);
+									: -1), opponentCardIsDiscarded,
+							GameActivity.gameMachine.cheatUsed);
 			if (!saveSucessful)
 				Log.d("sds.saveSession", "Something caused saveSession to fail");
 		}

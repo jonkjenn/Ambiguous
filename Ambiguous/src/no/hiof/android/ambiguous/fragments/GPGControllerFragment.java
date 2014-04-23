@@ -78,7 +78,7 @@ public class GPGControllerFragment extends Fragment implements
 		gPGHandler = (GooglePlayGameFragment) getActivity()
 				.getSupportFragmentManager().findFragmentByTag("gpg");
 		if (gPGHandler == null) {
-			createGooglePlayFragment();
+			createGooglePlayFragment(getArguments());
 		} else {
 			gPGHandler.setGPGConnectedListener(this);
 		}
@@ -109,12 +109,13 @@ public class GPGControllerFragment extends Fragment implements
 	/**
 	 * Create new GPG Fragment.
 	 */
-	void createGooglePlayFragment() {
+	void createGooglePlayFragment(Bundle arguments) {
 		gPGSVisible = true;
 		FragmentManager manager = getActivity().getSupportFragmentManager();
 		FragmentTransaction transaction = manager.beginTransaction();
 		gPGHandler = new GooglePlayGameFragment();
 		gPGHandler.setGPGConnectedListener(this);
+		gPGHandler.setArguments(arguments);
 		transaction.add(R.id.game_layout_container, gPGHandler, "gpg");
 		transaction.commit();
 	}
@@ -182,7 +183,9 @@ public class GPGControllerFragment extends Fragment implements
 	public void onStop() {
 		super.onStop();
 		closeGooglePlayGameFragment();
-		GameActivity.gameMachine.removeOnStateChangedListener(this);
+		if (GameActivity.gameMachine != null) {
+			GameActivity.gameMachine.removeOnStateChangedListener(this);
+		}
 		if (binder != null) {
 			binder.setGPGServiceListener(null);
 		}

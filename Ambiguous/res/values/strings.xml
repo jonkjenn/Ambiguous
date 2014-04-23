@@ -72,7 +72,7 @@
       <string name="defeat">Defeat!</string>
       <string name="close_service">Close Ambiguous service</string>
       <string name="got_invite_from">Got match sinvitation from %1s</string>
-      <string name="match_waiting_for_turn">A match is waiting for your turn</string>
+      <string name="match_waiting_for_turn">Your turn against %1s</string>
       <string name="accept">Accept</string>
       <string name="denie">Denie</string>
       <string name="discarded">DISCARDED</string>
@@ -80,5 +80,6 @@
       <string name="GPG_service_on">Disable GPG service</string>
       <string name="close_gpg_service">Close Google Play Game service</string>
       <string name="toast_message_disregard_outcome">Disregarding outcome of this game due to cheat</string>
+      <string name="your_turn">Your turn</string>
 
 </resources>

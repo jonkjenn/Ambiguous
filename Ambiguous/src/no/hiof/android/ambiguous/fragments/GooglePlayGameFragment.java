@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import no.hiof.android.ambiguous.BuildConfig;
+import no.hiof.android.ambiguous.GPGHelper;
 import no.hiof.android.ambiguous.GPGService;
 import no.hiof.android.ambiguous.GPGService.GPGServiceListner;
 import no.hiof.android.ambiguous.GameMachine;
@@ -23,6 +24,8 @@ import no.hiof.android.ambiguous.model.Effect;
 import no.hiof.android.ambiguous.model.Effect.EffectType;
 import no.hiof.android.ambiguous.model.Player;
 import android.app.Activity;
+import android.app.NotificationManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender.SendIntentException;
 import android.os.Bundle;
@@ -39,6 +42,7 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.games.Games;
 import com.google.android.gms.games.GamesStatusCodes;
@@ -50,6 +54,7 @@ import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatch;
 import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatchConfig;
 import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMultiplayer;
 import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMultiplayer.InitiateMatchResult;
+import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMultiplayer.LoadMatchResult;
 import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMultiplayer.LoadMatchesResult;
 import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMultiplayer.UpdateMatchResult;
 import com.google.example.games.basegameutils.GameHelper;
@@ -444,39 +449,6 @@ public class GooglePlayGameFragment extends Fragment implements
 		}
 	}
 
-	/**
-	 * Returns current player's participant Id
-	 * 
-	 * @return
-	 */
-	String getMyId() {
-		String myId = Games.Players.getCurrentPlayerId(gameHelper
-				.getApiClient());
-		return (match.getParticipantId(myId));
-	}
-
-	/**
-	 * Finds the opponents Id
-	 * 
-	 * @param match
-	 *            The current match
-	 * @return Opponents Id
-	 */
-	String getOpponentId(TurnBasedMatch match) {
-		String myParticipantId = getMyId();
-		ArrayList<String> participantIds = match.getParticipantIds();
-
-		for (int i = 0; i < participantIds.size(); i++) {
-			if (!participantIds.get(i).equals(myParticipantId)) {
-				return participantIds.get(i);
-			}
-		}
-
-		Log.d("test", "This should never happen");
-
-		return null;
-	}
-
 	void readGameState(TurnBasedMatch match) {
 		// If empty we assume it is our turn to play. Can happen if the host has
 		// to pass the turn to the other player at first turn.
@@ -486,7 +458,8 @@ public class GooglePlayGameFragment extends Fragment implements
 		}
 
 		boolean isCreator = false;
-		if (match.getCreatorId().equals(getOpponentId(match))) {
+		if (match.getCreatorId().equals(
+				GPGHelper.getOpponentId(gameHelper.getApiClient(), match))) {
 			isCreator = true;
 		}
 
@@ -587,7 +560,8 @@ public class GooglePlayGameFragment extends Fragment implements
 	byte[] writeGameState(TurnBasedMatch match) {
 
 		boolean isCreator = false;
-		if (getOpponentId(match).equals(match.getCreatorId())) {
+		if (GPGHelper.getOpponentId(gameHelper.getApiClient(), match).equals(
+				match.getCreatorId())) {
 			isCreator = true;
 		}
 
@@ -671,7 +645,8 @@ public class GooglePlayGameFragment extends Fragment implements
 		// The creator data is in the 2 first bytes, the other player in the 2
 		// last bytes.
 		int index1;
-		if (getOpponentId(match).equals(match.getCreatorId())) {
+		if (GPGHelper.getOpponentId(gameHelper.getApiClient(), match).equals(
+				match.getCreatorId())) {
 			index1 = 0;
 		} else {
 			index1 = 2;
@@ -759,18 +734,26 @@ public class GooglePlayGameFragment extends Fragment implements
 		return false;
 	}
 
+	void removeNotification() {
+		((NotificationManager) getActivity().getSystemService(
+				Context.NOTIFICATION_SERVICE)).cancel(match.getMatchId(), 1);
+	}
+
 	/**
 	 * Completes a turn and sends the data to Google.
 	 */
 	void completeTurn() {
 
+		removeNotification();
+
 		String matchId = match.getMatchId();// The Id for our match
-		String pendingParticipant = getOpponentId(match);// We set who's turn it
-															// is next since
-															// we're done,
-															// should always be
-															// opponents turn
-															// for us.
+		String pendingParticipant = GPGHelper.getOpponentId(
+				gameHelper.getApiClient(), match);// We set who's turn it
+		// is next since
+		// we're done,
+		// should always be
+		// opponents turn
+		// for us.
 		byte[] gameState = writeGameState(match);// We build the game state
 													// bytes from the current
 													// game state.
@@ -815,10 +798,12 @@ public class GooglePlayGameFragment extends Fragment implements
 
 		ArrayList<ParticipantResult> results = new ArrayList<ParticipantResult>();
 
-		results.add(new ParticipantResult(getMyId(), playerResult,
+		results.add(new ParticipantResult(GPGHelper.getMyId(
+				gameHelper.getApiClient(), match), playerResult,
 				ParticipantResult.PLACING_UNINITIALIZED));
 
-		results.add(new ParticipantResult(getOpponentId(match), opponentResult,
+		results.add(new ParticipantResult(GPGHelper.getOpponentId(
+				gameHelper.getApiClient(), match), opponentResult,
 				ParticipantResult.PLACING_UNINITIALIZED));
 
 		if (match.getStatus() == TurnBasedMatch.MATCH_STATUS_ACTIVE
@@ -828,6 +813,7 @@ public class GooglePlayGameFragment extends Fragment implements
 						gameHelper.getApiClient(), match.getMatchId(),
 						writeGameState(match), results);
 				turnUsed = true;
+				removeNotification();
 			}
 		} else if (match.getStatus() == TurnBasedMatch.MATCH_STATUS_COMPLETE) {
 			if (match.getTurnStatus() == TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN) {
@@ -916,7 +902,9 @@ public class GooglePlayGameFragment extends Fragment implements
 		View signout = (View) getView().findViewById(R.id.sign_out_button);
 		signout.setOnClickListener(this);
 
-		//If the service is not running we handle the updates ourselves and if we're standing in game in a match that gets updated remotely, it gets updated right away ingame.
+		// If the service is not running we handle the updates ourselves and if
+		// we're standing in game in a match that gets updated remotely, it gets
+		// updated right away ingame.
 		if (!GPGService.isRunning) {
 			Games.TurnBasedMultiplayer.registerMatchUpdateListener(
 					gameHelper.getApiClient(),
@@ -939,9 +927,38 @@ public class GooglePlayGameFragment extends Fragment implements
 					});
 		}
 
+		// If we get a matchId we start that instead of anything else
+		if (getArguments().containsKey("matchId")) {
+			loadMatch(getArguments().getString("matchId"));
+			return;
+		}
+
 		if (match != null && !turnUsed) {
 			startGame(match);
 		}
+	}
+
+	/**
+	 * Loads a specific match
+	 * 
+	 * @param matchId
+	 *            The id of the match we want to load.
+	 */
+	void loadMatch(String matchId) {
+		Games.TurnBasedMultiplayer
+				.loadMatch(gameHelper.getApiClient(), matchId)
+				.setResultCallback(
+						new ResultCallback<TurnBasedMultiplayer.LoadMatchResult>() {
+
+							@Override
+							public void onResult(LoadMatchResult loadResult) {
+								if (loadResult.getStatus().getStatusCode() == GamesStatusCodes.STATUS_OK) {
+									match = loadResult.getMatch();
+									startGame(loadResult.getMatch());
+								}
+							}
+						});
+
 	}
 
 	@Override

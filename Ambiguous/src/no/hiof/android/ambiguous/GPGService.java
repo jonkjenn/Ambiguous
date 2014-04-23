@@ -2,8 +2,10 @@ package no.hiof.android.ambiguous;
 
 import no.hiof.android.ambiguous.activities.GameActivity;
 import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
@@ -27,6 +29,8 @@ public class GPGService extends Service {
 	GoogleApiClient gApiClient;
 
 	public static boolean isRunning = false;
+
+	public GPGServiceListner gPGServiceListner;
 
 	@Override
 	public IBinder onBind(Intent intent) {
@@ -94,7 +98,43 @@ public class GPGService extends Service {
 					@Override
 					public void onTurnBasedMatchReceived(TurnBasedMatch match) {
 						Log.d("test", "Found match update");
-						notifyTurnBasedMatchReceived(match);
+
+						if (binder == null || gPGServiceListner == null) {
+							Intent i = new Intent(GPGService.this,
+									GameActivity.class);
+							i.putExtra("useGPGS", true);
+							i.putExtra("matchId", match.getMatchId());
+							PendingIntent pi = PendingIntent.getActivity(
+									getApplicationContext(), 0, i,
+									PendingIntent.FLAG_UPDATE_CURRENT);
+
+							Notification n = new NotificationCompat.Builder(
+									getApplicationContext())
+									.setSmallIcon(
+											R.drawable.smiley_drawing_small)
+									.setContentTitle(
+											getResources().getString(
+													R.string.your_turn))
+									.setContentText(
+											String.format(
+													getResources()
+															.getString(
+																	R.string.match_waiting_for_turn),
+													// We get the display name
+													// for our opponent
+													match.getParticipant(
+															GPGHelper
+																	.getOpponentId(
+																			gApiClient,
+																			match))
+															.getDisplayName()))
+									.setAutoCancel(true).setContentIntent(pi)
+									.build();
+							((NotificationManager) getSystemService(NOTIFICATION_SERVICE))
+									.notify(match.getMatchId(), 1, n);
+						} else {
+							notifyTurnBasedMatchReceived(match);
+						}
 					}
 				});
 		Games.Invitations.registerInvitationListener(gApiClient,
@@ -168,8 +208,6 @@ public class GPGService extends Service {
 	public interface GPGServiceListner {
 		public void onTurnBasedMatchReceived(TurnBasedMatch match);
 	}
-
-	GPGServiceListner gPGServiceListner;
 
 	void notifyTurnBasedMatchReceived(TurnBasedMatch match) {
 		if (gPGServiceListner != null) {

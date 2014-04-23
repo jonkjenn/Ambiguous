@@ -76,5 +76,6 @@
       <string name="accept">Accept</string>
       <string name="denie">Denie</string>
       <string name="discarded">DISCARDED</string>
+      <string name="toast_message_disregard_outcome">Disregarding outcome of this game due to cheat</string>
 
 </resources>

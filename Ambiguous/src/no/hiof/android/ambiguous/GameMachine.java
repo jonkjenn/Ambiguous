@@ -27,6 +27,7 @@ public class GameMachine implements OpponentListener {
 	
 	public Card currentOpponentCard;
 	public boolean opponentCardIsDiscarded;
+	public boolean cheatUsed;
 
 	public int delay;
 

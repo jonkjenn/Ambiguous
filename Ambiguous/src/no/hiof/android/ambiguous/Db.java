@@ -55,6 +55,7 @@ public class Db extends SQLiteOpenHelper {
 			"`turn` INTEGER NOT NULL," +
 			"`opponentCard` INTEGER," +
 			"`opponentDiscard` BOOLEAN," +
+			"`cheatUsed` BOOLEAN," +
 			"FOREIGN KEY (`player`) REFERENCES `Player` (`id`)," +
 			"FOREIGN KEY (`opponent`) REFERENCES `Player` (`id`)," +
 			"FOREIGN KEY (`opponentCard`) REFERENCES `Card` (`id`) )";
@@ -123,7 +124,7 @@ public class Db extends SQLiteOpenHelper {
 	{
 		if(db == null)
 		{
-			db = new Db(ctx,name,null,8);
+			db = new Db(ctx,name,null,9);
 				
 		}
 		

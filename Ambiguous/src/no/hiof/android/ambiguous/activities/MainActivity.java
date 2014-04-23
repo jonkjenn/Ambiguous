@@ -73,7 +73,7 @@ public class MainActivity extends Activity {
 	public void goToResumeGame(View view) {
 		Cursor c = db
 				.rawQuery(
-						"SELECT id,player,opponent,turn,opponentCard,opponentDiscard FROM Session WHERE id = (SELECT max(id) FROM Session) LIMIT 1",
+						"SELECT id,player,opponent,turn,opponentCard,opponentDiscard,cheatUsed FROM Session WHERE id = (SELECT max(id) FROM Session) LIMIT 1",
 						null);
 		if(!c.moveToFirst()){
 			c.close();
@@ -87,6 +87,7 @@ public class MainActivity extends Activity {
 		int sessionId = c.getInt(c.getColumnIndexOrThrow("id"));
 		int sessionTurn = c.getInt(c.getColumnIndexOrThrow("turn"));
 		int opponentDiscard = c.getInt(c.getColumnIndexOrThrow("opponentDiscard"));
+		int cheatUsed = c.getInt(c.getColumnIndexOrThrow("cheatUsed"));
 
 		c.close();
 		
@@ -95,8 +96,9 @@ public class MainActivity extends Activity {
 		CardDataSource cds = new CardDataSource(db);
 		
 		// Put everything together and pass it along as extras in the intent
-		Card SessionOpponentCard = CardDataSource.getCard(opponentCardId);
-		boolean SessionOpponentDiscard = (opponentDiscard != 0 ? true : false);
+		Card sessionOpponentCard = CardDataSource.getCard(opponentCardId);
+		boolean sessionOpponentDiscard = (opponentDiscard != 0 ? true : false);
+		boolean sessionCheatUsed = (cheatUsed != 0 ? true : false);
 		Player player = getPlayerFromDb(playerId);
 		Player opponent = getPlayerFromDb(opponentId);
 		if(player == null || opponent == null){
@@ -106,14 +108,18 @@ public class MainActivity extends Activity {
 		// If there is a stored name in sharedpreferences, use that instead.
 		player.name = PreferenceManager.getDefaultSharedPreferences(this)
 				.getString(SettingsFragment.KEY_PREF_USER,player.name);
+		// Use sharedpreference if it's set, else rely on the db
+		sessionCheatUsed = PreferenceManager.getDefaultSharedPreferences(this)
+				.getBoolean("cheatUsed", sessionCheatUsed);
 		
 		Intent intent = new Intent(this, no.hiof.android.ambiguous.activities.GameActivity.class)
 				.putExtra("SessionId",sessionId)
 				.putExtra("SessionPlayer",(Parcelable)player)
 				.putExtra("SessionOpponent",(Parcelable)opponent)
 				.putExtra("SessionTurn",sessionTurn)
-				.putExtra("SessionOpponentCard",(Parcelable)SessionOpponentCard)
-				.putExtra("SessionOpponentDiscard",SessionOpponentDiscard);
+				.putExtra("SessionOpponentCard",(Parcelable)sessionOpponentCard)
+				.putExtra("SessionOpponentDiscard",sessionOpponentDiscard)
+				.putExtra("SessionCheatUsed", sessionCheatUsed);
 		
 		startActivity(intent);
 	}
@@ -201,6 +207,8 @@ public class MainActivity extends Activity {
 
 	/** Called when the user clicks the Game button, starts up a new game vs AI. **/
 	public void goToGame(View view) {
+		PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
+		.edit().putBoolean("cheatUsed", false).commit();
 		Intent intent = new Intent(this,
 				no.hiof.android.ambiguous.activities.GameActivity.class);
 		startActivity(intent);

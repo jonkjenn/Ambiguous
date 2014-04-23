@@ -62,6 +62,7 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.RemoteViews;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  * Initializes games and shows/handles the game UI.
@@ -120,30 +121,37 @@ public class GameActivity extends ActionBarActivity implements
 		opponentController = new OpponentController();
 		setupUIListeners();
 
+		// Moved these up here because I check their values in regards to dmgBuff
+		this.useGPGS = getIntent().getBooleanExtra("useGPGS", false);
+		this.isNetwork = getIntent().getBooleanExtra("isNetwork", false);
+		
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
 			setupDragFragment();
+			if((!useGPGS) && (!isNetwork)){
+				SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+				int dmgBuff = sp.getInt(SettingsActivity.KEY_PREF_CHEAT, -1);
+				if(dmgBuff > 0){
+					if(dmgBuff == 249){
+						Toast.makeText(this, "Cheat is set to do 249 damage. Will not prevent this game being saved"
+								, Toast.LENGTH_LONG).show();
+					}
+					else{
+						Toast.makeText(this, "Warning: Cheat enabled and set to do "+String.valueOf(dmgBuff)+
+								" extra damage. If you use a card now the result of this game will not be saved"
+								, Toast.LENGTH_LONG).show();
+					}
+				}
+			}
 		}
 		cardHandFragment.setOnPlayerUsedCardListener(this);
 
 		loadPlayerStatsFragments();
 
-		// TODO: What?
 		setBackground(PreferenceManager.getDefaultSharedPreferences(this));
-
-		// Fix this!
-		// if(this.getIntent().getExtras().getInt("SessionId") >= 0){
-		// Bundle extras = this.getIntent().getExtras();
-		// savedSessionId = extras.getInt("SessionId");
-		// savedPlayer = (Player) extras.get("SessionPlayer");
-		// savedOpponent = (Player) extras.get("SessionOpponent");
-		// }
 
 		// We dont want the actionbar visible during the game
 		ActionBar actionBar = getSupportActionBar();
 		actionBar.hide();
-
-		this.useGPGS = getIntent().getBooleanExtra("useGPGS", false);
-		this.isNetwork = getIntent().getBooleanExtra("isNetwork", false);
 
 		if (this.isNetwork) {// We start a LAN Network game
 			startNetworkFragment();
@@ -542,16 +550,33 @@ public class GameActivity extends ActionBarActivity implements
 	@Override
 	public void onPlayerDoneListener() {
 		// To make winning easier while testing, opponent can be set to take
-		// additional dmg each turn
+		// additional dmg each turn.
+		// Will prevent saving a victory if the cheat has been used.
 		// For later reference simply search the tag below to jump here directly
 		// TAG: damage CHEAT
 		if ((!useGPGS) && (!isNetwork)) {
 			SharedPreferences sp = PreferenceManager
 					.getDefaultSharedPreferences(this);
-			int dmg = sp.getInt(SettingsActivity.KEY_PREF_CHEAT, -1);
-			// Only enable cheat if we are in a local game, and the damage is set to a positive number of significance
-			if(dmg > 0){
-				gameMachine.opponent.damage(dmg);
+
+			int dmgBuff = sp.getInt(SettingsActivity.KEY_PREF_CHEAT, -1);
+			// Only enable cheat if we are in a local game, and the damage is set to a positive number of any significance
+			if(dmgBuff > 0){
+				// Added workaround, selecting dmg 249 will now trigger the cheat, but still allow the game to be saved
+				// This is purely for testing purposes
+				if(dmgBuff == 249){
+					gameMachine.opponent.damage(dmgBuff);
+				}
+				else{
+					gameMachine.opponent.damage(dmgBuff);
+					sp.edit().putBoolean("cheatUsed", true).commit();
+	
+					if(gameMachine.cheatUsed != true){
+						gameMachine.cheatUsed = true;
+						Toast.makeText(this, "Warning: "
+						+getResources().getString(R.string.toast_message_disregard_outcome)
+						, Toast.LENGTH_SHORT).show();
+					}
+				}
 			}
 		}
 	}
@@ -604,7 +629,14 @@ public class GameActivity extends ActionBarActivity implements
 	public void onOpponentDeadListener(Player opponent) {
 		LayoutHelper.showResult(resultTextView, true);
 		cardHandFragment.disableUseCards();
-		saveVictory();
+		if(!PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
+				.getBoolean("cheatUsed", GameActivity.gameMachine.cheatUsed)){
+			saveVictory();
+		}else{
+			Toast.makeText(this, "Reminder: "+
+					getResources().getString(R.string.toast_message_disregard_outcome)
+					, Toast.LENGTH_SHORT).show();
+		}
 
 	}
 
@@ -629,7 +661,7 @@ public class GameActivity extends ActionBarActivity implements
 		}
 		// Store the amount of victories in sharedpreferences for ease of access
 		PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
-				.edit().putInt("WIN", victory);
+				.edit().putInt("WIN", victory).commit();
 
 		AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(this);
 		RemoteViews remoteViews = new RemoteViews(this.getPackageName(),

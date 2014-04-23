@@ -2,7 +2,6 @@ package no.hiof.android.ambiguous.fragments;
 
 import no.hiof.android.ambiguous.Db;
 import no.hiof.android.ambiguous.GameMachine;
-import no.hiof.android.ambiguous.GameMachine.State;
 import no.hiof.android.ambiguous.activities.GameActivity;
 import no.hiof.android.ambiguous.ai.AIController;
 import no.hiof.android.ambiguous.datasource.SessionDataSource;
@@ -55,58 +54,31 @@ public class SinglePlayerFragment extends Fragment {
 		} else if (!(extras.getInt("SessionId") >= 0)) {
 			return;
 		} else {
-			savedSessionId = extras.getInt("SessionId");
-			loadPlayer(GameActivity.gameMachine.player, (Player)extras.get("SessionPlayer"));
-			loadPlayer(GameActivity.gameMachine.opponent, (Player) extras
-					.get("SessionOpponent"));
-			GameActivity.gameMachine.state = GameMachine.State.values()[extras
-					.getInt("SessionTurn")];
-			currentOpponentCard = extras.getParcelable("SessionOpponentCard");
-			opponentCardIsDiscarded = extras
-					.getBoolean("SessionOpponentDiscard");
+			loadSessionStateBundle(extras);
 			if (currentOpponentCard != null) {
 				GameActivity.opponentController.previousCardPlayed(
 						currentOpponentCard, opponentCardIsDiscarded);
 			}
 		}
 	}
-	
-	//TODO: Find a better way to do this?
-	/**
-	 * We dont create new instance of player, instead we update current player. 
-	 * @param target
-	 * @param data
-	 */
-	void loadPlayer(Player target, Player data)
-	{
-		target.updatePlayer(data.name, data.health, data.armor, data.resources, data.hand, data.deck);
-	}
 
-	@Override
-	public void onSaveInstanceState(Bundle outState) {
-		super.onSaveInstanceState(outState);
-
-		if (GameActivity.gameMachine != null) {
-			// We store stuff so that can resume later.
-			outState.putParcelable("Player", GameActivity.gameMachine.player);
-			outState.putParcelable("Opponent",
-					GameActivity.gameMachine.opponent);
-			outState.putInt("State", GameActivity.gameMachine.state.ordinal());
-			outState.putParcelable("OpponentCard",
-					GameActivity.gameMachine.currentOpponentCard);
-			outState.putBoolean("OpponentCardDiscarded",
-					GameActivity.gameMachine.opponentCardIsDiscarded);
-			outState.putInt("Session", savedSessionId);
-			// TODO: Implementing storing state to database so can resume even
-			// if
-			// app is destroyed.
-			// save sessionid?
-		}
+	void loadSessionStateBundle(Bundle extras) {
+		savedSessionId = extras.getInt("SessionId");
+		GameActivity.gameMachine.player.updatePlayer((Player) extras
+				.get("SessionPlayer"));
+		GameActivity.gameMachine.opponent.updatePlayer((Player) extras
+				.get("SessionOpponent"));
+		GameActivity.gameMachine.state = GameMachine.State.values()[extras
+				.getInt("SessionTurn")];
+		currentOpponentCard = extras.getParcelable("SessionOpponentCard");
+		opponentCardIsDiscarded = extras.getBoolean("SessionOpponentDiscard");
 	}
 
 	@Override
 	public void onPause() {
 		super.onPause();
+
+		GameActivity.gameMachine.removeTurnChangeListener(aiController);
 
 		if (savedSessionId != -1) {
 			sds.setSessionId(savedSessionId);

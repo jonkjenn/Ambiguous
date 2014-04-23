@@ -4,12 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import no.hiof.android.ambiguous.Db;
+import no.hiof.android.ambiguous.GPGService;
 import no.hiof.android.ambiguous.R;
 import no.hiof.android.ambiguous.datasource.CardDataSource;
 import no.hiof.android.ambiguous.fragments.SettingsFragment;
 import no.hiof.android.ambiguous.model.Card;
 import no.hiof.android.ambiguous.model.Player;
 import android.app.Activity;
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -259,6 +261,19 @@ public class MainActivity extends Activity {
 				resumeButton.setEnabled(savedSessionExists);
 			}
 		}
+		
+		if(GPGService.isRunning)
+		{
+			findViewById(R.id.close_gpg_service_button).setVisibility(View.VISIBLE);
+		}
 	}
+	
+	public void stopGPGService(View view)
+	{
+		Intent close = new Intent(this, GPGService.class);
+		close.setAction(GPGService.CLOSE);
+		startService(close);
 
+        findViewById(R.id.close_gpg_service_button).setVisibility(View.GONE);
+	}
 }

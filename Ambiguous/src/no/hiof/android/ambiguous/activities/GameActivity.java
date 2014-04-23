@@ -1,5 +1,6 @@
 package no.hiof.android.ambiguous.activities;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
@@ -82,6 +83,9 @@ public class GameActivity extends ActionBarActivity implements
 
 	private ImageView opponentCard;
 
+	LANFragment lanFragment;
+	SinglePlayerFragment singlePlayerFragment;
+	GPGControllerFragment gpgFragment;
 	CardHandFragment cardHandFragment;
 	DragFragment dragFragment;
 
@@ -111,13 +115,16 @@ public class GameActivity extends ActionBarActivity implements
 
 		loadDb();
 
-		cancelAnnoyingNotification();
-
 		// Find all the views we use so we only have to find them once
 		findViews();
 
-		gameMachine = new GameMachine(cards);
-		opponentController = new OpponentController();
+		if (gameMachine == null) {
+			gameMachine = new GameMachine(cards);
+		}
+		if (opponentController == null) {
+			opponentController = new OpponentController();
+		}
+
 		setupUIListeners();
 
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
@@ -141,6 +148,12 @@ public class GameActivity extends ActionBarActivity implements
 		// We dont want the actionbar visible during the game
 		ActionBar actionBar = getSupportActionBar();
 		actionBar.hide();
+
+		// We load data after setting up UI hooks so that UI can react to
+		// current state.
+		if (savedInstanceState != null) {
+			loadGameStateBundle(savedInstanceState);
+		}
 
 		this.useGPGS = getIntent().getBooleanExtra("useGPGS", false);
 		this.isNetwork = getIntent().getBooleanExtra("isNetwork", false);
@@ -170,14 +183,6 @@ public class GameActivity extends ActionBarActivity implements
 			// The stats window showing player's stats.
 			playerStats = new PlayerStatsFragment();
 
-			// So we can update stats as soon as the fragment is done loading.
-			playerStats.setOnLoadedListener(new OnLoadedListener() {
-				@Override
-				public void onLoaded() {
-					onStatsUpdateListener(gameMachine.player);
-				}
-			});
-
 			Bundle args = new Bundle();
 			args.putBoolean("reverse", true);
 			playerStats.setArguments(args);
@@ -206,6 +211,23 @@ public class GameActivity extends ActionBarActivity implements
 			opponentStats = (PlayerStatsFragment) getSupportFragmentManager()
 					.findFragmentByTag("opponentStatsFragment");
 		}
+
+		// So we can update stats as soon as the fragment is done loading.
+		playerStats.setOnLoadedListener(new OnLoadedListener() {
+			@Override
+			public void onLoaded() {
+				onStatsUpdateListener(gameMachine.player);
+			}
+		});
+
+		// So we can update stats as soon as the fragment is done loading.
+		opponentStats.setOnLoadedListener(new OnLoadedListener() {
+			@Override
+			public void onLoaded() {
+				onStatsUpdateListener(gameMachine.opponent);
+				onStateChanged(gameMachine.state);
+			}
+		});
 	}
 
 	void loadDb() {
@@ -241,10 +263,10 @@ public class GameActivity extends ActionBarActivity implements
 	 */
 	private void startNetworkFragment() {
 
-		LANFragment lf = (LANFragment) getSupportFragmentManager()
+		lanFragment = (LANFragment) getSupportFragmentManager()
 				.findFragmentByTag("LANFragment");
 
-		if (lf == null) {
+		if (lanFragment == null) {
 
 			if (!getIntent().hasExtra("address")
 					|| !getIntent().hasExtra("port")
@@ -252,34 +274,35 @@ public class GameActivity extends ActionBarActivity implements
 				return;
 			}
 
-			lf = new LANFragment();
-			lf.setArguments(getIntent().getExtras());
+			lanFragment = new LANFragment();
+			lanFragment.setArguments(getIntent().getExtras());
 			getSupportFragmentManager().beginTransaction()
-					.add(lf, "LANFragment").commit();
+					.add(lanFragment, "LANFragment").commit();
 		}
 	}
 
 	void startGPGFragment() {
-		GPGControllerFragment f = (GPGControllerFragment) getSupportFragmentManager()
+		gpgFragment = (GPGControllerFragment) getSupportFragmentManager()
 				.findFragmentByTag("GPGControllerFragment");
-		if (f == null) {
-			f = new GPGControllerFragment();
-			f.setArguments(getIntent().getExtras());
+		if (gpgFragment == null) {
+			gpgFragment = new GPGControllerFragment();
+			setOnActivityResultListener(gpgFragment);
+			gpgFragment.setArguments(getIntent().getExtras());
 			getSupportFragmentManager().beginTransaction()
-					.add(f, "GPGControllerFragment").commit();
+					.add(gpgFragment, "GPGControllerFragment").commit();
 		}
 	}
 
 	void startSinglePlayerFragment() {
 
-		SinglePlayerFragment f = (SinglePlayerFragment) getSupportFragmentManager()
+		singlePlayerFragment = (SinglePlayerFragment) getSupportFragmentManager()
 				.findFragmentByTag("singlePlayerFragment");
-		if (f == null) {
+		if (singlePlayerFragment == null) {
 
-			f = new SinglePlayerFragment();
-			f.setArguments(getIntent().getExtras());
+			singlePlayerFragment = new SinglePlayerFragment();
+			singlePlayerFragment.setArguments(getIntent().getExtras());
 			getSupportFragmentManager().beginTransaction()
-					.add(f, "singlePlayerFragment").commit();
+					.add(singlePlayerFragment, "singlePlayerFragment").commit();
 		}
 	}
 
@@ -549,8 +572,9 @@ public class GameActivity extends ActionBarActivity implements
 			SharedPreferences sp = PreferenceManager
 					.getDefaultSharedPreferences(this);
 			int dmg = sp.getInt(SettingsActivity.KEY_PREF_CHEAT, -1);
-			// Only enable cheat if we are in a local game, and the damage is set to a positive number of significance
-			if(dmg > 0){
+			// Only enable cheat if we are in a local game, and the damage is
+			// set to a positive number of significance
+			if (dmg > 0) {
 				gameMachine.opponent.damage(dmg);
 			}
 		}
@@ -778,6 +802,26 @@ public class GameActivity extends ActionBarActivity implements
 		// Clear the static cache, this could possibly be tied to activity
 		// life cycle either directly or by fragment
 		cs.purge();
+
+		/*
+		 * FragmentTransaction ft =
+		 * getSupportFragmentManager().beginTransaction();
+		 * 
+		 * if (lanFragment != null) { ft.remove(lanFragment); } if
+		 * (singlePlayerFragment != null) { ft.remove( singlePlayerFragment); }
+		 * if (gpgFragment != null) { ft.remove(gpgFragment); }
+		 * 
+		 * if(playerStats != null) { ft.remove(playerStats); }
+		 * 
+		 * if(cardHandFragment != null) { ft.remove(cardHandFragment); }
+		 * 
+		 * if(dragFragment != null) { ft.remove(dragFragment); } ft.commit();
+		 */
+
+		if (isFinishing()) {
+			gameMachine = null;
+			opponentController = null;
+		}
 	}
 
 	/**
@@ -806,8 +850,9 @@ public class GameActivity extends ActionBarActivity implements
 	}
 
 	@Override
-	protected void onActivityResult(int arg0, int arg1, Intent arg2) {
-		super.onActivityResult(arg0, arg1, arg2);
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		notifyActivityResult(requestCode, resultCode, data);
 	}
 
 	// Get from DragFragment if player use or discard card.
@@ -853,6 +898,63 @@ public class GameActivity extends ActionBarActivity implements
 			disableUseCards();
 			playerStats.notMyTurn();
 			opponentStats.myTurn();
+		}
+	}
+
+	/**
+	 * Problems with fragments not getting OnActivityResults so we pass it
+	 * "manually"
+	 */
+	public interface OnActivityResultListener {
+		void onGameActivityResult(int requestCode, int resultCode, Intent data);
+	}
+
+	void notifyActivityResult(int requestCode, int resultCode, Intent data) {
+		for (OnActivityResultListener l : onActivityResultListeners) {
+			l.onGameActivityResult(requestCode, resultCode, data);
+		}
+	}
+
+	final List<OnActivityResultListener> onActivityResultListeners = new ArrayList<OnActivityResultListener>();
+
+	public void setOnActivityResultListener(OnActivityResultListener listener) {
+		if (!onActivityResultListeners.contains(listener)) {
+			onActivityResultListeners.add(listener);
+		}
+	}
+
+	public void unsetOnActivityResultListener(OnActivityResultListener listener) {
+		onActivityResultListeners.remove(listener);
+	}
+
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+
+		if (GameActivity.gameMachine != null) {
+			// We store stuff so that can resume later.
+			outState.putParcelable("Player", GameActivity.gameMachine.player);
+			outState.putParcelable("Opponent",
+					GameActivity.gameMachine.opponent);
+			outState.putInt("State", GameActivity.gameMachine.state.ordinal());
+			outState.putParcelable("OpponentCard",
+					GameActivity.gameMachine.currentOpponentCard);
+			outState.putBoolean("OpponentCardDiscarded",
+					GameActivity.gameMachine.opponentCardIsDiscarded);
+		}
+	}
+
+	void loadGameStateBundle(Bundle extras) {
+		gameMachine.player.updatePlayer((Player) extras.get("Player"));
+		gameMachine.opponent.updatePlayer((Player) extras.get("Opponent"));
+		gameMachine.state = GameMachine.State.values()[extras.getInt("State")];
+		Card currentOpponentCard = (Card) extras.getParcelable("OpponentCard");
+		boolean opponentCardIsDiscarded = extras.getBoolean("OpponentDiscard",
+				false);
+
+		if (currentOpponentCard != null) {
+			opponentController.previousCardPlayed(currentOpponentCard,
+					opponentCardIsDiscarded);
 		}
 	}
 }

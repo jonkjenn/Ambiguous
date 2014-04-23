@@ -50,6 +50,14 @@
             android:layout_height="wrap_content"
             android:onClick="goToGoogle"
             android:text="@string/menu_button_google" />
+        
+        <Button
+            android:id="@+id/close_gpg_service_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="stopGPGService"
+            android:visibility="gone"
+            android:text="@string/close_gpg_service"/>
 
     </LinearLayout>
 

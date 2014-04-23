@@ -10,8 +10,10 @@ import no.hiof.android.ambiguous.activities.GameActivity;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -22,7 +24,8 @@ import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
 
 public class GPGControllerFragment extends Fragment implements
-		GPGCallbackInterface, GooglePlayGameFragment.OnGPGConnectedListener {
+		GPGCallbackInterface, GooglePlayGameFragment.OnGPGConnectedListener,
+		OnStateChangeListener, GameActivity.OnActivityResultListener {
 
 	GooglePlayGameFragment gPGHandler;
 	boolean gPGSVisible = false;
@@ -52,22 +55,18 @@ public class GPGControllerFragment extends Fragment implements
 	public void onStart() {
 		super.onStart();
 
-		GameActivity.gameMachine
-				.setOnStateChangeListener(new OnStateChangeListener() {
+		GameActivity.gameMachine.setOnStateChangeListener(this);
 
-					@Override
-					public void onStateChanged(State state) {
-						if (state == State.GAME_OVER) {
-							showGPGFragment();
-						} else {
-							hideGPGFragment();
-						}
-					}
-				});
+		SharedPreferences sp = PreferenceManager
+				.getDefaultSharedPreferences(getActivity()
+						.getApplicationContext());
 
-		Intent i = new Intent(getActivity(), GPGService.class);
-		getActivity().startService(i);
-		getActivity().bindService(i, connection, 0);
+		if (sp.contains(SettingsFragment.KEY_PREF_GPGService)
+				&& sp.getBoolean(SettingsFragment.KEY_PREF_GPGService, false)) {
+			Intent i = new Intent(getActivity(), GPGService.class);
+			getActivity().startService(i);
+			getActivity().bindService(i, connection, 0);
+		}
 
 		int e = GooglePlayServicesUtil
 				.isGooglePlayServicesAvailable(getActivity());
@@ -155,19 +154,54 @@ public class GPGControllerFragment extends Fragment implements
 		gPGSVisible = false;
 		FragmentManager manager = getActivity().getSupportFragmentManager();
 		FragmentTransaction t = manager.beginTransaction();
-		t.remove(manager.findFragmentByTag("gpg"));
-		t.commit();
+		Fragment f = manager.findFragmentByTag("gpg");
+
+		// Probably do not have to remove this since we're destroying it anyway
+		if (f != null) {
+			((GooglePlayGameFragment) f).setGPGConnectedListener(null);
+		}
+
+		t.remove(f);
+		// The state is not important since it's all on Google server anyway.
+		t.commitAllowingStateLoss();
 		gPGHandler = null;
 	}
 
 	void startGameMachine() {
-
 		GameActivity.gameMachine.delay = 50;
 	}
 
 	@Override
 	public void onGPGPConnected(GoogleApiClient client) {
-		binder.setGoogleApiClient(client);
+		if (binder != null) {
+			binder.setGoogleApiClient(client);
+		}
 	}
 
+	@Override
+	public void onStop() {
+		super.onStop();
+		closeGooglePlayGameFragment();
+		GameActivity.gameMachine.removeOnStateChangedListener(this);
+		if (binder != null) {
+			binder.setGPGServiceListener(null);
+		}
+	}
+
+	@Override
+	public void onStateChanged(State state) {
+		if (state == State.GAME_OVER) {
+			showGPGFragment();
+		} else {
+			hideGPGFragment();
+		}
+	}
+
+	@Override
+	public void onGameActivityResult(int requestCode, int resultCode,
+			Intent data) {
+		if (gPGHandler != null) {
+			gPGHandler.onGameActivityResult(requestCode, resultCode, data);
+		}
+	}
 }

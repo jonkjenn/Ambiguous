@@ -39,7 +39,7 @@ public class CardLayout {
 	 */
 	public static Bitmap getCardBitmap(Card card, ViewGroup parent) {
 		// If exist in cache.
-		if (bitmaps.containsKey(card.name)) {
+		if (card!=null && bitmaps.containsKey(card.name)) {
 			return bitmaps.get(card.name);
 		} else// Create a new bitmap.
 		{

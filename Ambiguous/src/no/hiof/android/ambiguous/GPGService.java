@@ -22,9 +22,11 @@ public class GPGService extends Service {
 	final GPGBinder binder = new GPGBinder();
 	GPGCallbackInterface callback;
 
-	static String CLOSE = "CLOSE_SERVICE";
+	public static String CLOSE = "CLOSE_SERVICE";
 
 	GoogleApiClient gApiClient;
+
+	public static boolean isRunning = false;
 
 	@Override
 	public IBinder onBind(Intent intent) {
@@ -33,20 +35,28 @@ public class GPGService extends Service {
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
+
+		isRunning = true;
+
+		// The close button on notification service
 		if (intent.getAction() != null && intent.getAction().equals(CLOSE)) {
 			stopSelf();
 			return 0;
 		}
 
-		/*new Thread(new Runnable() {
-
-			@Override
-			public void run() {
-				mainLoop();
-			}
-		}, "no.hiof.ambiguous.GPGService").start();*/
 		mainLoop();
 		return super.onStartCommand(intent, flags, startId);
+	}
+
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		if (gApiClient != null) {
+			Games.TurnBasedMultiplayer
+					.unregisterMatchUpdateListener(gApiClient);
+			Games.Invitations.unregisterInvitationListener(gApiClient);
+		}
+		isRunning = false;
 	}
 
 	private void mainLoop() {
@@ -145,6 +155,11 @@ public class GPGService extends Service {
 			setGPGListener();
 		}
 
+		/**
+		 * Replaces any previous listener, can only be one at a time.
+		 * 
+		 * @param l
+		 */
 		public void setGPGServiceListener(GPGServiceListner l) {
 			GPGService.this.gPGServiceListner = l;
 		}
@@ -157,6 +172,8 @@ public class GPGService extends Service {
 	GPGServiceListner gPGServiceListner;
 
 	void notifyTurnBasedMatchReceived(TurnBasedMatch match) {
-		gPGServiceListner.onTurnBasedMatchReceived(match);
+		if (gPGServiceListner != null) {
+			gPGServiceListner.onTurnBasedMatchReceived(match);
+		}
 	}
 }

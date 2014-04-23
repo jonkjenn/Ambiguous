@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" 
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:custom="http://schemas.android.com/apk/res-auto" >
 
     <EditTextPreference
@@ -19,19 +19,21 @@
         android:title="@string/pref_bgcolor" />
 
     <no.hiof.android.ambiguous.NumberPickerDialogPreference
-        android:enabled="@bool/show_cheat_settings"
         android:defaultValue="0"
         android:dialogMessage="Please select the amount of extra damage:"
-        android:max="250"
-        android:title="Total additional damage"
+        android:enabled="@bool/show_cheat_settings"
         android:key="pref_cheat"
+        android:max="250"
         android:summary="This feature is not supported for your device"
+        android:title="Total additional damage"
         custom:min="0" />
 
-    <Preference android:title="khadooop" >
-        <intent
-            android:action="android.intent.action.VIEW"
-            android:data="http://www.example.com" />
-    </Preference>
+    <CheckBoxPreference
+        android:key="pref_GPGService"
+        android:defaultValue="false"
+        android:summaryOff="@string/GPG_service_off"
+        android:summaryOn="@string/GPG_service_on"
+        android:title="Google Play Game service helper" >
+    </CheckBoxPreference>
 
 </PreferenceScreen>

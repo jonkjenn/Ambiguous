@@ -16,6 +16,7 @@ public class SettingsFragment extends PreferenceFragment implements
 	public static final String KEY_PREF_USER = "pref_user";
 	public static final String KEY_PREF_BGColor = "pref_bgcolor";
 	public static final String KEY_PREF_CHEAT = "pref_cheat";
+	public static final String KEY_PREF_GPGService = "pref_GPGService";
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {

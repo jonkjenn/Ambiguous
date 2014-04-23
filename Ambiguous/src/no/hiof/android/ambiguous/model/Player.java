@@ -46,6 +46,16 @@ public class Player implements Parcelable {
 		notifyCardsUpdateListeners();
 	}
 
+	/**
+	 * Copies all data from another Player.
+	 * @param source The source Player we want to copy data from.
+	 */
+	public void updatePlayer(Player source)
+	{
+		updatePlayer(source.name, source.health, source.armor, source.resources,
+				source.hand, source.deck);
+	}
+
 	public Player(String name) {
 		this.name = name;
 		hand = new Card[NUMBER_OF_CARDS];

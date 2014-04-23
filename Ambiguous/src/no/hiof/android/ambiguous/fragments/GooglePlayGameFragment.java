@@ -13,9 +13,11 @@ import no.hiof.android.ambiguous.GameMachine;
 import no.hiof.android.ambiguous.GameMachine.GameMachineListener;
 import no.hiof.android.ambiguous.GameMachine.OnStateChangeListener;
 import no.hiof.android.ambiguous.GameMachine.State;
+import no.hiof.android.ambiguous.GPGService;
 import no.hiof.android.ambiguous.LayoutHelper;
 import no.hiof.android.ambiguous.R;
 import no.hiof.android.ambiguous.activities.GameActivity;
+import no.hiof.android.ambiguous.activities.GameActivity.OnActivityResultListener;
 import no.hiof.android.ambiguous.datasource.CardDataSource;
 import no.hiof.android.ambiguous.model.Card;
 import no.hiof.android.ambiguous.model.Effect;
@@ -60,7 +62,10 @@ import com.google.example.games.basegameutils.GameHelper.GameHelperListener;
  * was introduced very late and we want to avoid more clutter in GameActivity.
  */
 public class GooglePlayGameFragment extends Fragment implements
-		GameMachineListener, GameHelperListener, OnClickListener, OnStateChangeListener, GPGServiceListner, OnTurnBasedMatchUpdateReceivedListener {
+		GameMachineListener, GameHelperListener, OnClickListener,
+		OnStateChangeListener, GPGServiceListner,
+		OnTurnBasedMatchUpdateReceivedListener,
+		GameActivity.OnActivityResultListener {
 
 	boolean useGPGS;
 	GameHelper gameHelper;
@@ -163,7 +168,14 @@ public class GooglePlayGameFragment extends Fragment implements
 	@Override
 	public void onStop() {
 		super.onStop();
-		// gameHelper.onStop();
+
+		// Have modified the GameHelper code so that it will not disconnect the
+		// connection when we use service. But it will still do the rest of it's
+		// cleanup.
+		gameHelper.onStop(!GPGService.isRunning);
+
+		GameActivity.gameMachine.removeGameMachineListener(this);
+		GameActivity.gameMachine.removeOnStateChangedListener(this);
 	}
 
 	@Override
@@ -361,14 +373,11 @@ public class GooglePlayGameFragment extends Fragment implements
 			// Sort of a hack to correctly apply opponents actions before we
 			// change to players turn.
 			GameActivity.gameMachine.startGame();
-			
-			if(GameActivity.gameMachine.state != State.GAME_OVER)
-			{
+
+			if (GameActivity.gameMachine.state != State.GAME_OVER) {
 				GameActivity.gameMachine.state = State.PLAYER_TURN;
 			}
-		}
-		else
-		{
+		} else {
 			GameActivity.gameMachine.state = State.OPPONENT_TURN;
 		}
 
@@ -858,7 +867,9 @@ public class GooglePlayGameFragment extends Fragment implements
 	@Override
 	public void onSignInSucceeded() {
 
-		onGPGConnectedListener.onGPGPConnected(gameHelper.getApiClient());
+		if (onGPGConnectedListener != null) {
+			onGPGConnectedListener.onGPGPConnected(gameHelper.getApiClient());
+		}
 
 		showConnected();
 		View signin = (View) getView().findViewById(R.id.sign_in_button);
@@ -909,6 +920,11 @@ public class GooglePlayGameFragment extends Fragment implements
 
 	OnGPGConnectedListener onGPGConnectedListener;
 
+	/**
+	 * Replaces any previous listener, can only be one listener.
+	 * 
+	 * @param listener
+	 */
 	public void setGPGConnectedListener(OnGPGConnectedListener listener) {
 		this.onGPGConnectedListener = listener;
 
@@ -921,15 +937,13 @@ public class GooglePlayGameFragment extends Fragment implements
 	@Override
 	public void onStateChanged(State state) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void onTurnBasedMatchReceived(TurnBasedMatch match) {
-		if(this.match != null)
-		{
-			if(this.match.getMatchId().equals(match.getMatchId()))
-			{
+		if (this.match != null) {
+			if (this.match.getMatchId().equals(match.getMatchId())) {
 				startGame(match);
 			}
 		}
@@ -938,7 +952,15 @@ public class GooglePlayGameFragment extends Fragment implements
 	@Override
 	public void onTurnBasedMatchRemoved(String arg0) {
 		// TODO Auto-generated method stub
-		
+
+	}
+
+	@Override
+	public void onGameActivityResult(int requestCode, int resultCode,
+			Intent data) {
+		if (gameHelper != null) {
+			gameHelper.onActivityResult(requestCode, resultCode, data);
+		}
 	}
 
 }

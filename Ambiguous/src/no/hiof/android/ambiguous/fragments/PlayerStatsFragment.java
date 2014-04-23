@@ -95,7 +95,7 @@ public class PlayerStatsFragment extends Fragment {
 
 		int index = -1;
 
-		// Find the first empty textview so we can put the new stat text there.
+		// Find the first empty TextView so we can put the new stat text there.
 		for (int i = 0; i < viewGroup.getChildCount(); i++) {
 			if (((TextView) viewGroup.getChildAt(i)).getText().length() == 0) {
 				index = i;

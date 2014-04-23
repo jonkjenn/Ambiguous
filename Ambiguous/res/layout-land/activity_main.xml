@@ -13,28 +13,90 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:orientation="vertical" >
+        android:orientation="horizontal" >
 
-        <Button
-        android:id="@+id/game_button"
+        <ImageView 
+        android:src="@android:mipmap/sym_def_app_icon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/menu_button_game"
-        android:onClick="goToGame" />
-        
-        <Button
-            android:id="@+id/cards_button"
-            android:layout_width="wrap_content"
+        android:rotation="-90"
+        />
+        <LinearLayout
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:onClick="goToDeckManager"
-            android:text="@string/menu_button_cards" />
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:paddingRight="3dp" >
 
-        <!-- <Button
-            android:id="@+id/network_button"
-            android:layout_width="wrap_content"
+            <Button
+                android:id="@+id/resume_button"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="3dp"
+                android:background="@drawable/btn_main"
+                android:enabled="false"
+                android:onClick="goToResumeGame"
+                android:text="@string/menu_button_resume" />
+
+            <Button
+                android:id="@+id/game_button"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="3dp"
+                android:background="@drawable/btn_main"
+                android:onClick="goToGame"
+                android:text="@string/menu_button_game" />
+
+            <Button
+                android:id="@+id/cards_button"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="3dp"
+                android:background="@drawable/btn_main"
+                android:onClick="goToDeckManager"
+                android:text="@string/menu_button_cards" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:onClick="goToNetwork"
-            android:text="@string/menu_button_network" /> -->
+            android:layout_weight="1"
+            android:orientation="vertical" >
+
+            <Button
+                android:id="@+id/network_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="3dp"
+                android:background="@drawable/btn_main"
+                android:onClick="goToNetwork"
+                android:text="@string/menu_button_network" />
+
+            <Button
+                android:id="@+id/play_google_button"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="3dp"
+                android:background="@drawable/btn_main"
+                android:onClick="goToGoogle"
+                android:text="@string/menu_button_google" />
+
+            <Button
+                android:id="@+id/close_gpg_service_button"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="3dp"
+                android:background="@drawable/btn_main"
+                android:onClick="stopGPGService"
+                android:text="@string/close_gpg_service"
+                android:visibility="gone" />
+        </LinearLayout>
+        <ImageView 
+        android:src="@android:mipmap/sym_def_app_icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:rotation="90"
+        />
     </LinearLayout>
 
 </RelativeLayout>

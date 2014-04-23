@@ -113,14 +113,17 @@
         android:layout_height="wrap_content"
         android:layout_alignLeft="@+id/editcard_addeffect"
         android:layout_below="@+id/editcard_addeffect"
-        android:text="Save" />
+        android:text="Save"
+        android:background="@drawable/btn_main"
+        android:layout_marginBottom="3dp" />
 
     <Button
         android:id="@+id/editcard_addeffect"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
-        android:text="Add" />
+        android:text="Add"
+        android:background="@drawable/btn_main" />
 
     <LinearLayout
         android:id="@+id/editcard_effects"

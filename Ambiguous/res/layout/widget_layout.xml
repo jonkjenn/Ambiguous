@@ -3,26 +3,29 @@
     android:id="@+id/widget_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
+    android:orientation="horizontal"
     android:background="@drawable/widget_shape" >
     
     <TextView
         android:id="@+id/widget_layout_textview"
         style="@android:style/TextAppearance.Medium"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
+        android:layout_weight="2"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:gravity="center_horizontal|center_vertical"
-        android:layout_margin="4dip"
+        android:layout_margin="1dip"
          >
     </TextView>
     <Button 
         android:id="@+id/widget_layout_button"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
+        android:layout_weight="1"
         android:layout_height="fill_parent"
         android:layout_gravity="right"
         android:text="Start Ambiguous"
-        android:textSize="5dip" />
+        android:textSize="7dip"
+        android:background="@drawable/btn_main" />
     
 
 </LinearLayout>

@@ -566,8 +566,6 @@ public class GameActivity extends ActionBarActivity implements
 			// Only enable cheat if we are in a local game, and the damage is
 			// set to a positive number of significance
 			if (dmg > 0) {
-				gameMachine.opponent.damage(dmg);
-
 				int dmgBuff = sp.getInt(SettingsActivity.KEY_PREF_CHEAT, -1);
 				// Only enable cheat if we are in a local game, and the damage
 				// is set to a positive number of any significance

@@ -8,6 +8,12 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".MainActivity" >
 
+    <ImageView 
+        android:layout_centerHorizontal="true"
+        android:src="@android:mipmap/sym_def_app_icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        />
     <LinearLayout
         android:id="@+id/linearLayout1"
         android:layout_width="wrap_content"
@@ -17,47 +23,59 @@
 
         <Button
             android:id="@+id/resume_button"
-            android:layout_width="wrap_content"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:onClick="goToResumeGame"
             android:text="@string/menu_button_resume"
-            android:enabled="false" />
+            android:enabled="false"
+            android:layout_marginBottom="3dp"
+            android:background="@drawable/btn_main" />
 
         <Button
             android:id="@+id/game_button"
-            android:layout_width="wrap_content"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:onClick="goToGame"
-            android:text="@string/menu_button_game" />
+            android:text="@string/menu_button_game"
+            android:layout_marginBottom="3dp"
+            android:background="@drawable/btn_main" />
 
         <Button
             android:id="@+id/cards_button"
-            android:layout_width="wrap_content"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:onClick="goToDeckManager"
-            android:text="@string/menu_button_cards" />
+            android:text="@string/menu_button_cards"
+            android:layout_marginBottom="3dp"
+            android:background="@drawable/btn_main" />
 
         <Button
             android:id="@+id/network_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:onClick="goToNetwork"
-            android:text="@string/menu_button_network" />
+            android:text="@string/menu_button_network"
+            android:layout_marginBottom="3dp"
+            android:background="@drawable/btn_main" />
 
         <Button
             android:id="@+id/play_google_button"
-            android:layout_width="wrap_content"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:onClick="goToGoogle"
-            android:text="@string/menu_button_google" />
+            android:text="@string/menu_button_google"
+            android:layout_marginBottom="3dp"
+            android:background="@drawable/btn_main" />
         
         <Button
             android:id="@+id/close_gpg_service_button"
-            android:layout_width="wrap_content"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:onClick="stopGPGService"
             android:visibility="gone"
-            android:text="@string/close_gpg_service"/>
+            android:text="@string/close_gpg_service"
+            android:layout_marginBottom="3dp"
+            android:background="@drawable/btn_main" />
 
     </LinearLayout>
 

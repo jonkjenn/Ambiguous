@@ -915,7 +915,7 @@ public class GameActivity extends ActionBarActivity implements
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
 
-		if (GameActivity.gameMachine != null) {
+		if (gameMachine != null && gameMachine.player != null && gameMachine.opponent != null && gameMachine.state != null) {
 			// We store stuff so that can resume later.
 			outState.putParcelable("Player", GameActivity.gameMachine.player);
 			outState.putParcelable("Opponent",

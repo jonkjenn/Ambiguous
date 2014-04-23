@@ -8,16 +8,15 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import no.hiof.android.ambiguous.BuildConfig;
+import no.hiof.android.ambiguous.GPGService;
 import no.hiof.android.ambiguous.GPGService.GPGServiceListner;
 import no.hiof.android.ambiguous.GameMachine;
 import no.hiof.android.ambiguous.GameMachine.GameMachineListener;
 import no.hiof.android.ambiguous.GameMachine.OnStateChangeListener;
 import no.hiof.android.ambiguous.GameMachine.State;
-import no.hiof.android.ambiguous.GPGService;
 import no.hiof.android.ambiguous.LayoutHelper;
 import no.hiof.android.ambiguous.R;
 import no.hiof.android.ambiguous.activities.GameActivity;
-import no.hiof.android.ambiguous.activities.GameActivity.OnActivityResultListener;
 import no.hiof.android.ambiguous.datasource.CardDataSource;
 import no.hiof.android.ambiguous.model.Card;
 import no.hiof.android.ambiguous.model.Effect;
@@ -96,6 +95,10 @@ public class GooglePlayGameFragment extends Fragment implements
 	// The card the current player has played or discarded
 	byte[] playedCard = new byte[] { NO_ACTION, 0, NO_ACTION, 0 };
 
+	// If player has used his turn, prevent repeat turn during orientation
+	// change etc.
+	boolean turnUsed;
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -107,6 +110,7 @@ public class GooglePlayGameFragment extends Fragment implements
 
 		if (savedInstanceState != null) {
 			match = (TurnBasedMatch) savedInstanceState.getParcelable("match");
+			turnUsed = savedInstanceState.getBoolean("turnUsed", false);
 		}
 
 		// Prevent duplicate listener
@@ -156,6 +160,7 @@ public class GooglePlayGameFragment extends Fragment implements
 	public void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
 		outState.putParcelable("match", match);
+		outState.putBoolean("turnUsed", turnUsed);
 	}
 
 	@Override
@@ -163,6 +168,35 @@ public class GooglePlayGameFragment extends Fragment implements
 		super.onStart();
 
 		gameHelper.onStart(getActivity());
+
+		// Update the text field that shows how many actions are waiting for
+		// you. Invites/your turn
+		Games.TurnBasedMultiplayer
+				.loadMatchesByStatus(
+						gameHelper.getApiClient(),
+						new int[] { TurnBasedMatch.MATCH_TURN_STATUS_INVITED,
+								TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN })
+				.setResultCallback(
+						new ResultCallback<TurnBasedMultiplayer.LoadMatchesResult>() {
+
+							@Override
+							public void onResult(LoadMatchesResult result) {
+								int invites = result.getMatches()
+										.getInvitations().getCount();
+								int yourturn = result.getMatches()
+										.getMyTurnMatches().getCount();
+								TextView tw = (TextView) getActivity()
+										.findViewById(R.id.activeGamesText);
+								tw.setText(String.format(
+										getActivity().getResources().getString(
+												R.string.activeGamesText),
+										yourturn, invites));
+								tw.setVisibility(View.VISIBLE);
+								getActivity().findViewById(
+										R.id.activeGamesSpinner).setVisibility(
+										View.GONE);
+							}
+						});
 	}
 
 	@Override
@@ -364,6 +398,7 @@ public class GooglePlayGameFragment extends Fragment implements
 		}
 
 		GameActivity.gameMachine.state = State.OPPONENT_TURN;
+		turnUsed = false;
 		readGameState(match);// Loads the data from the bytes passed in
 								// the intent/match into our actual game
 								// objects in game.
@@ -747,6 +782,8 @@ public class GooglePlayGameFragment extends Fragment implements
 
 					@Override
 					public void onResult(UpdateMatchResult result) {
+						turnUsed = true;
+
 						// TODO:Handle this better
 						if (!GooglePlayGameFragment.this.checkStatusCode(match,
 								result.getStatus().getStatusCode())) {
@@ -790,6 +827,7 @@ public class GooglePlayGameFragment extends Fragment implements
 				Games.TurnBasedMultiplayer.finishMatch(
 						gameHelper.getApiClient(), match.getMatchId(),
 						writeGameState(match), results);
+				turnUsed = true;
 			}
 		} else if (match.getStatus() == TurnBasedMatch.MATCH_STATUS_COMPLETE) {
 			if (match.getTurnStatus() == TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN) {
@@ -878,36 +916,30 @@ public class GooglePlayGameFragment extends Fragment implements
 		View signout = (View) getView().findViewById(R.id.sign_out_button);
 		signout.setOnClickListener(this);
 
-		// Update the text field that shows how many actions are waiting for
-		// you. Invites/your turn
-		Games.TurnBasedMultiplayer
-				.loadMatchesByStatus(
-						gameHelper.getApiClient(),
-						new int[] { TurnBasedMatch.MATCH_TURN_STATUS_INVITED,
-								TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN })
-				.setResultCallback(
-						new ResultCallback<TurnBasedMultiplayer.LoadMatchesResult>() {
+		//If the service is not running we handle the updates ourselves and if we're standing in game in a match that gets updated remotely, it gets updated right away ingame.
+		if (!GPGService.isRunning) {
+			Games.TurnBasedMultiplayer.registerMatchUpdateListener(
+					gameHelper.getApiClient(),
+					new OnTurnBasedMatchUpdateReceivedListener() {
 
-							@Override
-							public void onResult(LoadMatchesResult result) {
-								int invites = result.getMatches()
-										.getInvitations().getCount();
-								int yourturn = result.getMatches()
-										.getMyTurnMatches().getCount();
-								TextView tw = (TextView) getActivity()
-										.findViewById(R.id.activeGamesText);
-								tw.setText(String.format(
-										getActivity().getResources().getString(
-												R.string.activeGamesText),
-										yourturn, invites));
-								tw.setVisibility(View.VISIBLE);
-								getActivity().findViewById(
-										R.id.activeGamesSpinner).setVisibility(
-										View.GONE);
+						@Override
+						public void onTurnBasedMatchRemoved(String arg0) {
+							// TODO Handle this.
+						}
+
+						@Override
+						public void onTurnBasedMatchReceived(TurnBasedMatch m) {
+							Log.d("test", "Found match update");
+							if (match != null
+									&& m.getMatchId()
+											.equals(match.getMatchId())) {
+								startGame(m);
 							}
-						});
+						}
+					});
+		}
 
-		if (match != null) {
+		if (match != null && !turnUsed) {
 			startGame(match);
 		}
 	}
@@ -936,8 +968,6 @@ public class GooglePlayGameFragment extends Fragment implements
 
 	@Override
 	public void onStateChanged(State state) {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override

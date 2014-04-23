@@ -40,18 +40,20 @@
             android:layout_below="@id/gpg_header"
             android:layout_marginLeft="10dp"
             android:text="@string/find_opponent"
-            android:textSize="12sp" >
+            android:textSize="12sp"
+            android:background="@drawable/btn_main" >
         </Button>
 
         <Button
             android:id="@+id/showActiveGamesButton"
-            android:layout_width="wrap_content"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/findOpponentButton"
             android:text="@string/show_active_games"
             android:layout_alignStart="@id/findOpponentButton"
             android:layout_alignRight="@id/findOpponentButton"
-            android:textSize="12sp" />
+            android:textSize="12sp"
+            android:background="@drawable/btn_main" />
 
         <ImageView
             android:id="@+id/logon_icon"
@@ -71,7 +73,8 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/showActiveGamesButton"
             android:layout_marginBottom="10dp"
-            android:layout_toLeftOf="@id/logon_icon" />
+            android:layout_toLeftOf="@id/logon_icon"
+            android:background="@drawable/btn_main" />
 
         <!-- sign-out button -->
         <Button
@@ -83,7 +86,8 @@
             android:layout_toLeftOf="@id/logon_icon"
             android:text="Sign Out"
             android:textSize="12sp"
-            android:visibility="gone" />
+            android:visibility="gone"
+            android:background="@drawable/btn_main" />
 
 
         <ProgressBar

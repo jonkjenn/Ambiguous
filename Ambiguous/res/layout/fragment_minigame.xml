@@ -58,7 +58,7 @@
          	    android:layout_width="wrap_content"
          	    android:text="@string/help"
          	    android:id="@+id/minigame_help"
-         	    ></Button>
+         	    />
          	</LinearLayout>
 
 </RelativeLayout>

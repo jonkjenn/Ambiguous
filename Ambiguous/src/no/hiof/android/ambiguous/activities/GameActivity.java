@@ -180,10 +180,6 @@ public class GameActivity extends ActionBarActivity implements
 		} else {// Single player against AI
 			startSinglePlayerFragment();
 		}
-
-		if (!hideTutorial()) {
-			showTutorialFragment(false);
-		}
 	}
 
 	void loadPlayerStatsFragments() {
@@ -364,24 +360,15 @@ public class GameActivity extends ActionBarActivity implements
 		}
 	}
 
-	/**
-	 * If the player has told us we should hide the startup tutorial.
-	 * 
-	 * @return Should we hide the tutorial?
-	 */
-	private boolean hideTutorial() {
-		SharedPreferences s = getPreferences(Context.MODE_PRIVATE);
-		return s.getBoolean("hideTutorial", false);
-	}
 
 	public void showTutorialButton(View view) {
-		showTutorialFragment(true);
+		showTutorialFragment();
 	}
 
 	/**
 	 * Displays the tutorial
 	 */
-	private void showTutorialFragment(boolean hideNeverButton) {
+	private void showTutorialFragment() {
 
 		// Cant use cards while tutorial shown.
 		disableUseCards();
@@ -389,20 +376,10 @@ public class GameActivity extends ActionBarActivity implements
 		final FragmentManager manager = getSupportFragmentManager();
 
 		final TutorialFragment tutorial = new TutorialFragment();
-		if (hideNeverButton) {
-			Bundle b = new Bundle();
-			b.putBoolean("hideNeverShow", true);
-			tutorial.setArguments(b);
-		}
 		FragmentTransaction transaction = manager.beginTransaction();
 		transaction.add(R.id.game_layout_container, tutorial, "tutorial")
 				.addToBackStack("showTutorial");
 		transaction.commit();
-	}
-
-	public void closeAndNeverShowTutorialButton(View view) {
-		disableTutorial();
-		closeTutorial();
 	}
 
 	public void closeTutorialButton(View view) {

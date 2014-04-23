@@ -213,8 +213,10 @@ public class GooglePlayGameFragment extends Fragment implements
 		// cleanup.
 		gameHelper.onStop(!GPGService.isRunning);
 
-		GameActivity.gameMachine.removeGameMachineListener(this);
-		GameActivity.gameMachine.removeOnStateChangedListener(this);
+		if (GameActivity.gameMachine != null) {
+			GameActivity.gameMachine.removeGameMachineListener(this);
+			GameActivity.gameMachine.removeOnStateChangedListener(this);
+		}
 	}
 
 	@Override

@@ -1,10 +1,8 @@
 package no.hiof.android.ambiguous.activities;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 
-import no.hiof.android.ambiguous.AlarmReceiver;
 import no.hiof.android.ambiguous.Db;
 import no.hiof.android.ambiguous.GameMachine;
 import no.hiof.android.ambiguous.GameMachine.OnStateChangeListener;
@@ -35,9 +33,7 @@ import no.hiof.android.ambiguous.model.Player;
 import no.hiof.android.ambiguous.model.Player.PlayerUpdateListener;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
-import android.app.AlarmManager;
 import android.app.AlertDialog.Builder;
-import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
 import android.content.Context;
@@ -128,24 +124,30 @@ public class GameActivity extends ActionBarActivity implements
 
 		setupUIListeners();
 
-		// Moved these up here because I check their values in regards to dmgBuff
+		// Moved these up here because I check their values in regards to
+		// dmgBuff
 		this.useGPGS = getIntent().getBooleanExtra("useGPGS", false);
 		this.isNetwork = getIntent().getBooleanExtra("isNetwork", false);
-		
+
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
 			setupDragFragment();
-			if((!useGPGS) && (!isNetwork)){
-				SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+			if ((!useGPGS) && (!isNetwork)) {
+				SharedPreferences sp = PreferenceManager
+						.getDefaultSharedPreferences(this);
 				int dmgBuff = sp.getInt(SettingsActivity.KEY_PREF_CHEAT, -1);
-				if(dmgBuff > 0){
-					if(dmgBuff == 249){
-						Toast.makeText(this, "Cheat is set to do 249 damage. Will not prevent this game being saved"
-								, Toast.LENGTH_LONG).show();
-					}
-					else{
-						Toast.makeText(this, "Warning: Cheat enabled and set to do "+String.valueOf(dmgBuff)+
-								" extra damage. If you use a card now the result of this game will not be saved"
-								, Toast.LENGTH_LONG).show();
+				if (dmgBuff > 0) {
+					if (dmgBuff == 249) {
+						Toast.makeText(
+								this,
+								"Cheat is set to do 249 damage. Will not prevent this game being saved",
+								Toast.LENGTH_LONG).show();
+					} else {
+						Toast.makeText(
+								this,
+								"Warning: Cheat enabled and set to do "
+										+ String.valueOf(dmgBuff)
+										+ " extra damage. If you use a card now the result of this game will not be saved",
+								Toast.LENGTH_LONG).show();
 					}
 				}
 			}
@@ -160,7 +162,6 @@ public class GameActivity extends ActionBarActivity implements
 		ActionBar actionBar = getSupportActionBar();
 		actionBar.hide();
 
-<<<<<<< HEAD
 		// We load data after setting up UI hooks so that UI can react to
 		// current state.
 		if (savedInstanceState != null) {
@@ -170,8 +171,6 @@ public class GameActivity extends ActionBarActivity implements
 		this.useGPGS = getIntent().getBooleanExtra("useGPGS", false);
 		this.isNetwork = getIntent().getBooleanExtra("isNetwork", false);
 
-=======
->>>>>>> 2838c2c2f4aade373f90fd8efa331f74614dd1d8
 		if (this.isNetwork) {// We start a LAN Network game
 			startNetworkFragment();
 
@@ -586,34 +585,37 @@ public class GameActivity extends ActionBarActivity implements
 		if ((!useGPGS) && (!isNetwork)) {
 			SharedPreferences sp = PreferenceManager
 					.getDefaultSharedPreferences(this);
-<<<<<<< HEAD
 			int dmg = sp.getInt(SettingsActivity.KEY_PREF_CHEAT, -1);
 			// Only enable cheat if we are in a local game, and the damage is
 			// set to a positive number of significance
 			if (dmg > 0) {
 				gameMachine.opponent.damage(dmg);
-=======
 
-			int dmgBuff = sp.getInt(SettingsActivity.KEY_PREF_CHEAT, -1);
-			// Only enable cheat if we are in a local game, and the damage is set to a positive number of any significance
-			if(dmgBuff > 0){
-				// Added workaround, selecting dmg 249 will now trigger the cheat, but still allow the game to be saved
-				// This is purely for testing purposes
-				if(dmgBuff == 249){
-					gameMachine.opponent.damage(dmgBuff);
-				}
-				else{
-					gameMachine.opponent.damage(dmgBuff);
-					sp.edit().putBoolean("cheatUsed", true).commit();
-	
-					if(gameMachine.cheatUsed != true){
-						gameMachine.cheatUsed = true;
-						Toast.makeText(this, "Warning: "
-						+getResources().getString(R.string.toast_message_disregard_outcome)
-						, Toast.LENGTH_SHORT).show();
+				int dmgBuff = sp.getInt(SettingsActivity.KEY_PREF_CHEAT, -1);
+				// Only enable cheat if we are in a local game, and the damage
+				// is set to a positive number of any significance
+				if (dmgBuff > 0) {
+					// Added workaround, selecting dmg 249 will now trigger the
+					// cheat, but still allow the game to be saved
+					// This is purely for testing purposes
+					if (dmgBuff == 249) {
+						gameMachine.opponent.damage(dmgBuff);
+					} else {
+						gameMachine.opponent.damage(dmgBuff);
+						sp.edit().putBoolean("cheatUsed", true).commit();
+
+						if (gameMachine.cheatUsed != true) {
+							gameMachine.cheatUsed = true;
+							Toast.makeText(
+									this,
+									"Warning: "
+											+ getResources()
+													.getString(
+															R.string.toast_message_disregard_outcome),
+									Toast.LENGTH_SHORT).show();
+						}
 					}
 				}
->>>>>>> 2838c2c2f4aade373f90fd8efa331f74614dd1d8
 			}
 		}
 	}
@@ -666,13 +668,17 @@ public class GameActivity extends ActionBarActivity implements
 	public void onOpponentDeadListener(Player opponent) {
 		LayoutHelper.showResult(resultTextView, true);
 		cardHandFragment.disableUseCards();
-		if(!PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
-				.getBoolean("cheatUsed", GameActivity.gameMachine.cheatUsed)){
+		if (!PreferenceManager.getDefaultSharedPreferences(
+				getApplicationContext()).getBoolean("cheatUsed",
+				GameActivity.gameMachine.cheatUsed)) {
 			saveVictory();
-		}else{
-			Toast.makeText(this, "Reminder: "+
-					getResources().getString(R.string.toast_message_disregard_outcome)
-					, Toast.LENGTH_SHORT).show();
+		} else {
+			Toast.makeText(
+					this,
+					"Reminder: "
+							+ getResources().getString(
+									R.string.toast_message_disregard_outcome),
+					Toast.LENGTH_SHORT).show();
 		}
 
 	}
@@ -790,24 +796,6 @@ public class GameActivity extends ActionBarActivity implements
 
 	}
 
-	@Override
-	protected void onPause() {
-		super.onPause();
-
-		if (gameMachine == null
-				|| (gameMachine.player.isAlive() && gameMachine.opponent
-						.isAlive())) {
-			sendAnnoyingNotification();
-		}
-	}
-
-	@Override
-	protected void onResume() {
-		super.onResume();
-		// TODO: Network reconnect?
-		cancelAnnoyingNotification();
-	}
-
 	// We check in code
 	@SuppressLint("NewApi")
 	@Override
@@ -822,21 +810,6 @@ public class GameActivity extends ActionBarActivity implements
 		}
 		// Set the requested orientation back to what it was before minigame.
 		setRequestedOrientation(previousRotation);
-	}
-
-	@SuppressLint("NewApi")
-	/**
-	 * If the player closes the game during a match we notify our AlarmReceiver so that we can notify the player that he has a game running.
-	 * This is mostly implemented to show-case use of AlarmManager and Notification.
-	 */
-	private void sendAnnoyingNotification() {
-		AlarmManager a = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-
-		PendingIntent alarm = PendingIntent.getBroadcast(this, 0, new Intent(
-				this, AlarmReceiver.class), 0);
-
-		a.set(AlarmManager.RTC,
-				Calendar.getInstance().getTimeInMillis() + 600000, alarm);
 	}
 
 	@Override
@@ -867,17 +840,6 @@ public class GameActivity extends ActionBarActivity implements
 			gameMachine = null;
 			opponentController = null;
 		}
-	}
-
-	/**
-	 * Cancels a previously set alarm
-	 */
-	private void cancelAnnoyingNotification() {
-		AlarmManager a = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-
-		PendingIntent alarm = PendingIntent.getBroadcast(this, 0, new Intent(
-				this, AlarmReceiver.class), 0);
-		a.cancel(alarm);
 	}
 
 	// Version checked in code.

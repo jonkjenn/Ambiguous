@@ -76,12 +76,9 @@
       <string name="accept">Accept</string>
       <string name="denie">Denie</string>
       <string name="discarded">DISCARDED</string>
-<<<<<<< HEAD
       <string name="GPG_service_off">Enable this to get notifications that brings you directly into matches.</string>
       <string name="GPG_service_on">Disable GPG service</string>
       <string name="close_gpg_service">Close Google Play Game service</string>
-=======
       <string name="toast_message_disregard_outcome">Disregarding outcome of this game due to cheat</string>
->>>>>>> 2838c2c2f4aade373f90fd8efa331f74614dd1d8
 
 </resources>

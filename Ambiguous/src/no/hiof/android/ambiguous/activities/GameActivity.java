@@ -120,6 +120,7 @@ public class GameActivity extends ActionBarActivity implements
 
 		if (gameMachine == null) {
 			gameMachine = new GameMachine(cards);
+			gameMachine.setOnPlayerUpdatesListener(this);
 		}
 		if (opponentController == null) {
 			opponentController = new OpponentController();

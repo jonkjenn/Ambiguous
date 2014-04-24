@@ -46,10 +46,10 @@ public class GameMachine implements OpponentListener, PlayerUpdateListener {
 	 */
 	public GameMachine(List<Card> cards) {
 		player = new Player("Local player");
-		player.setDeck(DeckBuilder.StandardDeck(cards));
 		opponent = new Player("Opponent");
-		opponent.setDeck(DeckBuilder.StandardDeck(cards));
 		addPlayerListeners();
+		opponent.setDeck(DeckBuilder.StandardDeck(cards));
+		player.setDeck(DeckBuilder.StandardDeck(cards));
 		this.delay = 1000;
 	}
 
@@ -451,21 +451,28 @@ public class GameMachine implements OpponentListener, PlayerUpdateListener {
 		void onPlayerDiscardCard(Card card);
 
 	}
-	
-	public interface OnPlayerUpdates
-	{
+
+	public interface OnPlayerUpdates {
 		void onCardsUpdateListener(Player player, Card[] cards);
 
 		void onStatsUpdateListener(Player player);
 
 		void onStatChange(Player player, int amount, EffectType type);
 	}
-	
+
 	OnPlayerUpdates onPlayerUpdatesListener;
-	
-	public void setOnPlayerUpdatesListener(OnPlayerUpdates listener)
-	{
+
+	public void setOnPlayerUpdatesListener(OnPlayerUpdates listener) {
 		this.onPlayerUpdatesListener = listener;
+		if (this.onPlayerUpdatesListener != null) {
+			postAllPlayerUpdates();
+		}
+	}
+
+	void postAllPlayerUpdates() {
+		onPlayerUpdatesListener.onCardsUpdateListener(player, player.getHand());
+		onPlayerUpdatesListener.onStatsUpdateListener(player);
+		onPlayerUpdatesListener.onStatsUpdateListener(opponent);
 	}
 
 	public interface OnStateChangeListener {
@@ -570,33 +577,29 @@ public class GameMachine implements OpponentListener, PlayerUpdateListener {
 		addPlayerListeners();
 		GameActivity.opponentController.previousCardPlayed(null, false);
 	}
-	
-	void addPlayerListeners()
-	{
+
+	void addPlayerListeners() {
 		player.setPlayerUpdateListener(this);
 		opponent.setPlayerUpdateListener(this);
 	}
 
 	@Override
 	public void onCardsUpdateListener(Player player, Card[] cards) {
-		if(onPlayerUpdatesListener != null)
-		{
+		if (onPlayerUpdatesListener != null) {
 			onPlayerUpdatesListener.onCardsUpdateListener(player, cards);
 		}
 	}
 
 	@Override
 	public void onStatsUpdateListener(Player player) {
-		if(onPlayerUpdatesListener != null)
-		{
+		if (onPlayerUpdatesListener != null) {
 			onPlayerUpdatesListener.onStatsUpdateListener(player);
 		}
 	}
 
 	@Override
 	public void onStatChange(Player player, int amount, EffectType type) {
-		if(onPlayerUpdatesListener != null)
-		{
+		if (onPlayerUpdatesListener != null) {
 			onPlayerUpdatesListener.onStatChange(player, amount, type);
 		}
 	}

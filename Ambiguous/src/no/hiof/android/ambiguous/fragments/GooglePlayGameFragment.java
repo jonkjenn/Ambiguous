@@ -18,6 +18,7 @@ import no.hiof.android.ambiguous.GameMachine.State;
 import no.hiof.android.ambiguous.LayoutHelper;
 import no.hiof.android.ambiguous.R;
 import no.hiof.android.ambiguous.activities.GameActivity;
+import no.hiof.android.ambiguous.activities.MainActivity;
 import no.hiof.android.ambiguous.datasource.CardDataSource;
 import no.hiof.android.ambiguous.model.Card;
 import no.hiof.android.ambiguous.model.Effect;
@@ -331,6 +332,7 @@ public class GooglePlayGameFragment extends Fragment implements
 		match = intent.getExtras().getParcelable(
 				Multiplayer.EXTRA_TURN_BASED_MATCH);
 
+		GameActivity.gameMachine.reset();
 		startGame(match);
 	}
 
@@ -387,6 +389,7 @@ public class GooglePlayGameFragment extends Fragment implements
 										.getStatusCode())) {
 									return;
 								}
+                                GameActivity.gameMachine.reset();
 								match = result.getMatch();
 								startGame(match);
 							}
@@ -400,6 +403,7 @@ public class GooglePlayGameFragment extends Fragment implements
 	 * @param result
 	 */
 	void startGame(TurnBasedMatch match) {
+		
 
 		LayoutHelper.hideResult(resultTextView);
 

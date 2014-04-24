@@ -56,7 +56,7 @@ public class GPGControllerFragment extends Fragment implements
 		super.onStart();
 
 	}
-	
+
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
@@ -122,24 +122,34 @@ public class GPGControllerFragment extends Fragment implements
 	void createGooglePlayFragment(Bundle arguments) {
 		gPGSVisible = true;
 		FragmentManager manager = getActivity().getSupportFragmentManager();
-		FragmentTransaction transaction = manager.beginTransaction();
-		gPGHandler = new GooglePlayGameFragment();
+		Fragment f = manager.findFragmentByTag("gpg");
+		if (f == null) {
+			FragmentTransaction transaction = manager.beginTransaction();
+			gPGHandler = new GooglePlayGameFragment();
+			gPGHandler.setArguments(arguments);
+			transaction.add(R.id.game_layout_container, gPGHandler, "gpg");
+			transaction.commit();
+		} else {
+			gPGHandler = (GooglePlayGameFragment) f;
+		}
 		gPGHandler.setGPGConnectedListener(this);
-		gPGHandler.setArguments(arguments);
-		transaction.add(R.id.game_layout_container, gPGHandler, "gpg");
-		transaction.commit();
 	}
 
 	/**
 	 * Show hidden GPG Fragment.
 	 */
 	void showGPGFragment() {
-		if (gPGHandler == null) {
+		FragmentManager manager = getActivity().getSupportFragmentManager();
+		
+		Fragment f = manager.findFragmentByTag("gpg");
+		if(f == null)
+		{
 			return;
 		}
-		FragmentManager manager = getActivity().getSupportFragmentManager();
+		
+		gPGHandler = (GooglePlayGameFragment)f;
 		FragmentTransaction transaction = manager.beginTransaction();
-		transaction.show(gPGHandler);
+		transaction.show(f);
 		transaction.commit();
 	}
 
@@ -192,7 +202,6 @@ public class GPGControllerFragment extends Fragment implements
 	@Override
 	public void onStop() {
 		super.onStop();
-		closeGooglePlayGameFragment();
 		if (GameActivity.gameMachine != null) {
 			GameActivity.gameMachine.removeOnStateChangedListener(this);
 		}

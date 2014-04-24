@@ -5,10 +5,12 @@ import java.util.List;
 import java.util.Random;
 
 import no.hiof.android.ambiguous.OpponentController.OpponentListener;
+import no.hiof.android.ambiguous.activities.GameActivity;
 import no.hiof.android.ambiguous.datasource.CardDataSource;
 import no.hiof.android.ambiguous.model.Card;
 import no.hiof.android.ambiguous.model.Effect;
 import no.hiof.android.ambiguous.model.Effect.EffectType;
+import no.hiof.android.ambiguous.model.Player.PlayerUpdateListener;
 import no.hiof.android.ambiguous.model.Player;
 import android.os.Handler;
 import android.os.SystemClock;
@@ -19,12 +21,11 @@ import android.os.SystemClock;
  * opponent game choices. Applies the effects from the cards used by players.
  * Notifies listeners about game changes.
  */
-public class GameMachine implements OpponentListener {
+public class GameMachine implements OpponentListener, PlayerUpdateListener {
 
 	public Player player;
 	public Player opponent;
 
-	
 	public Card currentOpponentCard;
 	public boolean opponentCardIsDiscarded;
 	public boolean cheatUsed;
@@ -48,25 +49,26 @@ public class GameMachine implements OpponentListener {
 		player.setDeck(DeckBuilder.StandardDeck(cards));
 		opponent = new Player("Opponent");
 		opponent.setDeck(DeckBuilder.StandardDeck(cards));
+		addPlayerListeners();
 		this.delay = 1000;
 	}
 
 	public boolean isPlayersTurn() {
 		return state == State.PLAYER_TURN;
 	}
-	
+
 	/**
 	 * Uses the state the GameMachine currently has.
 	 */
-	public void startGame()
-	{
+	public void startGame() {
 		changeState();
 	}
 
 	/**
 	 * Starts with the state passed.
 	 * 
-	 * @param state If null generates a state by random.
+	 * @param state
+	 *            If null generates a state by random.
 	 */
 	public void startGame(State state) {
 		if (state == null) {
@@ -127,7 +129,7 @@ public class GameMachine implements OpponentListener {
 			changeState();
 			break;
 		case GAME_OVER:
-			
+
 			break;
 		default:
 			break;
@@ -330,7 +332,7 @@ public class GameMachine implements OpponentListener {
 			break;
 		}
 	}
-	
+
 	// Listeners to changes happening in gamemachine
 	ArrayList<GameMachineListener> gameMachineListeners = new ArrayList<GameMachineListener>();
 	// Listeners to turn changes.
@@ -420,12 +422,12 @@ public class GameMachine implements OpponentListener {
 			listener.onPlayerDiscardCard(card);
 		}
 	}
-	
+
 	public interface TurnChangeListener {
 		void turnChange(Player player);
 	}
 
-	//TODO: Split into different interfaces
+	// TODO: Split into different interfaces
 	/**
 	 * Changes emerging from GameMachine
 	 */
@@ -447,29 +449,41 @@ public class GameMachine implements OpponentListener {
 		void onPlayerUsedeffect(EffectType type, Player target, int amount);
 
 		void onPlayerDiscardCard(Card card);
+
 	}
 	
-	public interface OnStateChangeListener
+	public interface OnPlayerUpdates
 	{
+		void onCardsUpdateListener(Player player, Card[] cards);
+
+		void onStatsUpdateListener(Player player);
+
+		void onStatChange(Player player, int amount, EffectType type);
+	}
+	
+	OnPlayerUpdates onPlayerUpdatesListener;
+	
+	public void setOnPlayerUpdatesListener(OnPlayerUpdates listener)
+	{
+		this.onPlayerUpdatesListener = listener;
+	}
+
+	public interface OnStateChangeListener {
 		void onStateChanged(State state);
 	}
-	
+
 	final ArrayList<OnStateChangeListener> onStateChangedListeners = new ArrayList<GameMachine.OnStateChangeListener>();
-	
-	public void setOnStateChangeListener(OnStateChangeListener listener)
-	{
+
+	public void setOnStateChangeListener(OnStateChangeListener listener) {
 		onStateChangedListeners.add(listener);
 	}
-	
-	public void removeOnStateChangedListener(OnStateChangeListener listener)
-	{
+
+	public void removeOnStateChangedListener(OnStateChangeListener listener) {
 		onStateChangedListeners.remove(listener);
 	}
-	
-	void notifyStateChange()
-	{
-		for(OnStateChangeListener l: onStateChangedListeners)
-		{
+
+	void notifyStateChange() {
+		for (OnStateChangeListener l : onStateChangedListeners) {
 			l.onStateChanged(state);
 		}
 	}
@@ -492,7 +506,6 @@ public class GameMachine implements OpponentListener {
 		currentOpponentCard = card;
 		opponentCardIsDiscarded = false;
 	}
-
 
 	/**
 	 * Applies effect directly on target.
@@ -545,4 +558,46 @@ public class GameMachine implements OpponentListener {
 		opponentCardIsDiscarded = discarded;
 	}
 
+	/*
+	 * Creates a new "blank" match with new players and no state.
+	 */
+	public void reset() {
+		player = new Player("Local player");
+		opponent = new Player("Opponent");
+		player.setDeck(DeckBuilder.StandardDeck());
+		opponent.setDeck(DeckBuilder.StandardDeck());
+		state = null;
+		addPlayerListeners();
+		GameActivity.opponentController.previousCardPlayed(null, false);
+	}
+	
+	void addPlayerListeners()
+	{
+		player.setPlayerUpdateListener(this);
+		opponent.setPlayerUpdateListener(this);
+	}
+
+	@Override
+	public void onCardsUpdateListener(Player player, Card[] cards) {
+		if(onPlayerUpdatesListener != null)
+		{
+			onPlayerUpdatesListener.onCardsUpdateListener(player, cards);
+		}
+	}
+
+	@Override
+	public void onStatsUpdateListener(Player player) {
+		if(onPlayerUpdatesListener != null)
+		{
+			onPlayerUpdatesListener.onStatsUpdateListener(player);
+		}
+	}
+
+	@Override
+	public void onStatChange(Player player, int amount, EffectType type) {
+		if(onPlayerUpdatesListener != null)
+		{
+			onPlayerUpdatesListener.onStatChange(player, amount, type);
+		}
+	}
 }

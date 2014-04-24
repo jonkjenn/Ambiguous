@@ -41,9 +41,15 @@ public class CardHandFragment extends Fragment implements OnTouchListener {
 
 		hand = (GridView) view.findViewById(R.id.game_grid);
 
-		/*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-			view.setOnTouchListener(this);
-		}*/
+		/*
+		 * if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+		 * view.setOnTouchListener(this); }
+		 */
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
 	}
 
 	public void updateCards(Card[] cards) {
@@ -55,7 +61,9 @@ public class CardHandFragment extends Fragment implements OnTouchListener {
 	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 	@Override
 	public boolean onTouch(View v, MotionEvent me) {
-		if(isDisabled){return false;}
+		if (isDisabled) {
+			return false;
+		}
 
 		Object tag = v.getTag();
 		if (tag != null) {
@@ -171,12 +179,16 @@ public class CardHandFragment extends Fragment implements OnTouchListener {
 	}
 
 	public void enableUseCards() {
-		registerForContextMenu(hand);
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+			registerForContextMenu(hand);
+		}
 		isDisabled = false;
 	}
 
 	public void disableUseCards() {
-		unregisterForContextMenu(hand);
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+			unregisterForContextMenu(hand);
+		}
 		isDisabled = true;
 	}
 

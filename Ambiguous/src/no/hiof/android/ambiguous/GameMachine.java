@@ -185,6 +185,12 @@ public class GameMachine implements OpponentListener, PlayerUpdateListener {
 			state = State.GAME_OVER;
 		}
 	}
+	
+	public void setStateAndNotify(State state)
+	{
+		this.state = state;
+		notifyStateChange();		
+	}
 
 	/**
 	 * Discards a card from the player and ends player's turn.

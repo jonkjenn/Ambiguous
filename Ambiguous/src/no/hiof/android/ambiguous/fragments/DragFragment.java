@@ -33,12 +33,17 @@ public class DragFragment extends Fragment implements OnDragListener {
 	@Override
 	public void onViewCreated(View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
-		view.setOnDragListener(this);
-
 		this.useCardNotificationView = view.findViewById(R.id.gameview_use);
 		this.discardCardNotificationView = view
 				.findViewById(R.id.gameview_discard);
 		this.dragCard = (ImageView) view.findViewById(R.id.drag_card);
+	}
+	
+	@Override
+	public void onResume() {
+		super.onResume();
+		getView().setOnDragListener(this);
+
 	}
 
 	@Override

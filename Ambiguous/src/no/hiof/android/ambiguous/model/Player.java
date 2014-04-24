@@ -55,6 +55,7 @@ public class Player implements Parcelable {
 	 *            The source Player we want to copy data from.
 	 */
 	public void updatePlayer(Player source) {
+		if(source == null){return;}
 		updatePlayer(source.name, source.health, source.armor,
 				source.resources, source.hand, source.deck);
 	}

@@ -109,7 +109,7 @@ public class GooglePlayGameFragment extends Fragment implements
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 	}
-	
+
 	@Override
 	public void onViewCreated(View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
@@ -149,7 +149,7 @@ public class GooglePlayGameFragment extends Fragment implements
 		outState.putParcelable("match", match);
 		outState.putBoolean("turnUsed", turnUsed);
 	}
-	
+
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
@@ -163,7 +163,6 @@ public class GooglePlayGameFragment extends Fragment implements
 	@Override
 	public void onStart() {
 		super.onStart();
-
 
 		// Prevent duplicate listener
 		GameActivity.gameMachine.removeGameMachineListener(this);
@@ -193,6 +192,10 @@ public class GooglePlayGameFragment extends Fragment implements
 
 							@Override
 							public void onResult(LoadMatchesResult result) {
+								if (getActivity() == null) {
+									return;
+								}
+
 								int invites = result.getMatches()
 										.getInvitations().getCount();
 								int yourturn = result.getMatches()
@@ -389,7 +392,7 @@ public class GooglePlayGameFragment extends Fragment implements
 										.getStatusCode())) {
 									return;
 								}
-                                GameActivity.gameMachine.reset();
+								GameActivity.gameMachine.reset();
 								match = result.getMatch();
 								startGame(match);
 							}
@@ -403,7 +406,6 @@ public class GooglePlayGameFragment extends Fragment implements
 	 * @param result
 	 */
 	void startGame(TurnBasedMatch match) {
-		
 
 		LayoutHelper.hideResult(resultTextView);
 
@@ -430,7 +432,7 @@ public class GooglePlayGameFragment extends Fragment implements
 				GameActivity.gameMachine.state = State.PLAYER_TURN;
 			}
 		} else {
-			GameActivity.gameMachine.state = State.OPPONENT_TURN;
+			GameActivity.gameMachine.setStateAndNotify(State.OPPONENT_TURN);
 		}
 
 		switch (match.getStatus()) {

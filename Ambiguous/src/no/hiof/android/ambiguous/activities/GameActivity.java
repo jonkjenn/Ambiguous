@@ -115,20 +115,8 @@ public class GameActivity extends ActionBarActivity implements
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_game);
 
-		// 1 LoadDb moved from here
-
 		// Find all the views we use so we only have to find them once
 		findViews();
-
-		// 2 moved gameMachine and opponentController from here
-
-		// 3 moved setupUIListeners from here
-
-		// 4 Setup dragFragment and CHEAT moved from here to OnResume
-
-		// 5 a listener and lostPlayerStatsFragment from here
-
-		// 6 setBackground moved from here
 
 		// We dont want the actionbar visible during the game
 		ActionBar actionBar = getSupportActionBar();
@@ -140,17 +128,13 @@ public class GameActivity extends ActionBarActivity implements
 			this.thing = savedInstanceState;
 		}
 
-		// 7 GPGS NETWORK and fragmentstuff from here
-
 	}
-
+	
 	@Override
-	protected void onResume() {
-		super.onResume();
-		// 1
+	protected void onStart() {
+		super.onStart();
 		loadDb();
 
-		// 2
 		if (gameMachine == null) {
 			gameMachine = new GameMachine(cards);
 			gameMachine.setOnPlayerUpdatesListener(this);
@@ -158,10 +142,13 @@ public class GameActivity extends ActionBarActivity implements
 		if (opponentController == null) {
 			opponentController = new OpponentController();
 		}
-
-		// 3
 		setupUIListeners();
-		// 4
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
 			setupDragFragment();
 			if ((!useGPGS) && (!isNetwork)) {
@@ -186,20 +173,16 @@ public class GameActivity extends ActionBarActivity implements
 			}
 		}
 
-		// 5
 		cardHandFragment.setOnPlayerUsedCardListener(this);
 
 		loadPlayerStatsFragments();
 
-		// 6
 		setBackground(PreferenceManager.getDefaultSharedPreferences(this));
 
-		// --
 		if (this.thing != null) {
 			loadGameStateBundle(this.thing);
 		}
-		// --
-		// 7
+
 		this.useGPGS = getIntent().getBooleanExtra("useGPGS", false);
 		this.isNetwork = getIntent().getBooleanExtra("isNetwork", false);
 
@@ -362,6 +345,7 @@ public class GameActivity extends ActionBarActivity implements
 	}
 
 	void setupUIListeners() {
+		removeUIListeners();
 		// Listen to gamemachine for changes that should be reflect in UI.
 		gameMachine.setGameMachineListener(this);
 		gameMachine.setOnStateChangeListener(this);
@@ -851,21 +835,6 @@ public class GameActivity extends ActionBarActivity implements
 		super.onStop();
 
 		removeUIListeners();
-
-		/*
-		 * FragmentTransaction ft =
-		 * getSupportFragmentManager().beginTransaction();
-		 * 
-		 * if (lanFragment != null) { ft.remove(lanFragment); } if
-		 * (singlePlayerFragment != null) { ft.remove( singlePlayerFragment); }
-		 * if (gpgFragment != null) { ft.remove(gpgFragment); }
-		 * 
-		 * if(playerStats != null) { ft.remove(playerStats); }
-		 * 
-		 * if(cardHandFragment != null) { ft.remove(cardHandFragment); }
-		 * 
-		 * if(dragFragment != null) { ft.remove(dragFragment); } ft.commit();
-		 */
 
 		if (isFinishing()) {
 			// Clear the static cache, this could possibly be tied to activity

@@ -26,7 +26,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:orientation="vertical"
-            android:paddingRight="3dp" >
+            android:paddingRight="10dp" >
 
             <Button
                 android:id="@+id/resume_button"

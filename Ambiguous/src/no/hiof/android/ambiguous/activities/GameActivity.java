@@ -976,7 +976,7 @@ public class GameActivity extends ActionBarActivity implements
 			outState.putInt("State", GameActivity.gameMachine.state.ordinal());
 			outState.putParcelable("OpponentCard",
 					GameActivity.gameMachine.currentOpponentCard);
-			outState.putBoolean("OpponentCardDiscarded",
+			outState.putBoolean("OpponentDiscarded",
 					GameActivity.gameMachine.opponentCardIsDiscarded);
 		}
 	}

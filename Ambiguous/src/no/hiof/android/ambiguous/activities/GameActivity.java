@@ -66,7 +66,7 @@ import android.widget.Toast;
  */
 public class GameActivity extends ActionBarActivity implements
 		GameMachine.GameMachineListener, OpponentListener,
-		PlayerUpdateListener, MinigameListener, OnPlayerUsedCardListener,
+		GameMachine.OnPlayerUpdates, MinigameListener, OnPlayerUsedCardListener,
 		OnDragStatusChangedListener, OnStateChangeListener {
 	private SQLiteDatabase db;
 
@@ -334,8 +334,7 @@ public class GameActivity extends ActionBarActivity implements
 
 		// Listen to player and opponent for changes that should be reflected in
 		// UI.
-		gameMachine.player.setPlayerUpdateListener(this);
-		gameMachine.opponent.setPlayerUpdateListener(this);
+		gameMachine.setOnPlayerUpdatesListener(this);
 		opponentController.setOpponentListener(gameMachine);
 		opponentController.setOpponentListener(this);
 	}
@@ -348,11 +347,7 @@ public class GameActivity extends ActionBarActivity implements
 		if (gameMachine != null) {
 			gameMachine.clearGameMachineListener();
 			gameMachine.clearTurnChangedListener();
-		}
-
-		if (gameMachine.player != null) {
-			gameMachine.player.clearPlayerUpdateListeners();
-			gameMachine.opponent.clearPlayerUpdateListeners();
+			gameMachine.setOnPlayerUpdatesListener(null);
 		}
 
 		if (opponentController != null) {
@@ -435,6 +430,12 @@ public class GameActivity extends ActionBarActivity implements
 	 * @param card
 	 */
 	private void opponentPlayCard(Card card) {
+		if(card == null)
+		{
+			opponentCard.setImageBitmap(null);
+			return;
+		}
+
 		opponentCard.setImageBitmap(CardLayout.getCardBitmap(card,
 				layoutContainer));
 		// Hide the discard graphic since we're not discarding.
@@ -447,6 +448,11 @@ public class GameActivity extends ActionBarActivity implements
 	 * @param card
 	 */
 	private void opponentDiscardCard(Card card) {
+		if(card == null)
+		{
+			opponentCard.setImageBitmap(null);
+			return;
+		}
 		opponentCard.setImageBitmap(CardLayout.getCardBitmap(card,
 				layoutContainer));
 		// Show the discard graphic since we're discarding.
@@ -815,13 +821,6 @@ public class GameActivity extends ActionBarActivity implements
 			gameMachine = null;
 			opponentController = null;
 		}
-	}
-
-	// Version checked in code.
-	@SuppressLint("NewApi")
-	@Override
-	protected void onDestroy() {
-		super.onDestroy();
 	}
 
 	public static void showGenericDialog(Context context, String title,

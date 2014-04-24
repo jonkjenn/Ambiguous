@@ -117,7 +117,7 @@ public class GPGService extends Service {
 									GameActivity.class);
 							i.putExtra("useGPGS", true);
 							i.putExtra("matchId", match.getMatchId());
-							i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+							i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
 							PendingIntent pi = PendingIntent.getActivity(
 									getApplicationContext(), 0, i,
 									PendingIntent.FLAG_UPDATE_CURRENT);

@@ -23,8 +23,9 @@ public class Player implements Parcelable {
 	public int resources = 10;
 	public static final int NUMBER_OF_CARDS = 8;
 	private boolean alive = true;
-	
-	public Player(String name, int health, int armor, int resources, Card[] hand, List<Card> deck){
+
+	public Player(String name, int health, int armor, int resources,
+			Card[] hand, List<Card> deck) {
 		super();
 		this.name = name;
 		this.health = health;
@@ -34,26 +35,28 @@ public class Player implements Parcelable {
 		this.deck = deck;
 	}
 
-	public void updatePlayer(String name, int health, int armor, int resources, Card[] hand, List<Card> deck){
+	public void updatePlayer(String name, int health, int armor, int resources,
+			Card[] hand, List<Card> deck) {
 		this.name = name;
 		this.health = health;
 		this.armor = armor;
 		this.resources = resources;
 		this.hand = hand;
 		this.deck = deck;
-		
+
 		notifyStatsUpdateListeners();
 		notifyCardsUpdateListeners();
 	}
 
 	/**
 	 * Copies all data from another Player.
-	 * @param source The source Player we want to copy data from.
+	 * 
+	 * @param source
+	 *            The source Player we want to copy data from.
 	 */
-	public void updatePlayer(Player source)
-	{
-		updatePlayer(source.name, source.health, source.armor, source.resources,
-				source.hand, source.deck);
+	public void updatePlayer(Player source) {
+		updatePlayer(source.name, source.health, source.armor,
+				source.resources, source.hand, source.deck);
 	}
 
 	public Player(String name) {
@@ -95,7 +98,7 @@ public class Player implements Parcelable {
 		return this;
 	}
 
-	//Replaces the whole hand
+	// Replaces the whole hand
 	public void setHand(Card[] hand) {
 		this.hand = hand;
 		notifyCardsUpdateListeners();
@@ -114,10 +117,9 @@ public class Player implements Parcelable {
 	public Card getCard(int position) {
 		return hand[position];
 	}
-	
-	public boolean isAlive()
-	{
-		return health>0;
+
+	public boolean isAlive() {
+		return health > 0;
 	}
 
 	public Card[] getHand() {
@@ -205,24 +207,22 @@ public class Player implements Parcelable {
 		notifyStatsUpdateListeners();
 	}
 
-	public void setHealth(int health){
+	public void setHealth(int health) {
 		this.health = health;
 		notifyStatsUpdateListeners();
 	}
-	
-	public void setArmor(int armor)
-	{
+
+	public void setArmor(int armor) {
 		this.armor = armor;
 		notifyStatsUpdateListeners();
 	}
-	
-	public void setResources(int resources)
-	{
+
+	public void setResources(int resources) {
 		this.resources = resources;
 		notifyStatsUpdateListeners();
 	}
 
-	private ArrayList<PlayerUpdateListener> listeners = new ArrayList<PlayerUpdateListener>();
+	private PlayerUpdateListener listener;
 
 	public interface PlayerUpdateListener {
 		void onCardsUpdateListener(Player player, Card[] cards);
@@ -234,14 +234,14 @@ public class Player implements Parcelable {
 	}
 
 	private void notifyStatChange(int amount, Effect.EffectType type) {
-		for (PlayerUpdateListener listener : listeners) {
+		if (listener != null) {
 			listener.onStatChange(this, amount, type);
 		}
 	}
 
 	/** For notifying about changes on player's hand. */
 	public void notifyCardsUpdateListeners() {
-		for (PlayerUpdateListener listener : listeners) {
+		if (listener != null) {
 			listener.onCardsUpdateListener(this, this.hand);
 		}
 	}
@@ -253,29 +253,17 @@ public class Player implements Parcelable {
 	 * @param listener
 	 */
 	public void setPlayerUpdateListener(PlayerUpdateListener listener) {
-		this.listeners.add(listener);
+		this.listener = listener;
 		notifyCardsUpdateListeners();
 		notifyStatsUpdateListeners();
-	}
-	
-	public void removePlayerUpdateListener(PlayerUpdateListener listener)
-	{
-		listeners.remove(listener);
-	}
-	
-	/**
-	 * Delete all player update listeners
-	 */
-	public void clearPlayerUpdateListeners()
-	{
-		listeners.clear();
 	}
 
 	/**
 	 * Notify changes in player's statistics.
 	 */
 	public void notifyStatsUpdateListeners() {
-		for (PlayerUpdateListener listener : listeners) {
+		if(listener != null)
+		{
 			listener.onStatsUpdateListener(this);
 		}
 	}
@@ -294,7 +282,8 @@ public class Player implements Parcelable {
 		out.writeInt(armor);
 		out.writeInt(resources);
 
-		// Convert hand to List<Card>, cause writing an array as parcel obviously is a pain, cause you can't cast Object[] to Card[]
+		// Convert hand to List<Card>, cause writing an array as parcel
+		// obviously is a pain, cause you can't cast Object[] to Card[]
 		List<Card> arList = new ArrayList<Card>();
 		for (int i = 0; i < hand.length; i++) {
 			arList.add(hand[i]);
@@ -323,7 +312,7 @@ public class Player implements Parcelable {
 		health = in.readInt();
 		armor = in.readInt();
 		resources = in.readInt();
-		
+
 		List<Card> placeHolder = in.readArrayList(Card.class.getClassLoader());
 		hand = placeHolder.toArray(new Card[placeHolder.size()]);
 

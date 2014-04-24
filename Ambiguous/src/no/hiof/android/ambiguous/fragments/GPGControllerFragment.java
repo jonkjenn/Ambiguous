@@ -19,8 +19,6 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.view.View;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
 
 public class GPGControllerFragment extends Fragment implements
@@ -73,12 +71,12 @@ public class GPGControllerFragment extends Fragment implements
 			getActivity().bindService(i, connection, 0);
 		}
 
-		int e = GooglePlayServicesUtil
+		/*int e = GooglePlayServicesUtil
 				.isGooglePlayServicesAvailable(getActivity());
 
 		if (e != ConnectionResult.SUCCESS) {
 			GooglePlayServicesUtil.getErrorDialog(e, getActivity(), 0).show();
-		}
+		}*/
 
 		gPGHandler = (GooglePlayGameFragment) getActivity()
 				.getSupportFragmentManager().findFragmentByTag("gpg");

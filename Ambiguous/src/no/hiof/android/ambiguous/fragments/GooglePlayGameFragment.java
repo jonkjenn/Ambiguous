@@ -821,7 +821,7 @@ public class GooglePlayGameFragment extends Fragment implements
 				ParticipantResult.PLACING_UNINITIALIZED));
 
 		if (match.getStatus() == TurnBasedMatch.MATCH_STATUS_ACTIVE
-				|| match.getStatus() == TurnBasedMatch.MATCH_STATUS_COMPLETE) {
+				) {
 			if (match.getTurnStatus() == TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN) {
 				Games.TurnBasedMultiplayer.finishMatch(
 						gameHelper.getApiClient(), match.getMatchId(),

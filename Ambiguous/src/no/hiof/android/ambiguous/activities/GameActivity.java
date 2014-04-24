@@ -30,7 +30,6 @@ import no.hiof.android.ambiguous.model.Card;
 import no.hiof.android.ambiguous.model.Effect;
 import no.hiof.android.ambiguous.model.Effect.EffectType;
 import no.hiof.android.ambiguous.model.Player;
-import no.hiof.android.ambiguous.model.Player.PlayerUpdateListener;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.AlertDialog.Builder;
@@ -273,10 +272,12 @@ public class GameActivity extends ActionBarActivity implements
 	}
 
 	void loadDb() {
-		// Gets the db that will be reused throughout the game.
-		this.db = Db.getDb(getApplicationContext()).getWritableDatabase();
-		cs = new CardDataSource(db);
-		cards = cs.getCards();
+		if (this.db == null) {
+			// Gets the db that will be reused throughout the game.
+			this.db = Db.getDb(getApplicationContext()).getWritableDatabase();
+			cs = new CardDataSource(db);
+			cards = cs.getCards();
+		}
 	}
 
 	void setupDragFragment() {
@@ -850,9 +851,6 @@ public class GameActivity extends ActionBarActivity implements
 		super.onStop();
 
 		removeUIListeners();
-		// Clear the static cache, this could possibly be tied to activity
-		// life cycle either directly or by fragment
-		cs.purge();
 
 		/*
 		 * FragmentTransaction ft =
@@ -870,6 +868,10 @@ public class GameActivity extends ActionBarActivity implements
 		 */
 
 		if (isFinishing()) {
+			// Clear the static cache, this could possibly be tied to activity
+			// life cycle either directly or by fragment
+			cs.purge();
+
 			gameMachine = null;
 			opponentController = null;
 		}

@@ -137,7 +137,7 @@ public class GameActivity extends ActionBarActivity implements
 		// We load data after setting up UI hooks so that UI can react to
 		// current state.
 		if (savedInstanceState != null) {
-			thing = savedInstanceState;
+			this.thing = savedInstanceState;
 		}
 		
 
@@ -195,8 +195,8 @@ public class GameActivity extends ActionBarActivity implements
 		setBackground(PreferenceManager.getDefaultSharedPreferences(this));
 		
 		// --
-		if (thing != null) {
-			loadGameStateBundle(thing);
+		if (this.thing != null) {
+			loadGameStateBundle(this.thing);
 		}
 		// --
 		//7

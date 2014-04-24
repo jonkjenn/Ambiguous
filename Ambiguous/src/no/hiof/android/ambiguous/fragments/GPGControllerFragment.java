@@ -55,6 +55,11 @@ public class GPGControllerFragment extends Fragment implements
 	public void onStart() {
 		super.onStart();
 
+	}
+	
+	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+		super.onActivityCreated(savedInstanceState);
 		GameActivity.gameMachine.setOnStateChangeListener(this);
 
 		SharedPreferences sp = PreferenceManager
@@ -77,6 +82,11 @@ public class GPGControllerFragment extends Fragment implements
 
 		gPGHandler = (GooglePlayGameFragment) getActivity()
 				.getSupportFragmentManager().findFragmentByTag("gpg");
+
+		if (getArguments().containsKey("matchId")) {
+			gPGSVisible = false;
+		}
+
 		if (gPGHandler == null) {
 			createGooglePlayFragment(getArguments());
 		} else {

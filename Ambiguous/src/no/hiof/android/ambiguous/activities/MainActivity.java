@@ -11,7 +11,6 @@ import no.hiof.android.ambiguous.fragments.SettingsFragment;
 import no.hiof.android.ambiguous.model.Card;
 import no.hiof.android.ambiguous.model.Player;
 import android.app.Activity;
-import android.app.PendingIntent;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;

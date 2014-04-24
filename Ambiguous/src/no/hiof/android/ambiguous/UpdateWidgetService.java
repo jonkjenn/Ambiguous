@@ -53,6 +53,8 @@ public class UpdateWidgetService extends Service {
 	      // Register an onClickListener
 	      Intent clickIntent = new Intent(this.getApplicationContext(),
 	    		  MainActivity.class);
+		clickIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+		clickIntent.setAction(Intent.ACTION_MAIN);
 	      
 	      PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 1,
 	    		  clickIntent, PendingIntent.FLAG_UPDATE_CURRENT);

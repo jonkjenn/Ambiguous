@@ -108,29 +108,10 @@ public class GooglePlayGameFragment extends Fragment implements
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 	}
-
+	
 	@Override
 	public void onViewCreated(View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
-
-		if (savedInstanceState != null) {
-			match = (TurnBasedMatch) savedInstanceState.getParcelable("match");
-			turnUsed = savedInstanceState.getBoolean("turnUsed", false);
-		}
-
-		// Prevent duplicate listener
-		GameActivity.gameMachine.removeGameMachineListener(this);
-		GameActivity.gameMachine.setGameMachineListener(this);
-
-		// Google created helper class for helping with signing into the Google
-		// service etc
-		gameHelper = new GameHelper(getActivity(), GameHelper.CLIENT_ALL);
-
-		if (BuildConfig.DEBUG) {
-			gameHelper.enableDebugLog(true);
-		}
-
-		gameHelper.setup(this);
 
 		resultTextView = (TextView) view.findViewById(R.id.result_text);
 
@@ -167,10 +148,35 @@ public class GooglePlayGameFragment extends Fragment implements
 		outState.putParcelable("match", match);
 		outState.putBoolean("turnUsed", turnUsed);
 	}
+	
+	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+		super.onActivityCreated(savedInstanceState);
+
+		if (savedInstanceState != null) {
+			match = (TurnBasedMatch) savedInstanceState.getParcelable("match");
+			turnUsed = savedInstanceState.getBoolean("turnUsed", false);
+		}
+	}
 
 	@Override
 	public void onStart() {
 		super.onStart();
+
+
+		// Prevent duplicate listener
+		GameActivity.gameMachine.removeGameMachineListener(this);
+		GameActivity.gameMachine.setGameMachineListener(this);
+
+		// Google created helper class for helping with signing into the Google
+		// service etc
+		gameHelper = new GameHelper(getActivity(), GameHelper.CLIENT_ALL);
+
+		if (BuildConfig.DEBUG) {
+			gameHelper.enableDebugLog(true);
+		}
+
+		gameHelper.setup(this);
 
 		gameHelper.onStart(getActivity());
 

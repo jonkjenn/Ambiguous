@@ -1,11 +1,11 @@
 package no.hiof.android.ambiguous;
 
 import no.hiof.android.ambiguous.activities.GameActivity;
+import no.hiof.android.ambiguous.activities.MainActivity;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
@@ -43,7 +43,7 @@ public class GPGService extends Service {
 		isRunning = true;
 
 		// The close button on notification service
-		if (intent.getAction() != null && intent.getAction().equals(CLOSE)) {
+		if (intent != null && intent.getAction() != null && intent.getAction().equals(CLOSE)) {
 			stopSelf();
 			return 0;
 		}
@@ -69,7 +69,9 @@ public class GPGService extends Service {
 	}
 
 	Notification buildNotification() {
-		Intent ni = new Intent(this, GameActivity.class);
+		Intent ni = new Intent(getApplicationContext(), MainActivity.class);
+		ni.addCategory(Intent.CATEGORY_LAUNCHER);
+		ni.setAction(Intent.ACTION_MAIN);
 		PendingIntent pi = PendingIntent.getActivity(this, 0, ni, 0);
 
 		Intent close = new Intent(this, GPGService.class);
@@ -86,7 +88,16 @@ public class GPGService extends Service {
 		return n;
 	}
 
+	/**
+	 * We register listeners with the connection Google API Client so we can
+	 * receive invitations and match updates even without game being open.
+	 * 
+	 * This is pretty much what the Google built in service does, but here we
+	 * can tailor our notifications such that they bring us directly into the
+	 * matches.
+	 */
 	void setGPGListener() {
+
 		Games.TurnBasedMultiplayer.registerMatchUpdateListener(gApiClient,
 				new OnTurnBasedMatchUpdateReceivedListener() {
 
@@ -95,15 +106,18 @@ public class GPGService extends Service {
 						// TODO Handle this.
 					}
 
+					// Update to one of our matches received.
 					@Override
 					public void onTurnBasedMatchReceived(TurnBasedMatch match) {
-						Log.d("test", "Found match update");
 
+						// If this check is true it should mean there's no game
+						// open looking at matches.
 						if (binder == null || gPGServiceListner == null) {
 							Intent i = new Intent(GPGService.this,
 									GameActivity.class);
 							i.putExtra("useGPGS", true);
 							i.putExtra("matchId", match.getMatchId());
+							i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 							PendingIntent pi = PendingIntent.getActivity(
 									getApplicationContext(), 0, i,
 									PendingIntent.FLAG_UPDATE_CURRENT);
@@ -132,7 +146,12 @@ public class GPGService extends Service {
 									.build();
 							((NotificationManager) getSystemService(NOTIFICATION_SERVICE))
 									.notify(match.getMatchId(), 1, n);
-						} else {
+							// TODO: Implement a check so that we only send
+							// match updates to the game when the game has open
+							// the exact MatchId we're receiving. Other match
+							// updates we can post notifications for.
+						} else {// If there's a game open listening for matches
+								// we send the notification to that.
 							notifyTurnBasedMatchReceived(match);
 						}
 					}
@@ -153,6 +172,7 @@ public class GPGService extends Service {
 								GameActivity.class);
 						i.putExtra("useGPGS", true);
 						i.putExtra("acceptInvitation", inv.getInvitationId());
+						i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 						PendingIntent accept = PendingIntent.getActivity(
 								getBaseContext(), 0, i, 0);
 
@@ -160,6 +180,7 @@ public class GPGService extends Service {
 								GameActivity.class);
 						di.putExtra("useGPGS", true);
 						di.putExtra("denieInvitation", inv.getInvitationId());
+						di.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 						PendingIntent denie = PendingIntent.getActivity(
 								getBaseContext(), 0, i, 0);
 

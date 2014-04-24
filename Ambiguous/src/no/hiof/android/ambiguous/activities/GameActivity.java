@@ -34,6 +34,8 @@ import no.hiof.android.ambiguous.model.Player.PlayerUpdateListener;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.AlertDialog.Builder;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
 import android.content.Context;
@@ -50,6 +52,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
@@ -666,6 +669,8 @@ public class GameActivity extends ActionBarActivity implements
 
 	private void saveVictory() {
 		int victory = -1;
+		int prevVictory = PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
+				.getInt("WIN", -1);
 		try {
 			String whereClause = "WHERE id = (SELECT id FROM Statistics ORDER BY id DESC LIMIT 1)";
 			db.beginTransaction();
@@ -686,6 +691,27 @@ public class GameActivity extends ActionBarActivity implements
 		// Store the amount of victories in sharedpreferences for ease of access
 		PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
 				.edit().putInt("WIN", victory).commit();
+		if(victory > 0 && prevVictory == victory-1 && victory%10 == 0){
+			NotificationCompat.Builder nBuilder =
+			        new NotificationCompat.Builder(this)
+			        .setSmallIcon(R.drawable.plus_drawing)
+			        .setContentTitle("Congratulations!")
+			        .setContentText("You have managed to win "+String.valueOf(victory)+" games, good job!");
+			
+			// Creates an explicit intent for an Activity in your app
+			Intent intent = new Intent(this, MainActivity.class)
+			.addCategory(Intent.CATEGORY_LAUNCHER)
+			.setAction(Intent.ACTION_MAIN);
+			
+			PendingIntent pendingIntent = 
+					PendingIntent.getActivity(this, victory, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+			
+			nBuilder.setContentIntent(pendingIntent);
+			NotificationManager nManager = 
+					(NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+			nManager.notify(victory, nBuilder.build());
+			
+		}
 
 		AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(this);
 		RemoteViews remoteViews = new RemoteViews(this.getPackageName(),

@@ -105,6 +105,8 @@ public class GameActivity extends ActionBarActivity implements
 
 	CardDataSource cs;
 	public static List<Card> cards;
+	
+	private Bundle thing;
 
 	// We check API level in code
 	@SuppressLint("NewApi")
@@ -113,25 +115,53 @@ public class GameActivity extends ActionBarActivity implements
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_game);
 
-		loadDb();
+		//1 LoadDb moved from here
 
 		// Find all the views we use so we only have to find them once
 		findViews();
 
+		//2 moved gameMachine and opponentController from here
+		
+		//3 moved setupUIListeners from here
+
+		//4 Setup dragFragment and CHEAT moved from here to OnResume
+		
+		//5 a listener and lostPlayerStatsFragment from here
+		
+		//6 setBackground moved from here
+
+		// We dont want the actionbar visible during the game
+		ActionBar actionBar = getSupportActionBar();
+		actionBar.hide();
+
+		// We load data after setting up UI hooks so that UI can react to
+		// current state.
+		if (savedInstanceState != null) {
+			thing = savedInstanceState;
+		}
+		
+
+		//7 GPGS NETWORK and fragmentstuff from here
+		
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		//1
+		loadDb();
+		
+		//2
 		if (gameMachine == null) {
 			gameMachine = new GameMachine(cards);
 		}
 		if (opponentController == null) {
 			opponentController = new OpponentController();
 		}
-
+		
+		//3
 		setupUIListeners();
-
-		// Moved these up here because I check their values in regards to
-		// dmgBuff
-		this.useGPGS = getIntent().getBooleanExtra("useGPGS", false);
-		this.isNetwork = getIntent().getBooleanExtra("isNetwork", false);
-
+		//4
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
 			setupDragFragment();
 			if ((!useGPGS) && (!isNetwork)) {
@@ -155,22 +185,21 @@ public class GameActivity extends ActionBarActivity implements
 				}
 			}
 		}
+		
+		//5
 		cardHandFragment.setOnPlayerUsedCardListener(this);
 
 		loadPlayerStatsFragments();
-
+		
+		//6
 		setBackground(PreferenceManager.getDefaultSharedPreferences(this));
-
-		// We dont want the actionbar visible during the game
-		ActionBar actionBar = getSupportActionBar();
-		actionBar.hide();
-
-		// We load data after setting up UI hooks so that UI can react to
-		// current state.
-		if (savedInstanceState != null) {
-			loadGameStateBundle(savedInstanceState);
+		
+		// --
+		if (thing != null) {
+			loadGameStateBundle(thing);
 		}
-
+		// --
+		//7
 		this.useGPGS = getIntent().getBooleanExtra("useGPGS", false);
 		this.isNetwork = getIntent().getBooleanExtra("isNetwork", false);
 
@@ -183,8 +212,8 @@ public class GameActivity extends ActionBarActivity implements
 		} else {// Single player against AI
 			startSinglePlayerFragment();
 		}
+		
 	}
-
 	void loadPlayerStatsFragments() {
 		playerStats = (PlayerStatsFragment) getSupportFragmentManager()
 				.findFragmentByTag("playerStatsFragment");

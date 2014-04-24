@@ -16,7 +16,7 @@
         />
     <LinearLayout
         android:id="@+id/linearLayout1"
-        android:layout_width="wrap_content"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:orientation="vertical" >
@@ -51,7 +51,7 @@
 
         <Button
             android:id="@+id/network_button"
-            android:layout_width="wrap_content"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:onClick="goToNetwork"
             android:text="@string/menu_button_network"

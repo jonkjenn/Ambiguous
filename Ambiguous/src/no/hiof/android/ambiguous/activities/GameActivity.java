@@ -69,8 +69,9 @@ import android.widget.Toast;
  */
 public class GameActivity extends ActionBarActivity implements
 		GameMachine.GameMachineListener, OpponentListener,
-		GameMachine.OnPlayerUpdates, MinigameListener, OnPlayerUsedCardListener,
-		OnDragStatusChangedListener, OnStateChangeListener {
+		GameMachine.OnPlayerUpdates, MinigameListener,
+		OnPlayerUsedCardListener, OnDragStatusChangedListener,
+		OnStateChangeListener {
 	private SQLiteDatabase db;
 
 	public static OpponentController opponentController;
@@ -105,7 +106,7 @@ public class GameActivity extends ActionBarActivity implements
 
 	CardDataSource cs;
 	public static List<Card> cards;
-	
+
 	private Bundle thing;
 
 	// We check API level in code
@@ -115,20 +116,20 @@ public class GameActivity extends ActionBarActivity implements
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_game);
 
-		//1 LoadDb moved from here
+		// 1 LoadDb moved from here
 
 		// Find all the views we use so we only have to find them once
 		findViews();
 
-		//2 moved gameMachine and opponentController from here
-		
-		//3 moved setupUIListeners from here
+		// 2 moved gameMachine and opponentController from here
 
-		//4 Setup dragFragment and CHEAT moved from here to OnResume
-		
-		//5 a listener and lostPlayerStatsFragment from here
-		
-		//6 setBackground moved from here
+		// 3 moved setupUIListeners from here
+
+		// 4 Setup dragFragment and CHEAT moved from here to OnResume
+
+		// 5 a listener and lostPlayerStatsFragment from here
+
+		// 6 setBackground moved from here
 
 		// We dont want the actionbar visible during the game
 		ActionBar actionBar = getSupportActionBar();
@@ -139,19 +140,18 @@ public class GameActivity extends ActionBarActivity implements
 		if (savedInstanceState != null) {
 			this.thing = savedInstanceState;
 		}
-		
 
-		//7 GPGS NETWORK and fragmentstuff from here
-		
+		// 7 GPGS NETWORK and fragmentstuff from here
+
 	}
 
 	@Override
 	protected void onResume() {
 		super.onResume();
-		//1
+		// 1
 		loadDb();
-		
-		//2
+
+		// 2
 		if (gameMachine == null) {
 			gameMachine = new GameMachine(cards);
 			gameMachine.setOnPlayerUpdatesListener(this);
@@ -159,10 +159,10 @@ public class GameActivity extends ActionBarActivity implements
 		if (opponentController == null) {
 			opponentController = new OpponentController();
 		}
-		
-		//3
+
+		// 3
 		setupUIListeners();
-		//4
+		// 4
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
 			setupDragFragment();
 			if ((!useGPGS) && (!isNetwork)) {
@@ -186,21 +186,21 @@ public class GameActivity extends ActionBarActivity implements
 				}
 			}
 		}
-		
-		//5
+
+		// 5
 		cardHandFragment.setOnPlayerUsedCardListener(this);
 
 		loadPlayerStatsFragments();
-		
-		//6
+
+		// 6
 		setBackground(PreferenceManager.getDefaultSharedPreferences(this));
-		
+
 		// --
 		if (this.thing != null) {
 			loadGameStateBundle(this.thing);
 		}
 		// --
-		//7
+		// 7
 		this.useGPGS = getIntent().getBooleanExtra("useGPGS", false);
 		this.isNetwork = getIntent().getBooleanExtra("isNetwork", false);
 
@@ -213,8 +213,8 @@ public class GameActivity extends ActionBarActivity implements
 		} else {// Single player against AI
 			startSinglePlayerFragment();
 		}
-		
 	}
+
 	void loadPlayerStatsFragments() {
 		playerStats = (PlayerStatsFragment) getSupportFragmentManager()
 				.findFragmentByTag("playerStatsFragment");
@@ -388,7 +388,6 @@ public class GameActivity extends ActionBarActivity implements
 		}
 	}
 
-
 	public void showTutorialButton(View view) {
 		showTutorialFragment();
 	}
@@ -463,8 +462,7 @@ public class GameActivity extends ActionBarActivity implements
 	 * @param card
 	 */
 	private void opponentPlayCard(Card card) {
-		if(card == null)
-		{
+		if (card == null) {
 			opponentCard.setImageBitmap(null);
 			return;
 		}
@@ -481,8 +479,7 @@ public class GameActivity extends ActionBarActivity implements
 	 * @param card
 	 */
 	private void opponentDiscardCard(Card card) {
-		if(card == null)
-		{
+		if (card == null) {
 			opponentCard.setImageBitmap(null);
 			return;
 		}
@@ -640,9 +637,8 @@ public class GameActivity extends ActionBarActivity implements
 	void disableUseCards() {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
 			dragFragment.disableDrag();
-		} else {
-			cardHandFragment.disableUseCards();
 		}
+		cardHandFragment.disableUseCards();
 	}
 
 	/**
@@ -651,9 +647,8 @@ public class GameActivity extends ActionBarActivity implements
 	void enableUseCards() {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
 			dragFragment.enableDrag();
-		} else {
-			cardHandFragment.enableUseCards();
 		}
+		cardHandFragment.enableUseCards();
 	}
 
 	/**
@@ -699,8 +694,8 @@ public class GameActivity extends ActionBarActivity implements
 
 	private void saveVictory() {
 		int victory = -1;
-		int prevVictory = PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
-				.getInt("WIN", -1);
+		int prevVictory = PreferenceManager.getDefaultSharedPreferences(
+				getApplicationContext()).getInt("WIN", -1);
 		try {
 			String whereClause = "WHERE id = (SELECT id FROM Statistics ORDER BY id DESC LIMIT 1)";
 			db.beginTransaction();
@@ -721,26 +716,27 @@ public class GameActivity extends ActionBarActivity implements
 		// Store the amount of victories in sharedpreferences for ease of access
 		PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
 				.edit().putInt("WIN", victory).commit();
-		if(victory > 0 && prevVictory == victory-1 && victory%10 == 0){
-			NotificationCompat.Builder nBuilder =
-			        new NotificationCompat.Builder(this)
-			        .setSmallIcon(R.drawable.plus_drawing)
-			        .setContentTitle("Congratulations!")
-			        .setContentText("You have managed to win "+String.valueOf(victory)+" games, good job!");
-			
+		if (victory > 0 && prevVictory == victory - 1 && victory % 10 == 0) {
+			NotificationCompat.Builder nBuilder = new NotificationCompat.Builder(
+					this)
+					.setSmallIcon(R.drawable.plus_drawing)
+					.setContentTitle("Congratulations!")
+					.setContentText(
+							"You have managed to win "
+									+ String.valueOf(victory)
+									+ " games, good job!");
+
 			// Creates an explicit intent for an Activity in your app
-			Intent intent = new Intent(this, MainActivity.class)
-			.addCategory(Intent.CATEGORY_LAUNCHER)
-			.setAction(Intent.ACTION_MAIN);
-			
-			PendingIntent pendingIntent = 
-					PendingIntent.getActivity(this, victory, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-			
+			Intent intent = new Intent(this, MainActivity.class).addCategory(
+					Intent.CATEGORY_LAUNCHER).setAction(Intent.ACTION_MAIN);
+
+			PendingIntent pendingIntent = PendingIntent.getActivity(this,
+					victory, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
 			nBuilder.setContentIntent(pendingIntent);
-			NotificationManager nManager = 
-					(NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+			NotificationManager nManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 			nManager.notify(victory, nBuilder.build());
-			
+
 		}
 
 		AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(this);
@@ -968,7 +964,8 @@ public class GameActivity extends ActionBarActivity implements
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
 
-		if (gameMachine != null && gameMachine.player != null && gameMachine.opponent != null && gameMachine.state != null) {
+		if (gameMachine != null && gameMachine.player != null
+				&& gameMachine.opponent != null && gameMachine.state != null) {
 			// We store stuff so that can resume later.
 			outState.putParcelable("Player", GameActivity.gameMachine.player);
 			outState.putParcelable("Opponent",

@@ -35,5 +35,11 @@
         android:summaryOn="@string/GPG_service_on"
         android:title="Google Play Game service helper" >
     </CheckBoxPreference>
+    
+    <Preference android:title="About Ambiguous" >
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="http://frigg.hiof.no/android_v142/" />
+    </Preference>
 
 </PreferenceScreen>

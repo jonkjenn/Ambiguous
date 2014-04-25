@@ -185,11 +185,10 @@ public class GameMachine implements OpponentListener, PlayerUpdateListener {
 			state = State.GAME_OVER;
 		}
 	}
-	
-	public void setStateAndNotify(State state)
-	{
+
+	public void setStateAndNotify(State state) {
 		this.state = state;
-		notifyStateChange();		
+		notifyStateChange();
 	}
 
 	/**
@@ -357,7 +356,9 @@ public class GameMachine implements OpponentListener, PlayerUpdateListener {
 	}
 
 	public void setTurnChangeListener(TurnChangeListener listener) {
-		turnChangeListeners.add(listener);
+		if (!turnChangeListeners.contains(listener)) {
+			turnChangeListeners.add(listener);
+		}
 	}
 
 	public void removeTurnChangeListener(TurnChangeListener listener) {

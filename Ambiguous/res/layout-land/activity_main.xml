@@ -6,21 +6,24 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context=".MainActivity" >
+    tools:context=".MainActivity"
+    android:orientation="vertical" >
 
+    <ImageView
+         android:layout_width="match_parent"
+         android:layout_height="50dp"
+         android:layout_centerHorizontal="true"
+         android:cropToPadding="true"
+         android:src="@drawable/ambiguous_header_cropped" />
     <LinearLayout
         android:id="@+id/linearLayout1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:orientation="horizontal" >
+        android:paddingTop="50dp"
+        android:orientation="horizontal"
+        android:weightSum="2" >
 
-        <ImageView 
-        android:src="@android:mipmap/sym_def_app_icon"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:rotation="-90"
-        />
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -91,12 +94,6 @@
                 android:text="@string/close_gpg_service"
                 android:visibility="gone" />
         </LinearLayout>
-        <ImageView 
-        android:src="@android:mipmap/sym_def_app_icon"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:rotation="90"
-        />
     </LinearLayout>
 
 </RelativeLayout>

@@ -26,26 +26,30 @@ public class SinglePlayerFragment extends Fragment {
 	@Override
 	public void onStart() {
 		super.onStart();
+		sds = new SessionDataSource((Db.getDb(getActivity()
+				.getApplicationContext()).getWritableDatabase()));
+		setupController();
+
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
 		if (getArguments() != null) {
 			resumeGame(getArguments());
 		}
-		sds = new SessionDataSource((Db.getDb(getActivity()
-				.getApplicationContext()).getWritableDatabase()));
+		GameActivity.gameMachine.setTurnChangeListener(aiController);
 
-		setupController();
-
-		startGameMachine();
-	}
-
-	void startGameMachine() {
 		GameActivity.gameMachine.startGame(GameActivity.gameMachine.state);
 	}
 
+
 	void setupController() {
-		aiController = new AIController(GameActivity.gameMachine.opponent,
-				GameActivity.gameMachine.player,
-				GameActivity.opponentController);
-		GameActivity.gameMachine.setTurnChangeListener(aiController);
+		if (aiController == null) {
+			aiController = new AIController(GameActivity.gameMachine.opponent,
+					GameActivity.gameMachine.player,
+					GameActivity.opponentController);
+		}
 	}
 
 	private void resumeGame(Bundle extras) {

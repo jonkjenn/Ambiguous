@@ -368,7 +368,8 @@ public class GameActivity extends ActionBarActivity implements
 		}
 
 		if (opponentController != null) {
-			opponentController.removeOpponentListener(this);;
+			opponentController.removeOpponentListener(this);
+			;
 		}
 	}
 
@@ -641,17 +642,20 @@ public class GameActivity extends ActionBarActivity implements
 	public void onOpponentDeadListener(Player opponent) {
 		LayoutHelper.showResult(resultTextView, true);
 		cardHandFragment.disableUseCards();
-		if (!PreferenceManager.getDefaultSharedPreferences(
-				getApplicationContext()).getBoolean("cheatUsed",
-				GameActivity.gameMachine.cheatUsed)) {
-			saveVictory();
-		} else {
-			Toast.makeText(
-					this,
-					"Reminder: "
-							+ getResources().getString(
-									R.string.toast_message_disregard_outcome),
-					Toast.LENGTH_SHORT).show();
+		if (!isNetwork && !useGPGS) {
+			if (!PreferenceManager.getDefaultSharedPreferences(
+					getApplicationContext()).getBoolean("cheatUsed",
+					GameActivity.gameMachine.cheatUsed)) {
+				saveVictory();
+			} else {
+				Toast.makeText(
+						this,
+						"Reminder: "
+								+ getResources()
+										.getString(
+												R.string.toast_message_disregard_outcome),
+						Toast.LENGTH_SHORT).show();
+			}
 		}
 
 	}

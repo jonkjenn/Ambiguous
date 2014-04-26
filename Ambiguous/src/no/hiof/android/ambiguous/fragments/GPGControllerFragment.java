@@ -11,6 +11,7 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.graphics.drawable.StateListDrawable;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
@@ -48,17 +49,16 @@ public class GPGControllerFragment extends Fragment implements
 			gPGSVisible = savedInstanceState.getBoolean("gPGVisible", false);
 		}
 	}
-
+	
 	@Override
-	public void onStart() {
-		super.onStart();
-
+	public void onResume() {
+		super.onResume();
+		GameActivity.gameMachine.setOnStateChangeListener(this);
 	}
-
+	
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		GameActivity.gameMachine.setOnStateChangeListener(this);
 
 		SharedPreferences sp = PreferenceManager
 				.getDefaultSharedPreferences(getActivity()
@@ -70,7 +70,7 @@ public class GPGControllerFragment extends Fragment implements
 			getActivity().startService(i);
 			getActivity().bindService(i, connection, 0);
 		}
-
+		
 		/*int e = GooglePlayServicesUtil
 				.isGooglePlayServicesAvailable(getActivity());
 
@@ -137,6 +137,7 @@ public class GPGControllerFragment extends Fragment implements
 	 * Show hidden GPG Fragment.
 	 */
 	void showGPGFragment() {
+		if(getActivity() == null){return;}
 		FragmentManager manager = getActivity().getSupportFragmentManager();
 		
 		Fragment f = manager.findFragmentByTag("gpg");
@@ -145,10 +146,16 @@ public class GPGControllerFragment extends Fragment implements
 			return;
 		}
 		
+		try
+		{
 		gPGHandler = (GooglePlayGameFragment)f;
 		FragmentTransaction transaction = manager.beginTransaction();
 		transaction.show(f);
 		transaction.commit();
+		}catch(IllegalStateException e)
+		{
+			
+		}
 	}
 
 	/**
@@ -200,9 +207,6 @@ public class GPGControllerFragment extends Fragment implements
 	@Override
 	public void onStop() {
 		super.onStop();
-		if (GameActivity.gameMachine != null) {
-			GameActivity.gameMachine.removeOnStateChangedListener(this);
-		}
 		if (binder != null) {
 			binder.setGPGServiceListener(null);
 		}
@@ -210,11 +214,10 @@ public class GPGControllerFragment extends Fragment implements
 
 	@Override
 	public void onStateChanged(State state) {
-		if (state == State.GAME_OVER) {
+/*		if (state == State.GAME_OVER) {
 			showGPGFragment();
-		} else {
+		} else {*/
 			hideGPGFragment();
-		}
 	}
 
 	@Override
@@ -224,4 +227,13 @@ public class GPGControllerFragment extends Fragment implements
 			gPGHandler.onGameActivityResult(requestCode, resultCode, data);
 		}
 	}
+	
+	@Override
+	public void onPause() {
+		super.onPause();
+		if (GameActivity.gameMachine != null) {
+			GameActivity.gameMachine.removeOnStateChangedListener(this);
+		}
+	}
+	
 }

@@ -129,7 +129,7 @@ public class GameActivity extends ActionBarActivity implements
 		}
 
 	}
-	
+
 	@Override
 	protected void onStart() {
 		super.onStart();
@@ -363,25 +363,19 @@ public class GameActivity extends ActionBarActivity implements
 	void removeUIListeners() {
 
 		if (gameMachine != null) {
-			gameMachine.clearGameMachineListener();
-			gameMachine.clearTurnChangedListener();
+			gameMachine.removeGameMachineListener(this);
 			gameMachine.setOnPlayerUpdatesListener(null);
 		}
 
 		if (opponentController != null) {
-			opponentController.clearOpponentListener();
+			opponentController.removeOpponentListener(this);;
 		}
-	}
-
-	public void showTutorialButton(View view) {
-		showTutorialFragment();
 	}
 
 	/**
 	 * Displays the tutorial
 	 */
-	private void showTutorialFragment() {
-
+	public void showTutorialButton(View view) {
 		// Cant use cards while tutorial shown.
 		disableUseCards();
 
@@ -394,14 +388,10 @@ public class GameActivity extends ActionBarActivity implements
 		transaction.commit();
 	}
 
-	public void closeTutorialButton(View view) {
-		closeTutorial();
-	}
-
 	/**
 	 * Closes the tutorial fragment.
 	 */
-	private void closeTutorial() {
+	public void closeTutorialButton(View view) {
 		FragmentManager manager = getSupportFragmentManager();
 		manager.popBackStack("showTutorial",
 				FragmentManager.POP_BACK_STACK_INCLUSIVE);
@@ -411,17 +401,6 @@ public class GameActivity extends ActionBarActivity implements
 									// tutorial.
 
 		onStateChanged(gameMachine.state);
-
-	}
-
-	/**
-	 * Disables the tutorial from showing up on startup.
-	 */
-	public void disableTutorial() {
-		SharedPreferences sp = getPreferences(Context.MODE_PRIVATE);
-		SharedPreferences.Editor editor = sp.edit();
-		editor.putBoolean("hideTutorial", true);
-		editor.commit();
 	}
 
 	// Used three lines rather than a switch, all values are safe to parse

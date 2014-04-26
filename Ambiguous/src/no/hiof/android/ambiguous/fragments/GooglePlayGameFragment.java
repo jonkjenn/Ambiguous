@@ -99,7 +99,7 @@ public class GooglePlayGameFragment extends Fragment implements
 	// The effects the current player has used
 	ArrayList<Integer> effects = new ArrayList<Integer>();
 	// The card the current player has played or discarded
-	byte[] playedCard = new byte[] { NO_ACTION, 0, NO_ACTION, 0 };
+	byte[] playedCard = new byte[] { NO_ACTION, 0 };
 
 	// If player has used his turn, prevent repeat turn during orientation
 	// change etc.
@@ -236,23 +236,29 @@ public class GooglePlayGameFragment extends Fragment implements
 	}
 
 	void showConnected() {
-		ImageView iv = (ImageView) getActivity().findViewById(R.id.logon_icon);
-		getActivity().findViewById(R.id.sign_in_button)
-				.setVisibility(View.GONE);
-		getActivity().findViewById(R.id.sign_out_button).setVisibility(
-				View.VISIBLE);
-		iv.setImageDrawable(getActivity().getResources().getDrawable(
-				android.R.drawable.presence_online));
+		if (getActivity() != null) {
+			ImageView iv = (ImageView) getActivity().findViewById(
+					R.id.logon_icon);
+			getActivity().findViewById(R.id.sign_in_button).setVisibility(
+					View.GONE);
+			getActivity().findViewById(R.id.sign_out_button).setVisibility(
+					View.VISIBLE);
+			iv.setImageDrawable(getActivity().getResources().getDrawable(
+					android.R.drawable.presence_online));
+		}
 	}
 
 	void showDisconnected() {
-		ImageView iv = (ImageView) getActivity().findViewById(R.id.logon_icon);
-		getActivity().findViewById(R.id.sign_in_button).setVisibility(
-				View.VISIBLE);
-		getActivity().findViewById(R.id.sign_out_button).setVisibility(
-				View.GONE);
-		iv.setImageDrawable(getActivity().getResources().getDrawable(
-				android.R.drawable.presence_offline));
+		if (getActivity() != null) {
+			ImageView iv = (ImageView) getActivity().findViewById(
+					R.id.logon_icon);
+			getActivity().findViewById(R.id.sign_in_button).setVisibility(
+					View.VISIBLE);
+			getActivity().findViewById(R.id.sign_out_button).setVisibility(
+					View.GONE);
+			iv.setImageDrawable(getActivity().getResources().getDrawable(
+					android.R.drawable.presence_offline));
+		}
 	}
 
 	/**
@@ -471,11 +477,10 @@ public class GooglePlayGameFragment extends Fragment implements
 
 		}
 
-		boolean isCreator = false;
-		if (match.getCreatorId().equals(
-				GPGHelper.getOpponentId(gameHelper.getApiClient(), match))) {
-			isCreator = true;
-		}
+		boolean isCreator = GPGHelper.isCreator(gameHelper.getApiClient(),
+				match);
+
+		int[] ids = GPGHelper.getIds(gameHelper.getApiClient(), match);
 
 		ByteArrayInputStream stream = new ByteArrayInputStream(match.getData());
 
@@ -483,28 +488,27 @@ public class GooglePlayGameFragment extends Fragment implements
 
 		try {
 
-			// Only want the action that the opponent has done so we move past
-			// the first action
-			if (isCreator) {
-				r.skipBytes(2);
-			}
+			// 1. Read who's action, action type and card 2bytes
 
-			// 1. Read action type and card 2bytes
-			switch (r.readByte()) {
-			case PLAYED_CARD:
-				GameActivity.opponentController.playCard(r.readByte(), false);
-				break;
-			case DISCARDED_CARD:
-				GameActivity.opponentController.discardCard(r.readByte());
-				break;
-			case NO_ACTION:
-				r.skipBytes(1);
-				break;
-			}
+			// If its my own action or opponent
+			boolean myAction = r.readInt() == ids[0];
 
-			// Skip these since we already loaded action from creator.
-			if (!isCreator) {
+			if (myAction) {
+				GameActivity.opponentController.previousCardPlayed(null, false);
 				r.skipBytes(2);
+			} else {
+				switch (r.readByte()) {
+				case PLAYED_CARD:
+					GameActivity.opponentController.playCard(r.readByte(),
+							false);
+					break;
+				case DISCARDED_CARD:
+					GameActivity.opponentController.discardCard(r.readByte());
+					break;
+				case NO_ACTION:
+					r.skipBytes(1);
+					break;
+				}
 			}
 
 			// 3 bytes for each effect, effect type, target and amount
@@ -513,11 +517,20 @@ public class GooglePlayGameFragment extends Fragment implements
 			// 2. read number of effects 1 int
 			for (int i = 0; i < numEffects; i++) {
 				// 3. Read effects, id, which player and amount 3 ints
-				GameActivity.opponentController.useEffect(Effect.EffectType
-						.values()[r.readInt()],
-						(r.readInt() == 1 ? GameActivity.gameMachine.opponent
-								: GameActivity.gameMachine.player),
-						r.readInt(), true);
+				if (myAction) {
+
+					EffectType type = Effect.EffectType.values()[r.readInt()];
+
+					GameActivity.gameMachine.onStatChange(GPGHelper.getTarget(
+							gameHelper.getApiClient(), match, r.readInt()),
+							r.readInt(), type);
+
+				} else {
+					GameActivity.opponentController.useEffect(
+							Effect.EffectType.values()[r.readInt()],
+							GPGHelper.getTarget(gameHelper.getApiClient(),match,r.readInt()),
+							r.readInt(), true);
+				}
 			}
 
 			Card[] hand = new Card[8];
@@ -573,16 +586,15 @@ public class GooglePlayGameFragment extends Fragment implements
 	 */
 	byte[] writeGameState(TurnBasedMatch match) {
 
-		boolean isCreator = false;
-		if (GPGHelper.getOpponentId(gameHelper.getApiClient(), match).equals(
-				match.getCreatorId())) {
-			isCreator = true;
-		}
+		boolean isCreator = GPGHelper.isCreator(gameHelper.getApiClient(),
+				match);
+		int[] ids = GPGHelper.getIds(gameHelper.getApiClient(), match);
 
 		// action type, played card, effects count, effects, action and played
 		// card, creator hand, other
 		// hand, creator stats, other stats
-		int size = 2 + 1 + effects.size() + playedCard.length + 8 + 8 + 3 + 3;
+		int size = 2 + 1 + 1 + effects.size() + playedCard.length + 8 + 8 + 3
+				+ 3;
 
 		// The size is just an estimate, the buffer will expand if needed
 		ByteArrayOutputStream stream = new ByteArrayOutputStream(size);
@@ -592,12 +604,11 @@ public class GooglePlayGameFragment extends Fragment implements
 		// Write what action the player is doing on which card.
 		try {
 
-			// 1. Write action type and card 2bytes
+			// 1. Write who's action, action type and card 2bytes
+			w.writeInt(ids[0]);
+
 			w.write(playedCard[0]);
 			w.write(playedCard[1]);
-			w.write(playedCard[2]);
-
-			w.write(playedCard[3]);
 
 			// 2. Write number of effects 1 int
 			w.writeInt(effects.size());
@@ -658,15 +669,8 @@ public class GooglePlayGameFragment extends Fragment implements
 	void playerUsedCard(Card c, boolean discard) {
 		// The creator data is in the 2 first bytes, the other player in the 2
 		// last bytes.
-		int index1;
-		if (GPGHelper.getOpponentId(gameHelper.getApiClient(), match).equals(
-				match.getCreatorId())) {
-			index1 = 0;
-		} else {
-			index1 = 2;
-		}
-		playedCard[index1] = (discard ? DISCARDED_CARD : PLAYED_CARD);
-		playedCard[index1 + 1] = (byte) c.id;
+		playedCard[0] = (discard ? DISCARDED_CARD : PLAYED_CARD);
+		playedCard[1] = (byte) c.id;
 	}
 
 	/**
@@ -681,7 +685,8 @@ public class GooglePlayGameFragment extends Fragment implements
 	 */
 	void playerUsedEffect(EffectType e, Player target, int amount) {
 		effects.add(e.ordinal());
-		effects.add(target == GameActivity.gameMachine.opponent ? 0 : 1);
+		effects.add(GPGHelper.getTargetId(gameHelper.getApiClient(), match,
+				target));
 		effects.add(amount);
 	}
 
@@ -820,8 +825,7 @@ public class GooglePlayGameFragment extends Fragment implements
 				gameHelper.getApiClient(), match), opponentResult,
 				ParticipantResult.PLACING_UNINITIALIZED));
 
-		if (match.getStatus() == TurnBasedMatch.MATCH_STATUS_ACTIVE
-				) {
+		if (match.getStatus() == TurnBasedMatch.MATCH_STATUS_ACTIVE) {
 			if (match.getTurnStatus() == TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN) {
 				Games.TurnBasedMultiplayer.finishMatch(
 						gameHelper.getApiClient(), match.getMatchId(),

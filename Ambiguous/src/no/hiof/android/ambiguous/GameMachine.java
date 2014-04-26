@@ -489,7 +489,9 @@ public class GameMachine implements OpponentListener, PlayerUpdateListener {
 	final ArrayList<OnStateChangeListener> onStateChangedListeners = new ArrayList<GameMachine.OnStateChangeListener>();
 
 	public void setOnStateChangeListener(OnStateChangeListener listener) {
-		onStateChangedListeners.add(listener);
+		if (!onStateChangedListeners.contains(listener)) {
+			onStateChangedListeners.add(listener);
+		}
 	}
 
 	public void removeOnStateChangedListener(OnStateChangeListener listener) {

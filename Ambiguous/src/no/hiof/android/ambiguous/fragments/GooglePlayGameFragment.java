@@ -514,6 +514,9 @@ public class GooglePlayGameFragment extends Fragment implements
 			// 3 bytes for each effect, effect type, target and amount
 
 			int numEffects = r.readInt() / 3;
+			try
+			{
+			
 			// 2. read number of effects 1 int
 			for (int i = 0; i < numEffects; i++) {
 				// 3. Read effects, id, which player and amount 3 ints
@@ -531,6 +534,10 @@ public class GooglePlayGameFragment extends Fragment implements
 							GPGHelper.getTarget(gameHelper.getApiClient(),match,r.readInt()),
 							r.readInt(), true);
 				}
+			}
+			}catch(IndexOutOfBoundsException e)
+			{
+				
 			}
 
 			Card[] hand = new Card[8];

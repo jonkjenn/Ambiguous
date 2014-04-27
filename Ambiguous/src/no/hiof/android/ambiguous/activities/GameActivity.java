@@ -3,17 +3,18 @@ package no.hiof.android.ambiguous.activities;
 import java.util.ArrayList;
 import java.util.List;
 
+import no.hiof.android.ambiguous.BuildConfig;
 import no.hiof.android.ambiguous.Db;
 import no.hiof.android.ambiguous.GameMachine;
 import no.hiof.android.ambiguous.GameMachine.OnStateChangeListener;
 import no.hiof.android.ambiguous.GameMachine.State;
-import no.hiof.android.ambiguous.BuildConfig;
 import no.hiof.android.ambiguous.LayoutHelper;
 import no.hiof.android.ambiguous.MyWidgetProvider;
 import no.hiof.android.ambiguous.OpponentController;
 import no.hiof.android.ambiguous.OpponentController.OpponentListener;
 import no.hiof.android.ambiguous.R;
 import no.hiof.android.ambiguous.datasource.CardDataSource;
+import no.hiof.android.ambiguous.datasource.CardDataSource.OnLoadCompleteListener;
 import no.hiof.android.ambiguous.fragments.CardHandFragment;
 import no.hiof.android.ambiguous.fragments.DragFragment;
 import no.hiof.android.ambiguous.fragments.DragFragment.OnDragStatusChangedListener;
@@ -114,23 +115,21 @@ public class GameActivity extends ActionBarActivity implements
 	@SuppressLint("NewApi")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		
-		if (BuildConfig.DEBUG) {
-	         StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
-	                 .detectDiskReads()
-	                 .detectDiskWrites()
-	                 .detectNetwork()   // or .detectAll() for all detectable problems
-	                 .penaltyLog()
-	                 .build());
-	         StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
-	                 .detectLeakedSqlLiteObjects()
-	                 .detectLeakedClosableObjects()
-	                 .penaltyLog()
-	                 .penaltyDeath()
-	                 .build());
-	     }
 
-		
+		if (BuildConfig.DEBUG) {
+			StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
+					.detectDiskReads().detectDiskWrites().detectNetwork() // or
+																			// .detectAll()
+																			// for
+																			// all
+																			// detectable
+																			// problems
+					.penaltyLog().build());
+			StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
+					.detectLeakedSqlLiteObjects().detectLeakedClosableObjects()
+					.penaltyLog().penaltyDeath().build());
+		}
+
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_game);
 
@@ -152,8 +151,13 @@ public class GameActivity extends ActionBarActivity implements
 	@Override
 	protected void onStart() {
 		super.onStart();
-		loadDb();
 
+
+	}
+	
+	void dbLoaded()
+	{
+		
 		if (gameMachine == null) {
 			gameMachine = new GameMachine(cards);
 			gameMachine.setOnPlayerUpdatesListener(this);
@@ -167,7 +171,30 @@ public class GameActivity extends ActionBarActivity implements
 	@Override
 	protected void onResume() {
 		super.onResume();
+		if (this.db == null) {
+			// Gets the db that will be reused throughout the game.
+			this.db = Db.getDb(getApplicationContext()).getWritableDatabase();
+			cs = new CardDataSource(db);
+			cs.setOnLoadCompleteListener(new OnLoadCompleteListener() {
 
+				@Override
+				public void onLoadComplete() {
+					GameActivity.cards = cs.getCards();
+					dbLoaded();
+					doResume();
+				}
+			});
+			cs.loadData();
+		}
+		else
+		{
+			doResume();
+		}
+
+	}
+	
+	void doResume()
+	{
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
 			setupDragFragment();
 			if ((!useGPGS) && (!isNetwork)) {
@@ -214,6 +241,7 @@ public class GameActivity extends ActionBarActivity implements
 		} else {// Single player against AI
 			startSinglePlayerFragment();
 		}
+		
 	}
 
 	void loadPlayerStatsFragments() {
@@ -271,15 +299,6 @@ public class GameActivity extends ActionBarActivity implements
 				onStateChanged(gameMachine.state);
 			}
 		});
-	}
-
-	void loadDb() {
-		if (this.db == null) {
-			// Gets the db that will be reused throughout the game.
-			this.db = Db.getDb(getApplicationContext()).getWritableDatabase();
-			cs = new CardDataSource(db);
-			cards = cs.getCards();
-		}
 	}
 
 	void setupDragFragment() {

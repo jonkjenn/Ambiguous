@@ -7,6 +7,7 @@ import no.hiof.android.ambiguous.ai.AIController;
 import no.hiof.android.ambiguous.datasource.SessionDataSource;
 import no.hiof.android.ambiguous.model.Card;
 import no.hiof.android.ambiguous.model.Player;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -42,7 +43,6 @@ public class SinglePlayerFragment extends Fragment {
 
 		GameActivity.gameMachine.startGame(GameActivity.gameMachine.state);
 	}
-
 
 	void setupController() {
 		if (aiController == null) {
@@ -110,23 +110,45 @@ public class SinglePlayerFragment extends Fragment {
 		if (savedSessionId != -1) {
 			sds.setSessionId(savedSessionId);
 		}
-		GameMachine.State state = GameActivity.gameMachine.state;
+		final GameMachine.State state = GameActivity.gameMachine.state;
 		// Deletes the session if the game has finished
 		if (state == GameMachine.State.GAME_OVER) {
-			sds.deleteAllSessions();
+			new AsyncTask<Void, Void, Void>() {
+
+				@Override
+				protected Void doInBackground(Void... params) {
+					sds.deleteAllSessions();
+					return null;
+				}
+			}.execute();
 		} else {
 			// If gameMachine exists, and the game is not finished, attempt
 			// to save the current session in the database
-			Boolean saveSucessful = sds
-					.saveSession(
-							state.ordinal(),
-							GameActivity.gameMachine.player,
-							GameActivity.gameMachine.opponent,
-							(currentOpponentCard != null ? currentOpponentCard.id
-									: -1), opponentCardIsDiscarded,
-							GameActivity.gameMachine.cheatUsed);
-			if (!saveSucessful)
-				Log.d("sds.saveSession", "Something caused saveSession to fail");
+			new AsyncTask<Void, Void, Boolean>() {
+
+				@Override
+				protected Boolean doInBackground(Void... params) {
+					return sds
+							.saveSession(
+									state.ordinal(),
+									GameActivity.gameMachine.player,
+									GameActivity.gameMachine.opponent,
+									(currentOpponentCard != null ? currentOpponentCard.id
+											: -1), opponentCardIsDiscarded,
+									GameActivity.gameMachine.cheatUsed);
+
+				}
+
+				@Override
+				protected void onPostExecute(Boolean result) {
+					super.onPostExecute(result);
+					// TODO: show error msg
+					if (!result)
+						Log.d("sds.saveSession",
+								"Something caused saveSession to fail");
+				}
+			}.execute();
+
 		}
 
 	}

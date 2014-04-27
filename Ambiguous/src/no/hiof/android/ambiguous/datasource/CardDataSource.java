@@ -28,7 +28,10 @@ public class CardDataSource {
 	public CardDataSource(SQLiteDatabase db) {
 		this.db = db;
 		this.effectDs = new EffectDataSource(db);
-
+	}
+	
+	public void loadData()
+	{
 		new AsyncTask<CardDataSource, Void, List<Card>>() {
 
 			@Override
@@ -60,6 +63,8 @@ public class CardDataSource {
 			for (int i = 0; i < cards.size(); i++) {
 				cardMap.put(cards.get(i).id, cards.get(i));
 			}
+			
+			notifyOnLoadComplete();
 		}
 		else
 		{
@@ -106,6 +111,10 @@ public class CardDataSource {
 	 * @return List of all the different cards.
 	 */
 	public List<Card> getCards() {
+		if(cards != null)
+		{
+			return cards;
+		}
 		return getCards(-1);
 	}
 
@@ -179,6 +188,26 @@ public class CardDataSource {
 	public void purge() {
 		cards = null;
 		cardMap = null;
+	}
+	
+	public interface OnLoadCompleteListener
+	{
+		void onLoadComplete();
+	}
+	
+	OnLoadCompleteListener onLoadCompleteListener;
+	
+	public void setOnLoadCompleteListener(OnLoadCompleteListener l)
+	{
+		this.onLoadCompleteListener = l;
+	}
+	
+	void notifyOnLoadComplete()
+	{
+		if(this.onLoadCompleteListener != null)
+		{
+			this.onLoadCompleteListener.onLoadComplete();
+		}
 	}
 
 }

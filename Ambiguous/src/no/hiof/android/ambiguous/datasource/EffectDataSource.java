@@ -62,6 +62,8 @@ public class EffectDataSource {
 			c.moveToNext();
 		}
 		
+		c.close();
+		
 		return effects;
 	}
 

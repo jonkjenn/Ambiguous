@@ -7,6 +7,7 @@ import no.hiof.android.ambiguous.Db;
 import no.hiof.android.ambiguous.GameMachine;
 import no.hiof.android.ambiguous.GameMachine.OnStateChangeListener;
 import no.hiof.android.ambiguous.GameMachine.State;
+import no.hiof.android.ambiguous.BuildConfig;
 import no.hiof.android.ambiguous.LayoutHelper;
 import no.hiof.android.ambiguous.MyWidgetProvider;
 import no.hiof.android.ambiguous.OpponentController;
@@ -48,6 +49,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -112,6 +114,23 @@ public class GameActivity extends ActionBarActivity implements
 	@SuppressLint("NewApi")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		
+		if (BuildConfig.DEBUG) {
+	         StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
+	                 .detectDiskReads()
+	                 .detectDiskWrites()
+	                 .detectNetwork()   // or .detectAll() for all detectable problems
+	                 .penaltyLog()
+	                 .build());
+	         StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
+	                 .detectLeakedSqlLiteObjects()
+	                 .detectLeakedClosableObjects()
+	                 .penaltyLog()
+	                 .penaltyDeath()
+	                 .build());
+	     }
+
+		
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_game);
 

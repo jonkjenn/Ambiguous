@@ -81,5 +81,7 @@
       <string name="close_gpg_service">Close Google Play Game service</string>
       <string name="toast_message_disregard_outcome">Disregarding outcome of this game due to cheat</string>
       <string name="your_turn">Your turn</string>
+      <string name="error">Error</string>
+      <string name="could_not_load_GPG_data">There was a problem loading game data from GPG.</string>
 
 </resources>

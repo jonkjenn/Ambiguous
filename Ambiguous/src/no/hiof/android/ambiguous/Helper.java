@@ -1,5 +1,10 @@
 package no.hiof.android.ambiguous;
 
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
+
 public class Helper {
 
 	/**
@@ -50,5 +55,17 @@ public class Helper {
 		return (((Integer)tag) &65281) + position;
 	}
 	
-	
+	public static void showError(int messageId, Context context)
+	{
+		AlertDialog.Builder b = new AlertDialog.Builder(context);
+		b.setMessage(messageId)
+		.setTitle(R.string.error)
+		.setNegativeButton(R.string.close, new OnClickListener() {
+			
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				dialog.cancel();
+			}
+		}).create().show();
+	}
 }

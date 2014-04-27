@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import no.hiof.android.ambiguous.BuildConfig;
+import no.hiof.android.ambiguous.DelayedStart;
 import no.hiof.android.ambiguous.GPGHelper;
 import no.hiof.android.ambiguous.GPGService;
 import no.hiof.android.ambiguous.GPGService.GPGServiceListner;
@@ -15,10 +16,10 @@ import no.hiof.android.ambiguous.GameMachine;
 import no.hiof.android.ambiguous.GameMachine.GameMachineListener;
 import no.hiof.android.ambiguous.GameMachine.OnStateChangeListener;
 import no.hiof.android.ambiguous.GameMachine.State;
+import no.hiof.android.ambiguous.Helper;
 import no.hiof.android.ambiguous.LayoutHelper;
 import no.hiof.android.ambiguous.R;
 import no.hiof.android.ambiguous.activities.GameActivity;
-import no.hiof.android.ambiguous.activities.MainActivity;
 import no.hiof.android.ambiguous.datasource.CardDataSource;
 import no.hiof.android.ambiguous.model.Card;
 import no.hiof.android.ambiguous.model.Effect;
@@ -43,7 +44,6 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.games.Games;
 import com.google.android.gms.games.GamesStatusCodes;
@@ -70,7 +70,8 @@ public class GooglePlayGameFragment extends Fragment implements
 		GameMachineListener, GameHelperListener, OnClickListener,
 		OnStateChangeListener, GPGServiceListner,
 		OnTurnBasedMatchUpdateReceivedListener,
-		GameActivity.OnActivityResultListener {
+		GameActivity.OnActivityResultListener,
+		DelayedStart.OnReadyTostartListener {
 
 	boolean useGPGS;
 	GameHelper gameHelper;
@@ -164,6 +165,11 @@ public class GooglePlayGameFragment extends Fragment implements
 	public void onStart() {
 		super.onStart();
 
+		new DelayedStart(this);
+	}
+
+	@Override
+	public void startLoad() {
 		// Prevent duplicate listener
 		GameActivity.gameMachine.removeGameMachineListener(this);
 		GameActivity.gameMachine.setGameMachineListener(this);
@@ -212,6 +218,7 @@ public class GooglePlayGameFragment extends Fragment implements
 										View.GONE);
 							}
 						});
+
 	}
 
 	@Override
@@ -266,6 +273,7 @@ public class GooglePlayGameFragment extends Fragment implements
 	 * games.
 	 */
 	void showActiveGames() {
+		if(gameHelper == null){return;}
 		if (gameHelper.getApiClient().isConnected()) {
 			Intent i = Games.TurnBasedMultiplayer.getInboxIntent(gameHelper
 					.getApiClient());
@@ -280,6 +288,7 @@ public class GooglePlayGameFragment extends Fragment implements
 	 * Starts Google's activity for inviting other people to play against you.
 	 */
 	void findOpponent() {
+		if(gameHelper == null){return;}
 		if (gameHelper.isSignedIn()) {
 			Intent intent = Games.TurnBasedMultiplayer
 					.getSelectOpponentsIntent(gameHelper.getApiClient(), 1, 1);
@@ -424,7 +433,10 @@ public class GooglePlayGameFragment extends Fragment implements
 
 		GameActivity.gameMachine.state = State.OPPONENT_TURN;
 		turnUsed = false;
-		readGameState(match);// Loads the data from the bytes passed in
+		if(!readGameState(match))
+		{
+			return;// Loads the data from the bytes passed in
+		}
 								// the intent/match into our actual game
 								// objects in game.
 
@@ -469,11 +481,11 @@ public class GooglePlayGameFragment extends Fragment implements
 		}
 	}
 
-	void readGameState(TurnBasedMatch match) {
+	boolean readGameState(TurnBasedMatch match) {
 		// If empty we assume it is our turn to play. Can happen if the host has
 		// to pass the turn to the other player at first turn.
 		if (match.getData() == null || match.getData().length == 0) {
-			return;
+			return false;
 
 		}
 
@@ -514,9 +526,7 @@ public class GooglePlayGameFragment extends Fragment implements
 			// 3 bytes for each effect, effect type, target and amount
 
 			int numEffects = r.readInt() / 3;
-			try
-			{
-			
+
 			// 2. read number of effects 1 int
 			for (int i = 0; i < numEffects; i++) {
 				// 3. Read effects, id, which player and amount 3 ints
@@ -525,19 +535,15 @@ public class GooglePlayGameFragment extends Fragment implements
 					EffectType type = Effect.EffectType.values()[r.readInt()];
 
 					GameActivity.gameMachine.onStatChange(GPGHelper.getTarget(
-							gameHelper.getApiClient(), match, r.readInt()),
-							r.readInt(), type);
+							gameHelper.getApiClient(), match, r.readInt()), r
+							.readInt(), type);
 
 				} else {
-					GameActivity.opponentController.useEffect(
-							Effect.EffectType.values()[r.readInt()],
-							GPGHelper.getTarget(gameHelper.getApiClient(),match,r.readInt()),
-							r.readInt(), true);
+					GameActivity.opponentController.useEffect(Effect.EffectType
+							.values()[r.readInt()], GPGHelper.getTarget(
+							gameHelper.getApiClient(), match, r.readInt()), r
+							.readInt(), true);
 				}
-			}
-			}catch(IndexOutOfBoundsException e)
-			{
-				
 			}
 
 			Card[] hand = new Card[8];
@@ -581,9 +587,14 @@ public class GooglePlayGameFragment extends Fragment implements
 			other.setHealth(r.readInt());
 			other.setArmor(r.readInt());
 			other.setResources(r.readInt());
+		} catch (IndexOutOfBoundsException e) {
+			Helper.showError(R.string.could_not_load_GPG_data, getActivity());
+			return false;
 		} catch (IOException e) {
 			Log.d("test", "Error reading data from google");
+			return false;
 		}
+		return true;
 	}
 
 	/**
@@ -1033,6 +1044,12 @@ public class GooglePlayGameFragment extends Fragment implements
 		if (gameHelper != null) {
 			gameHelper.onActivityResult(requestCode, resultCode, data);
 		}
+	}
+
+	@Override
+	public void gaveUp() {
+		//This hopefully never happens
+		Log.e("no.hiof.android.ambiguous", "Could not load GooglePlayGameFragment, timed out waiting for GameActivity.gameMachine");
 	}
 
 }

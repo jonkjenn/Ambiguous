@@ -118,7 +118,7 @@ public class GameActivity extends ActionBarActivity implements
 
 		if (BuildConfig.DEBUG) {
 			StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
-					.detectDiskReads().detectDiskWrites().detectNetwork() // or
+					.detectAll()
 																			// .detectAll()
 																			// for
 																			// all
@@ -127,7 +127,7 @@ public class GameActivity extends ActionBarActivity implements
 					.penaltyLog().build());
 			StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
 					.detectLeakedSqlLiteObjects().detectLeakedClosableObjects()
-					.penaltyLog().penaltyDeath().build());
+					.penaltyLog().build());
 		}
 
 		super.onCreate(savedInstanceState);
@@ -200,6 +200,7 @@ public class GameActivity extends ActionBarActivity implements
 			if ((!useGPGS) && (!isNetwork)) {
 				SharedPreferences sp = PreferenceManager
 						.getDefaultSharedPreferences(this);
+				//This triggers strict mode errors, but we allow it.
 				int dmgBuff = sp.getInt(SettingsActivity.KEY_PREF_CHEAT, -1);
 				if (dmgBuff > 0) {
 					if (dmgBuff == 249) {

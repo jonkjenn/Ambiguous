@@ -1,5 +1,8 @@
 package no.hiof.android.ambiguous.fragments;
 
+
+import no.hiof.android.ambiguous.DelayedStart;
+import no.hiof.android.ambiguous.DelayedStart.OnReadyTostartListener;
 import no.hiof.android.ambiguous.GPGCallbackInterface;
 import no.hiof.android.ambiguous.GPGService;
 import no.hiof.android.ambiguous.GPGService.GPGBinder;
@@ -11,7 +14,6 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
-import android.graphics.drawable.StateListDrawable;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
@@ -22,9 +24,9 @@ import android.view.View;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 
-public class GPGControllerFragment extends Fragment implements
+public class GPGControllerFragment extends Fragment implements 
 		GPGCallbackInterface, GooglePlayGameFragment.OnGPGConnectedListener,
-		OnStateChangeListener, GameActivity.OnActivityResultListener {
+		OnStateChangeListener, GameActivity.OnActivityResultListener, OnReadyTostartListener {
 
 	GooglePlayGameFragment gPGHandler;
 	boolean gPGSVisible = false;
@@ -49,13 +51,13 @@ public class GPGControllerFragment extends Fragment implements
 			gPGSVisible = savedInstanceState.getBoolean("gPGVisible", false);
 		}
 	}
-	
+
 	@Override
 	public void onResume() {
 		super.onResume();
-		GameActivity.gameMachine.setOnStateChangeListener(this);
+		new DelayedStart(this);
 	}
-	
+
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
@@ -70,13 +72,14 @@ public class GPGControllerFragment extends Fragment implements
 			getActivity().startService(i);
 			getActivity().bindService(i, connection, 0);
 		}
-		
-		/*int e = GooglePlayServicesUtil
-				.isGooglePlayServicesAvailable(getActivity());
 
-		if (e != ConnectionResult.SUCCESS) {
-			GooglePlayServicesUtil.getErrorDialog(e, getActivity(), 0).show();
-		}*/
+		/*
+		 * int e = GooglePlayServicesUtil
+		 * .isGooglePlayServicesAvailable(getActivity());
+		 * 
+		 * if (e != ConnectionResult.SUCCESS) {
+		 * GooglePlayServicesUtil.getErrorDialog(e, getActivity(), 0).show(); }
+		 */
 
 		gPGHandler = (GooglePlayGameFragment) getActivity()
 				.getSupportFragmentManager().findFragmentByTag("gpg");
@@ -137,24 +140,23 @@ public class GPGControllerFragment extends Fragment implements
 	 * Show hidden GPG Fragment.
 	 */
 	void showGPGFragment() {
-		if(getActivity() == null){return;}
-		FragmentManager manager = getActivity().getSupportFragmentManager();
-		
-		Fragment f = manager.findFragmentByTag("gpg");
-		if(f == null)
-		{
+		if (getActivity() == null) {
 			return;
 		}
-		
-		try
-		{
-		gPGHandler = (GooglePlayGameFragment)f;
-		FragmentTransaction transaction = manager.beginTransaction();
-		transaction.show(f);
-		transaction.commit();
-		}catch(IllegalStateException e)
-		{
-			
+		FragmentManager manager = getActivity().getSupportFragmentManager();
+
+		Fragment f = manager.findFragmentByTag("gpg");
+		if (f == null) {
+			return;
+		}
+
+		try {
+			gPGHandler = (GooglePlayGameFragment) f;
+			FragmentTransaction transaction = manager.beginTransaction();
+			transaction.show(f);
+			transaction.commit();
+		} catch (IllegalStateException e) {
+
 		}
 	}
 
@@ -214,10 +216,10 @@ public class GPGControllerFragment extends Fragment implements
 
 	@Override
 	public void onStateChanged(State state) {
-/*		if (state == State.GAME_OVER) {
-			showGPGFragment();
-		} else {*/
-			hideGPGFragment();
+		/*
+		 * if (state == State.GAME_OVER) { showGPGFragment(); } else {
+		 */
+		hideGPGFragment();
 	}
 
 	@Override
@@ -227,7 +229,7 @@ public class GPGControllerFragment extends Fragment implements
 			gPGHandler.onGameActivityResult(requestCode, resultCode, data);
 		}
 	}
-	
+
 	@Override
 	public void onPause() {
 		super.onPause();
@@ -235,5 +237,16 @@ public class GPGControllerFragment extends Fragment implements
 			GameActivity.gameMachine.removeOnStateChangedListener(this);
 		}
 	}
-	
+
+	@Override
+	public void startLoad() {
+		GameActivity.gameMachine.setOnStateChangeListener(this);
+	}
+
+	@Override
+	public void gaveUp() {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

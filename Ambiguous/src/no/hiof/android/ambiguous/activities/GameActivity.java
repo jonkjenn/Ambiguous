@@ -6,6 +6,7 @@ import java.util.List;
 import no.hiof.android.ambiguous.BuildConfig;
 import no.hiof.android.ambiguous.Db;
 import no.hiof.android.ambiguous.GameMachine;
+import no.hiof.android.ambiguous.GameMachine.OnPlayerDeadListener;
 import no.hiof.android.ambiguous.GameMachine.OnStateChangeListener;
 import no.hiof.android.ambiguous.GameMachine.State;
 import no.hiof.android.ambiguous.LayoutHelper;
@@ -73,7 +74,7 @@ public class GameActivity extends ActionBarActivity implements
 		GameMachine.GameMachineListener, OpponentListener,
 		GameMachine.OnPlayerUpdates, MinigameListener,
 		OnPlayerUsedCardListener, OnDragStatusChangedListener,
-		OnStateChangeListener {
+		OnStateChangeListener, OnPlayerDeadListener {
 	private SQLiteDatabase db;
 
 	public static OpponentController opponentController;
@@ -388,6 +389,7 @@ public class GameActivity extends ActionBarActivity implements
 		// Listen to gamemachine for changes that should be reflect in UI.
 		gameMachine.setGameMachineListener(this);
 		gameMachine.setOnStateChangeListener(this);
+		gameMachine.setOnPlayerDeadListener(this);
 
 		// Listen to player and opponent for changes that should be reflected in
 		// UI.
@@ -404,6 +406,7 @@ public class GameActivity extends ActionBarActivity implements
 		if (gameMachine != null) {
 			gameMachine.removeGameMachineListener(this);
 			gameMachine.setOnPlayerUpdatesListener(null);
+			gameMachine.removeOnPlayerDeadListener(this);
 		}
 
 		if (opponentController != null) {

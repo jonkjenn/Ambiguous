@@ -3,12 +3,14 @@ package no.hiof.android.ambiguous.fragments;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import no.hiof.android.ambiguous.GameMachine.OnPlayerDeadListener;
 import no.hiof.android.ambiguous.GameMachine.State;
 import no.hiof.android.ambiguous.Helper;
 import no.hiof.android.ambiguous.NetworkOpponent;
 import no.hiof.android.ambiguous.OnNetworkErrorListener;
 import no.hiof.android.ambiguous.R;
 import no.hiof.android.ambiguous.activities.GameActivity;
+import no.hiof.android.ambiguous.model.Player;
 import no.hiof.android.ambiguous.network.CloseServerSocketTask;
 import no.hiof.android.ambiguous.network.CloseSocketTask;
 import no.hiof.android.ambiguous.network.OpenSocketTask;
@@ -28,7 +30,8 @@ import android.widget.Toast;
  * event changing screen orientation will break the game.
  * 
  */
-public class LANFragment extends Fragment implements OpenSocketListener, OnNetworkErrorListener {
+public class LANFragment extends Fragment implements OpenSocketListener,
+		OnNetworkErrorListener, OnPlayerDeadListener {
 	private boolean isServer;
 	private Socket socket;
 	private ServerSocket server;
@@ -43,7 +46,7 @@ public class LANFragment extends Fragment implements OpenSocketListener, OnNetwo
 	private NetworkOpponent networkOpponent;
 
 	boolean die = false;
-	
+
 	boolean closing = false;
 
 	@Override
@@ -176,6 +179,7 @@ public class LANFragment extends Fragment implements OpenSocketListener, OnNetwo
 	 */
 	void setupListeners() {
 		GameActivity.gameMachine.setGameMachineListener(networkOpponent);
+		GameActivity.gameMachine.setOnPlayerDeadListener(this);
 	}
 
 	/**
@@ -183,6 +187,7 @@ public class LANFragment extends Fragment implements OpenSocketListener, OnNetwo
 	 */
 	void removeListeners() {
 		GameActivity.gameMachine.removeGameMachineListener(networkOpponent);
+		GameActivity.gameMachine.removeOnPlayerDeadListener(this);
 	}
 
 	/**
@@ -208,16 +213,30 @@ public class LANFragment extends Fragment implements OpenSocketListener, OnNetwo
 
 	@Override
 	public void onNetworkError(String error) {
-		//Avoid displaying errors when we're already leaving.
-		if(closing){return;}
-		Helper.showError(R.string.network_error_abort_game, getActivity(),new OnDismissListener() {
-			
-			@Override
-			public void onDismiss(DialogInterface dialog) {
-				//We want to close the activity if there's any network error.
-				getActivity().finish();
-			}
-		});
+		// Avoid displaying errors when we're already leaving.
+		if (closing) {
+			return;
+		}
+		Helper.showError(R.string.network_error_abort_game, getActivity(),
+				new OnDismissListener() {
+
+					@Override
+					public void onDismiss(DialogInterface dialog) {
+						// We want to close the activity if there's any network
+						// error.
+						getActivity().finish();
+					}
+				});
+	}
+
+	@Override
+	public void onPlayerDeadListener(Player player) {
+		closeSockets();
+	}
+
+	@Override
+	public void onOpponentDeadListener(Player opponent) {
+		closeSockets();
 	}
 
 }

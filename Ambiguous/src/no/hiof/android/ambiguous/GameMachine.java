@@ -400,13 +400,13 @@ public class GameMachine implements OpponentListener, PlayerUpdateListener {
 	}
 
 	private void notifyPlayerDead() {
-		for (GameMachineListener listener : gameMachineListeners) {
+		for (OnPlayerDeadListener listener : onPlayerDeadListeners) {
 			listener.onPlayerDeadListener(player);
 		}
 	}
 
 	private void notifyOpponentDead() {
-		for (GameMachineListener listener : gameMachineListeners) {
+		for (OnPlayerDeadListener listener : onPlayerDeadListeners) {
 			listener.onOpponentDeadListener(opponent);
 		}
 	}
@@ -447,9 +447,6 @@ public class GameMachine implements OpponentListener, PlayerUpdateListener {
 
 		void onOpponentTurnListener();
 
-		void onPlayerDeadListener(Player player);
-
-		void onOpponentDeadListener(Player opponent);
 
 		void onPlayerPlayedCard(Card card);
 
@@ -458,7 +455,29 @@ public class GameMachine implements OpponentListener, PlayerUpdateListener {
 		void onPlayerDiscardCard(Card card);
 
 	}
+	
+	public interface OnPlayerDeadListener
+	{
+		void onPlayerDeadListener(Player player);
 
+		void onOpponentDeadListener(Player opponent);
+	}
+
+	List<OnPlayerDeadListener> onPlayerDeadListeners = new ArrayList<GameMachine.OnPlayerDeadListener>();
+	
+	public void setOnPlayerDeadListener(OnPlayerDeadListener onPlayerDeadListener)
+	{
+		if(!onPlayerDeadListeners.contains(onPlayerDeadListener))
+		{
+			onPlayerDeadListeners.add(onPlayerDeadListener);
+		}
+	}
+	
+	public void removeOnPlayerDeadListener(OnPlayerDeadListener listener)
+	{
+		onPlayerDeadListeners.remove(listener);
+	}
+	
 	public interface OnPlayerUpdates {
 		void onCardsUpdateListener(Player player, Card[] cards);
 

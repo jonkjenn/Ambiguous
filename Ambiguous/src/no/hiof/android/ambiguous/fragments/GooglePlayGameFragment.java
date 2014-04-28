@@ -14,6 +14,7 @@ import no.hiof.android.ambiguous.GPGService;
 import no.hiof.android.ambiguous.GPGService.GPGServiceListner;
 import no.hiof.android.ambiguous.GameMachine;
 import no.hiof.android.ambiguous.GameMachine.GameMachineListener;
+import no.hiof.android.ambiguous.GameMachine.OnPlayerDeadListener;
 import no.hiof.android.ambiguous.GameMachine.OnStateChangeListener;
 import no.hiof.android.ambiguous.GameMachine.State;
 import no.hiof.android.ambiguous.Helper;
@@ -71,7 +72,7 @@ public class GooglePlayGameFragment extends Fragment implements
 		OnStateChangeListener, GPGServiceListner,
 		OnTurnBasedMatchUpdateReceivedListener,
 		GameActivity.OnActivityResultListener,
-		DelayedStart.OnReadyTostartListener {
+		DelayedStart.OnReadyTostartListener, OnPlayerDeadListener {
 
 	boolean useGPGS;
 	GameHelper gameHelper;
@@ -173,6 +174,7 @@ public class GooglePlayGameFragment extends Fragment implements
 		// Prevent duplicate listener
 		GameActivity.gameMachine.removeGameMachineListener(this);
 		GameActivity.gameMachine.setGameMachineListener(this);
+		GameActivity.gameMachine.setOnPlayerDeadListener(this);
 
 		// Google created helper class for helping with signing into the Google
 		// service etc
@@ -233,6 +235,7 @@ public class GooglePlayGameFragment extends Fragment implements
 		if (GameActivity.gameMachine != null) {
 			GameActivity.gameMachine.removeGameMachineListener(this);
 			GameActivity.gameMachine.removeOnStateChangedListener(this);
+			GameActivity.gameMachine.removeOnPlayerDeadListener(this);
 		}
 	}
 

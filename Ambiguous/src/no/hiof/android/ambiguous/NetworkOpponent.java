@@ -9,6 +9,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 import no.hiof.android.ambiguous.GameMachine.GameMachineListener;
+import no.hiof.android.ambiguous.GameMachine.OnPlayerDeadListener;
 import no.hiof.android.ambiguous.model.Card;
 import no.hiof.android.ambiguous.model.Effect.EffectType;
 import no.hiof.android.ambiguous.model.Player;
@@ -329,18 +330,6 @@ public class NetworkOpponent implements GameMachineListener, OnNetworkErrorListe
 	@Override
 	public void onOpponentTurnListener() {
 		sendOpponentTurn();
-	}
-
-	@Override
-	public void onPlayerDeadListener(Player player) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void onOpponentDeadListener(Player opponent) {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override

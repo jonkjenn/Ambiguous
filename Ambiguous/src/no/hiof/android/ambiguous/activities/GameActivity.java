@@ -120,11 +120,11 @@ public class GameActivity extends ActionBarActivity implements
 		if (BuildConfig.DEBUG) {
 			StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
 					.detectAll()
-																			// .detectAll()
-																			// for
-																			// all
-																			// detectable
-																			// problems
+					// .detectAll()
+					// for
+					// all
+					// detectable
+					// problems
 					.penaltyLog().build());
 			StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
 					.detectLeakedSqlLiteObjects().detectLeakedClosableObjects()
@@ -153,12 +153,10 @@ public class GameActivity extends ActionBarActivity implements
 	protected void onStart() {
 		super.onStart();
 
-
 	}
-	
-	void dbLoaded()
-	{
-		
+
+	void dbLoaded() {
+
 		if (gameMachine == null) {
 			gameMachine = new GameMachine(cards);
 			gameMachine.setOnPlayerUpdatesListener(this);
@@ -170,38 +168,31 @@ public class GameActivity extends ActionBarActivity implements
 	}
 
 	@Override
-	protected void onResume() {
+	protected void onPostResume() {
 		super.onResume();
 		if (this.db == null) {
 			// Gets the db that will be reused throughout the game.
 			this.db = Db.getDb(getApplicationContext()).getWritableDatabase();
 			cs = new CardDataSource(db);
-			cs.setOnLoadCompleteListener(new OnLoadCompleteListener() {
-
-				@Override
-				public void onLoadComplete() {
-					GameActivity.cards = cs.getCards();
-					dbLoaded();
-					doResume();
-				}
-			});
-			cs.loadData();
-		}
-		else
-		{
+			// This triggers errors in strict mode but it only happens at start
+			// of game. And it is preferable to do it synchronously.
+			cs.loadDataSync();
+			GameActivity.cards = cs.getCards();
+			dbLoaded();
+			doResume();
+		} else {
 			doResume();
 		}
 
 	}
-	
-	void doResume()
-	{
+
+	void doResume() {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
 			setupDragFragment();
 			if ((!useGPGS) && (!isNetwork)) {
 				SharedPreferences sp = PreferenceManager
 						.getDefaultSharedPreferences(this);
-				//This triggers strict mode errors, but we allow it.
+				// This triggers strict mode errors, but we allow it.
 				int dmgBuff = sp.getInt(SettingsActivity.KEY_PREF_CHEAT, -1);
 				if (dmgBuff > 0) {
 					if (dmgBuff == 249) {
@@ -243,7 +234,7 @@ public class GameActivity extends ActionBarActivity implements
 		} else {// Single player against AI
 			startSinglePlayerFragment();
 		}
-		
+
 	}
 
 	void loadPlayerStatsFragments() {
@@ -311,11 +302,11 @@ public class GameActivity extends ActionBarActivity implements
 		if (dragFragment == null) {
 			// Have to start fragment in code since older version cant seem to
 			// handle it being in xml
+
 			dragFragment = new DragFragment();
 			getSupportFragmentManager().beginTransaction()
 					.add(R.id.drag_container, dragFragment, "dragFragment")
 					.commit();
-
 		}
 
 		dragFragment.setPlayerUsedCardListener(this);

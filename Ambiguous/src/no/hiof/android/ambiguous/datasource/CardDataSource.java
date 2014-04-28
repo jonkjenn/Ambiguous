@@ -30,6 +30,14 @@ public class CardDataSource {
 		this.effectDs = new EffectDataSource(db);
 	}
 	
+	/**
+	 * Loads the data synchronously
+	 */
+	public void loadDataSync()
+	{
+		cardsLoaded(getCards());
+	}
+	
 	public void loadData()
 	{
 		new AsyncTask<CardDataSource, Void, List<Card>>() {

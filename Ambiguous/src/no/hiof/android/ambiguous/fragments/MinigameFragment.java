@@ -40,7 +40,9 @@ public class MinigameFragment extends Fragment implements SensorEventListener {
 	TextView score;
 	private SensorManager sensorManager;
 	private Sensor sensor;
+	//The position of the player's white bar.
 	private int position;
+	//Position of the red target bar.
 	private int tPosition;
 	// Current speed applied to the player view
 	private int speed = 0;
@@ -63,6 +65,7 @@ public class MinigameFragment extends Fragment implements SensorEventListener {
 	// Note the fragment can return values higher then max.
 	int min, max, cardPosition;
 
+	//The minigame tutorial
 	AlertDialog helpDialog;
 
 	private boolean stop = false;
@@ -73,7 +76,8 @@ public class MinigameFragment extends Fragment implements SensorEventListener {
 		this.min = getArguments().getInt("min");
 		this.max = getArguments().getInt("max");
 		this.cardPosition = getArguments().getInt("pos");
-		setRetainInstance(true);
+		
+		//setRetainInstance(true);
 	}
 
 	@Override
@@ -137,6 +141,7 @@ public class MinigameFragment extends Fragment implements SensorEventListener {
 	 * @return Should we hide the help dialog?
 	 */
 	private boolean hideHelp() {
+		//This triggers strict mode error but we ignore it.
 		SharedPreferences s = getActivity()
 				.getPreferences(Context.MODE_PRIVATE);
 		return s.getBoolean("hideHelp", false);

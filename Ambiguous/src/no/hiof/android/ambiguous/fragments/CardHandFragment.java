@@ -7,6 +7,7 @@ import no.hiof.android.ambiguous.adapter.PlayerHandAdapter;
 import no.hiof.android.ambiguous.fragments.DragFragment.OnPlayerUsedCardListener;
 import no.hiof.android.ambiguous.model.Card;
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Build;
@@ -50,6 +51,12 @@ public class CardHandFragment extends Fragment implements OnTouchListener {
 	@Override
 	public void onResume() {
 		super.onResume();
+	}
+	
+	@Override
+	public void onAttach(Activity activity) {
+		// TODO Auto-generated method stub
+		super.onAttach(activity);
 	}
 
 	public void updateCards(Card[] cards) {

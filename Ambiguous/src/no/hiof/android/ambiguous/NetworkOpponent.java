@@ -9,7 +9,6 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 import no.hiof.android.ambiguous.GameMachine.GameMachineListener;
-import no.hiof.android.ambiguous.GameMachine.OnPlayerDeadListener;
 import no.hiof.android.ambiguous.model.Card;
 import no.hiof.android.ambiguous.model.Effect.EffectType;
 import no.hiof.android.ambiguous.model.Player;

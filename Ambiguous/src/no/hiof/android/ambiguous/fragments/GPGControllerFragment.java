@@ -7,9 +7,12 @@ import no.hiof.android.ambiguous.GPGService;
 import no.hiof.android.ambiguous.GPGService.GPGBinder;
 import no.hiof.android.ambiguous.GameMachine.OnStateChangeListener;
 import no.hiof.android.ambiguous.GameMachine.State;
+import no.hiof.android.ambiguous.Helper;
 import no.hiof.android.ambiguous.R;
 import no.hiof.android.ambiguous.activities.GameActivity;
 import android.content.ComponentName;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
@@ -24,15 +27,15 @@ import android.view.View;
 import com.google.android.gms.common.api.GoogleApiClient;
 
 /**
- * Et abstraksjonslag mellom GameActivity og GPG delen. Håndterer visning av GPG
- * meny.
+ * Abstraction layer between GameActivity and the GPG part. Handles displaying
+ * the GPG menu.
  */
 public class GPGControllerFragment extends Fragment implements
 		GPGCallbackInterface, GooglePlayGameFragment.OnGPGConnectedListener,
 		OnStateChangeListener, GameActivity.OnActivityResultListener,
 		OnReadyTostartListener {
 
-	GooglePlayGameFragment gPGHandler;
+	GooglePlayGameFragment googlePlayGameFragment;
 	boolean gPGSVisible = false;
 	GPGBinder binder;
 	boolean bound = false;
@@ -70,19 +73,17 @@ public class GPGControllerFragment extends Fragment implements
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
-
-
-		gPGHandler = (GooglePlayGameFragment) getActivity()
+		googlePlayGameFragment = (GooglePlayGameFragment) getActivity()
 				.getSupportFragmentManager().findFragmentByTag("gpg");
 
 		if (getArguments().containsKey("matchId")) {
 			gPGSVisible = false;
 		}
 
-		if (gPGHandler == null) {
+		if (googlePlayGameFragment == null) {
 			createGooglePlayFragment(getArguments());
 		} else {
-			gPGHandler.setGPGConnectedListener(this);
+			googlePlayGameFragment.setGPGConnectedListener(this);
 		}
 
 		if (gPGSVisible) {
@@ -103,28 +104,28 @@ public class GPGControllerFragment extends Fragment implements
 		public void onServiceConnected(ComponentName name, IBinder service) {
 			bound = true;
 			binder = (GPGBinder) service;
+			// We send pass a reference to this class (as a GPGCallback
+			// interface) for calling this class from service.
 			binder.setActivityCallback(GPGControllerFragment.this);
-			binder.setGPGServiceListener(gPGHandler);
+			// We listen to the service
+			binder.setGPGServiceListener(googlePlayGameFragment);
 		}
 	};
 
 	/**
-	 * Create new GPG Fragment.
+	 * Create new GPG Fragment. Should already have checked if fragment already
+	 * exists before this.
 	 */
 	void createGooglePlayFragment(Bundle arguments) {
 		gPGSVisible = true;
 		FragmentManager manager = getActivity().getSupportFragmentManager();
-		Fragment f = manager.findFragmentByTag("gpg");
-		if (f == null) {
-			FragmentTransaction transaction = manager.beginTransaction();
-			gPGHandler = new GooglePlayGameFragment();
-			gPGHandler.setArguments(arguments);
-			transaction.add(R.id.game_layout_container, gPGHandler, "gpg");
-			transaction.commit();
-		} else {
-			gPGHandler = (GooglePlayGameFragment) f;
-		}
-		gPGHandler.setGPGConnectedListener(this);
+		FragmentTransaction transaction = manager.beginTransaction();
+		googlePlayGameFragment = new GooglePlayGameFragment();
+		googlePlayGameFragment.setArguments(arguments);
+		transaction.add(R.id.game_layout_container, googlePlayGameFragment,
+				"gpg");
+		transaction.commit();
+		googlePlayGameFragment.setGPGConnectedListener(this);
 	}
 
 	/**
@@ -142,7 +143,7 @@ public class GPGControllerFragment extends Fragment implements
 		}
 
 		try {
-			gPGHandler = (GooglePlayGameFragment) f;
+			googlePlayGameFragment = (GooglePlayGameFragment) f;
 			FragmentTransaction transaction = manager.beginTransaction();
 			transaction.show(f);
 			transaction.commit();
@@ -183,11 +184,7 @@ public class GPGControllerFragment extends Fragment implements
 		t.remove(f);
 		// The state is not important since it's all on Google server anyway.
 		t.commitAllowingStateLoss();
-		gPGHandler = null;
-	}
-
-	void startGameMachine() {
-		GameActivity.gameMachine.delay = 50;
+		googlePlayGameFragment = null;
 	}
 
 	@Override
@@ -217,8 +214,9 @@ public class GPGControllerFragment extends Fragment implements
 	@Override
 	public void onGameActivityResult(int requestCode, int resultCode,
 			Intent data) {
-		if (gPGHandler != null) {
-			gPGHandler.onGameActivityResult(requestCode, resultCode, data);
+		if (googlePlayGameFragment != null) {
+			googlePlayGameFragment.onGameActivityResult(requestCode,
+					resultCode, data);
 		}
 	}
 
@@ -246,10 +244,18 @@ public class GPGControllerFragment extends Fragment implements
 		}
 	}
 
+	// If the GameMachine does not load quick enough we abort and close the
+	// activity.
 	@Override
 	public void gaveUp() {
-		// TODO Auto-generated method stub
+		Helper.showError(R.string.gpg_load_error, getActivity(),
+				new OnDismissListener() {
 
+					@Override
+					public void onDismiss(DialogInterface dialog) {
+						getActivity().finish();
+					}
+				});
 	}
 
 }

@@ -84,5 +84,6 @@
     <string name="minigame_help_message">Keep the white bar inside of the red bar by tilting the device left and right.</string>
     <string name="minigame_help_title">Minigame help</string>
     <string name="start">Start</string>
+    <string name="gpg_load_error">There was an error loading Google Play Game aborting....</string>
 
 </resources>

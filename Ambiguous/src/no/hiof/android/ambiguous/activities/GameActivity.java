@@ -193,6 +193,20 @@ public class GameActivity extends ActionBarActivity implements
 	}
 
 	void doResume() {
+
+		cardHandFragment.setOnPlayerUsedCardListener(this);
+
+		loadPlayerStatsFragments();
+
+		setBackground(PreferenceManager.getDefaultSharedPreferences(this));
+
+		if (this.thing != null) {
+			loadGameStateBundle(this.thing);
+		}
+
+		this.useGPGS = getIntent().getBooleanExtra("useGPGS", false);
+		this.isNetwork = getIntent().getBooleanExtra("isNetwork", false);
+
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
 			setupDragFragment();
 			if ((!useGPGS) && (!isNetwork)) {
@@ -217,19 +231,6 @@ public class GameActivity extends ActionBarActivity implements
 				}
 			}
 		}
-
-		cardHandFragment.setOnPlayerUsedCardListener(this);
-
-		loadPlayerStatsFragments();
-
-		setBackground(PreferenceManager.getDefaultSharedPreferences(this));
-
-		if (this.thing != null) {
-			loadGameStateBundle(this.thing);
-		}
-
-		this.useGPGS = getIntent().getBooleanExtra("useGPGS", false);
-		this.isNetwork = getIntent().getBooleanExtra("isNetwork", false);
 
 		if (this.isNetwork) {// We start a LAN Network game
 			startNetworkFragment();

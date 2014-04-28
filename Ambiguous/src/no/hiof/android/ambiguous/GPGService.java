@@ -40,15 +40,17 @@ public class GPGService extends Service {
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 
-		isRunning = true;
-
 		// The close button on notification service
-		if (intent != null && intent.getAction() != null && intent.getAction().equals(CLOSE)) {
+		if (intent != null && intent.getAction() != null
+				&& intent.getAction().equals(CLOSE)) {
 			stopSelf();
 			return 0;
 		}
 
-		mainLoop();
+		if (!isRunning) {
+			isRunning = true;
+			mainLoop();
+		}
 		return super.onStartCommand(intent, flags, startId);
 	}
 

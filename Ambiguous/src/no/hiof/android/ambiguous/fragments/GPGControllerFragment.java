@@ -1,6 +1,5 @@
 package no.hiof.android.ambiguous.fragments;
 
-
 import no.hiof.android.ambiguous.DelayedStart;
 import no.hiof.android.ambiguous.DelayedStart.OnReadyTostartListener;
 import no.hiof.android.ambiguous.GPGCallbackInterface;
@@ -24,9 +23,14 @@ import android.view.View;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 
-public class GPGControllerFragment extends Fragment implements 
+/**
+ * Et abstraksjonslag mellom GameActivity og GPG delen. Håndterer visning av GPG
+ * meny.
+ */
+public class GPGControllerFragment extends Fragment implements
 		GPGCallbackInterface, GooglePlayGameFragment.OnGPGConnectedListener,
-		OnStateChangeListener, GameActivity.OnActivityResultListener, OnReadyTostartListener {
+		OnStateChangeListener, GameActivity.OnActivityResultListener,
+		OnReadyTostartListener {
 
 	GooglePlayGameFragment gPGHandler;
 	boolean gPGSVisible = false;
@@ -47,6 +51,7 @@ public class GPGControllerFragment extends Fragment implements
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		// Check if the GPG fragment should be visible
 		if (savedInstanceState != null) {
 			gPGSVisible = savedInstanceState.getBoolean("gPGVisible", false);
 		}
@@ -55,6 +60,9 @@ public class GPGControllerFragment extends Fragment implements
 	@Override
 	public void onResume() {
 		super.onResume();
+		// We use a delayed start to make sure the game is setup correctly
+		// before we start. This might not be needed anymore because of changes
+		// made but keep it until have time to test it differently.
 		new DelayedStart(this);
 	}
 
@@ -62,24 +70,7 @@ public class GPGControllerFragment extends Fragment implements
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
-		SharedPreferences sp = PreferenceManager
-				.getDefaultSharedPreferences(getActivity()
-						.getApplicationContext());
 
-		if (sp.contains(SettingsFragment.KEY_PREF_GPGService)
-				&& sp.getBoolean(SettingsFragment.KEY_PREF_GPGService, false)) {
-			Intent i = new Intent(getActivity(), GPGService.class);
-			getActivity().startService(i);
-			getActivity().bindService(i, connection, 0);
-		}
-
-		/*
-		 * int e = GooglePlayServicesUtil
-		 * .isGooglePlayServicesAvailable(getActivity());
-		 * 
-		 * if (e != ConnectionResult.SUCCESS) {
-		 * GooglePlayServicesUtil.getErrorDialog(e, getActivity(), 0).show(); }
-		 */
 
 		gPGHandler = (GooglePlayGameFragment) getActivity()
 				.getSupportFragmentManager().findFragmentByTag("gpg");
@@ -211,6 +202,7 @@ public class GPGControllerFragment extends Fragment implements
 		super.onStop();
 		if (binder != null) {
 			binder.setGPGServiceListener(null);
+			getActivity().unbindService(connection);
 		}
 	}
 
@@ -241,12 +233,23 @@ public class GPGControllerFragment extends Fragment implements
 	@Override
 	public void startLoad() {
 		GameActivity.gameMachine.setOnStateChangeListener(this);
+
+		SharedPreferences sp = PreferenceManager
+				.getDefaultSharedPreferences(getActivity()
+						.getApplicationContext());
+
+		if (sp.contains(SettingsFragment.KEY_PREF_GPGService)
+				&& sp.getBoolean(SettingsFragment.KEY_PREF_GPGService, false)) {
+			Intent i = new Intent(getActivity(), GPGService.class);
+			getActivity().startService(i);
+			getActivity().bindService(i, connection, 0);
+		}
 	}
 
 	@Override
 	public void gaveUp() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 }

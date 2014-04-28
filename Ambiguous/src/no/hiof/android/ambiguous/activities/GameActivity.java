@@ -15,7 +15,6 @@ import no.hiof.android.ambiguous.OpponentController;
 import no.hiof.android.ambiguous.OpponentController.OpponentListener;
 import no.hiof.android.ambiguous.R;
 import no.hiof.android.ambiguous.datasource.CardDataSource;
-import no.hiof.android.ambiguous.datasource.CardDataSource.OnLoadCompleteListener;
 import no.hiof.android.ambiguous.fragments.CardHandFragment;
 import no.hiof.android.ambiguous.fragments.DragFragment;
 import no.hiof.android.ambiguous.fragments.DragFragment.OnDragStatusChangedListener;
@@ -555,6 +554,7 @@ public class GameActivity extends ActionBarActivity implements
 
 		Effect e = gameMachine.player.getCard(cardPosition).effects.get(0);
 		MinigameFragment minigame = new MinigameFragment();
+		minigame.setMinigameListener(this);
 		Bundle b = new Bundle();
 		b.putInt("min", e.minValue);
 		b.putInt("max", e.maxValue);

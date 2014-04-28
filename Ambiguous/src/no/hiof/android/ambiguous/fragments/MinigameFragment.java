@@ -40,9 +40,9 @@ public class MinigameFragment extends Fragment implements SensorEventListener {
 	TextView score;
 	private SensorManager sensorManager;
 	private Sensor sensor;
-	//The position of the player's white bar.
+	// The position of the player's white bar.
 	private int position;
-	//Position of the red target bar.
+	// Position of the red target bar.
 	private int tPosition;
 	// Current speed applied to the player view
 	private int speed = 0;
@@ -65,7 +65,7 @@ public class MinigameFragment extends Fragment implements SensorEventListener {
 	// Note the fragment can return values higher then max.
 	int min, max, cardPosition;
 
-	//The minigame tutorial
+	// The minigame tutorial
 	AlertDialog helpDialog;
 
 	private boolean stop = false;
@@ -76,17 +76,16 @@ public class MinigameFragment extends Fragment implements SensorEventListener {
 		this.min = getArguments().getInt("min");
 		this.max = getArguments().getInt("max");
 		this.cardPosition = getArguments().getInt("pos");
-		
-		//setRetainInstance(true);
+
+		// setRetainInstance(true);
 	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
-		return inflater.inflate(R.layout.fragment_minigame, container,
-				false);
+		return inflater.inflate(R.layout.fragment_minigame, container, false);
 	}
-	
+
 	@Override
 	public void onStart() {
 		super.onStart();
@@ -101,22 +100,12 @@ public class MinigameFragment extends Fragment implements SensorEventListener {
 				showHelp(false);
 			}
 		});
-		player = getActivity().findViewById(R.id.minigame_player);
-		target = getActivity().findViewById(R.id.minigame_target);
-		score = (TextView) getActivity().findViewById(R.id.minigame_score);
+
+		findViews();
 		score.setText("0");
 
-		// Position players view in the center
-		RelativeLayout.LayoutParams params = new LayoutParams(
-				player.getLayoutParams());
-		position = this.width / 2 - player.getWidth() - 10;
-		params.leftMargin = position;
-		player.setLayoutParams(params);
-		// Position target view in the center
-		params = new LayoutParams(target.getLayoutParams());
-		tPosition = this.width / 2 - target.getWidth() - 10;
-		params.leftMargin = tPosition;
-		target.setLayoutParams(params);
+		position = centerView(player);
+		tPosition = centerView(target);
 
 		// Only show help if player has not disabled it in preferences.
 		if (hideHelp()) {
@@ -124,6 +113,29 @@ public class MinigameFragment extends Fragment implements SensorEventListener {
 		} else {
 			showHelp(true);
 		}
+	}
+
+	void findViews() {
+		player = getActivity().findViewById(R.id.minigame_player);
+		target = getActivity().findViewById(R.id.minigame_target);
+		score = (TextView) getActivity().findViewById(R.id.minigame_score);
+	}
+
+	/**
+	 * Pretty much center the view inside the container.
+	 * 
+	 * @param view
+	 *            The view to center.
+	 * @return The new position of the view.
+	 */
+	int centerView(View view) {
+		// Positions players view in the center
+		RelativeLayout.LayoutParams params = new LayoutParams(
+				view.getLayoutParams());
+		int position = this.width / 2 - view.getWidth() - 10;
+		params.leftMargin = position;
+		view.setLayoutParams(params);
+		return position;
 	}
 
 	/**
@@ -141,7 +153,7 @@ public class MinigameFragment extends Fragment implements SensorEventListener {
 	 * @return Should we hide the help dialog?
 	 */
 	private boolean hideHelp() {
-		//This triggers strict mode error but we ignore it.
+		// This triggers strict mode error but we ignore it.
 		SharedPreferences s = getActivity()
 				.getPreferences(Context.MODE_PRIVATE);
 		return s.getBoolean("hideHelp", false);
@@ -261,6 +273,12 @@ public class MinigameFragment extends Fragment implements SensorEventListener {
 		previousLoop = Calendar.getInstance().getTimeInMillis();
 	}
 
+	/**
+	 * Creates a random value with a negative to positive range, but excluding
+	 * 0.
+	 * 
+	 * @return
+	 */
 	private int getRandomSpeed() {
 		int rnd;
 		// Avoid small speed values which are to easy for the player.
@@ -279,6 +297,7 @@ public class MinigameFragment extends Fragment implements SensorEventListener {
 		if (helpDialog != null) {
 			helpDialog.cancel();
 		}
+
 		if (sensorManager != null) {
 			sensorManager.unregisterListener(this);
 		}
@@ -301,6 +320,7 @@ public class MinigameFragment extends Fragment implements SensorEventListener {
 		}
 	}
 
+	@Override
 	public void onSensorChanged(SensorEvent event) {
 
 		// Adapt the sensor we track depending on screen rotation.
@@ -331,28 +351,52 @@ public class MinigameFragment extends Fragment implements SensorEventListener {
 		// TODO:Handle the exception possibility here. It should never happen
 		// unless we run this fragment from an activity that does not
 		// implement MinigameListener.
-		((MinigameListener) getActivity()).onGameEnd(amount, cardPosition);
+		if (minigameListener != null) {
+			minigameListener.onGameEnd(amount, cardPosition);
+			minigameListener = null;
+		}
 	}
 
+	/**
+	 * For getting event when minigame is completed
+	 */
 	public interface MinigameListener {
 		public void onGameEnd(int amount, int position);
 	}
 
+	MinigameListener minigameListener;
+
+	public void setMinigameListener(MinigameListener minigameListener) {
+		this.minigameListener = minigameListener;
+	}
+
+	/**
+	 * Show the help dialog when click on button
+	 * 
+	 * @param view
+	 */
 	public void showHelp(View view) {
 		showHelp(false);
 	}
 
 	private boolean showingHelp = false;
 
+	/**
+	 * Shows the help dialog
+	 * 
+	 * @param askNeverShow
+	 *            If false we do not show the button that ask if you want to
+	 *            never show the help dialog again.
+	 */
 	public void showHelp(boolean askNeverShow) {
 		if (askNeverShow) {
 			showingHelp = true;
 		}
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-		builder.setTitle("Minigame help");
-		builder.setMessage("Keep the white bar inside of the red bar by tilting the device left and right.");
+		builder.setTitle(R.string.minigame_help_title);
+		builder.setMessage(R.string.minigame_help_message);
 
-		builder.setNeutralButton("Start", new OnClickListener() {
+		builder.setNeutralButton(R.string.start, new OnClickListener() {
 
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
@@ -366,7 +410,7 @@ public class MinigameFragment extends Fragment implements SensorEventListener {
 		});
 
 		if (askNeverShow) {
-			builder.setNegativeButton("Never show this message again",
+			builder.setNegativeButton(R.string.never_show_message_again,
 					new OnClickListener() {
 
 						@Override
@@ -388,6 +432,6 @@ public class MinigameFragment extends Fragment implements SensorEventListener {
 
 	@Override
 	public void onAccuracyChanged(Sensor arg0, int arg1) {
-		//Not being used
+		// Not being used but have to override because of interface
 	}
 }

@@ -4,7 +4,9 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 import no.hiof.android.ambiguous.GameMachine.State;
+import no.hiof.android.ambiguous.Helper;
 import no.hiof.android.ambiguous.NetworkOpponent;
+import no.hiof.android.ambiguous.OnNetworkErrorListener;
 import no.hiof.android.ambiguous.R;
 import no.hiof.android.ambiguous.activities.GameActivity;
 import no.hiof.android.ambiguous.network.CloseServerSocketTask;
@@ -14,6 +16,7 @@ import no.hiof.android.ambiguous.network.OpenSocketTask.OpenSocketListener;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
+import android.content.DialogInterface.OnDismissListener;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -25,7 +28,7 @@ import android.widget.Toast;
  * event changing screen orientation will break the game.
  * 
  */
-public class LANFragment extends Fragment implements OpenSocketListener {
+public class LANFragment extends Fragment implements OpenSocketListener, OnNetworkErrorListener {
 	private boolean isServer;
 	private Socket socket;
 	private ServerSocket server;
@@ -40,6 +43,8 @@ public class LANFragment extends Fragment implements OpenSocketListener {
 	private NetworkOpponent networkOpponent;
 
 	boolean die = false;
+	
+	boolean closing = false;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -106,7 +111,6 @@ public class LANFragment extends Fragment implements OpenSocketListener {
 		super.onStop();
 		closeSockets();
 		removeListeners();
-		getActivity().finish();
 	}
 
 	@Override
@@ -163,6 +167,8 @@ public class LANFragment extends Fragment implements OpenSocketListener {
 		networkOpponent = new NetworkOpponent(GameActivity.opponentController,
 				GameActivity.gameMachine.player,
 				GameActivity.gameMachine.opponent, socket);
+		networkOpponent.setOnNetworkErrorListener(this);
+		networkOpponent.start();
 	}
 
 	/**
@@ -183,6 +189,7 @@ public class LANFragment extends Fragment implements OpenSocketListener {
 	 * Close the network sockets.
 	 */
 	private void closeSockets() {
+		closing = true;
 		if (openSocketTask != null) {
 			openSocketTask.cancel(true);
 		}
@@ -197,6 +204,20 @@ public class LANFragment extends Fragment implements OpenSocketListener {
 
 	void reconnect() {
 
+	}
+
+	@Override
+	public void onNetworkError(String error) {
+		//Avoid displaying errors when we're already leaving.
+		if(closing){return;}
+		Helper.showError(R.string.network_error_abort_game, getActivity(),new OnDismissListener() {
+			
+			@Override
+			public void onDismiss(DialogInterface dialog) {
+				//We want to close the activity if there's any network error.
+				getActivity().finish();
+			}
+		});
 	}
 
 }

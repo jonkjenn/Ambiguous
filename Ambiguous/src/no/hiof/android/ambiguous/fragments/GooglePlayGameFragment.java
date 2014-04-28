@@ -588,7 +588,7 @@ public class GooglePlayGameFragment extends Fragment implements
 			other.setArmor(r.readInt());
 			other.setResources(r.readInt());
 		} catch (IndexOutOfBoundsException e) {
-			Helper.showError(R.string.could_not_load_GPG_data, getActivity());
+			Helper.showError(R.string.could_not_load_GPG_data, getActivity(),null);
 			return false;
 		} catch (IOException e) {
 			Log.d("test", "Error reading data from google");

@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/widget_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="horizontal"
     android:background="@drawable/widget_shape" >
     
     <TextView
+        android:textIsSelectable="false"
         android:id="@+id/widget_layout_textview"
         style="@android:style/TextAppearance.Medium"
         android:layout_width="0dp"
@@ -22,7 +22,7 @@
         android:layout_width="0dp"
         android:layout_weight="1"
         android:layout_height="fill_parent"
-        android:layout_gravity="right"
+        android:layout_gravity="end"
         android:text="Start Ambiguous"
         android:textSize="7dip"
         android:background="@drawable/btn_main" />

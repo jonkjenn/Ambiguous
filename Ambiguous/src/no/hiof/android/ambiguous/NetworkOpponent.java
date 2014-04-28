@@ -18,8 +18,10 @@ import android.util.Log;
 
 /**
  * Handles the packet read and write against a network opponent.
+ * 
+ * Call start() to start the network operation.
  */
-public class NetworkOpponent implements GameMachineListener{
+public class NetworkOpponent implements GameMachineListener, OnNetworkErrorListener {
 
 	/**
 	 * Enumeration of different packet types each with an unique id.
@@ -83,6 +85,16 @@ public class NetworkOpponent implements GameMachineListener{
 	 */
 	private Queue<Byte> dataBuffer = new LinkedList<Byte>();
 
+	/**
+	 * 
+	 * @param oc
+	 * @param player
+	 *            The local player
+	 * @param opponent
+	 *            The remote opponent
+	 * @param socket
+	 *            The already open socket.
+	 */
 	public NetworkOpponent(OpponentController oc, Player player,
 			Player opponent, Socket socket) {
 		handler = new Handler();
@@ -90,6 +102,12 @@ public class NetworkOpponent implements GameMachineListener{
 		this.player = player;
 		this.opponent = opponent;
 		this.socket = socket;
+	}
+
+	/**
+	 * Creates a new thread and starts listening for network data.
+	 */
+	public void start() {
 		Thread t = new Thread(new Runnable() {
 
 			@Override
@@ -99,12 +117,15 @@ public class NetworkOpponent implements GameMachineListener{
 							NetworkOpponent.this.socket.getOutputStream());
 					DataInputStream in = new DataInputStream(
 							NetworkOpponent.this.socket.getInputStream());
+
 					byte[] buffer = new byte[100];
 
 					int r;
 					// Reads the currently available data into the buffer.
+					// Limited to our buffer size.
 					while ((r = in.read(buffer, 0, buffer.length)) > 0) {
 						for (int i = 0; i < r; i++) {
+							// Adds the bytes read into our Queue.
 							dataBuffer.add(buffer[i]);
 						}
 
@@ -112,12 +133,12 @@ public class NetworkOpponent implements GameMachineListener{
 					}
 
 				} catch (IOException e) {
-					//If exception while reading we close and notify any listeners.
-					closeSilently();
+					notifyNetworkError(e.getMessage());
 				}
 			}
 		});
 		t.start();
+
 	}
 
 	/**
@@ -127,7 +148,7 @@ public class NetworkOpponent implements GameMachineListener{
 		try {
 			NetworkOpponent.this.socket.close();
 		} catch (IOException e1) {
-			e1.printStackTrace();
+			// We have already notified about network error.
 		}
 	}
 
@@ -138,9 +159,8 @@ public class NetworkOpponent implements GameMachineListener{
 	private void readPacketsFromBuffer() {
 
 		while (dataBuffer.size() >= 1) {
-			switch (Packets.getPacket(dataBuffer.peek())) {
-			case DISCARD_CARD:
-				dataBuffer.poll();
+			switch (Packets.getPacket(dataBuffer.poll())) {
+			case DISCARD_CARD:// Opponent discarded card
 				final int card = dataBuffer.poll();
 				handler.post(new Runnable() {
 
@@ -150,8 +170,7 @@ public class NetworkOpponent implements GameMachineListener{
 					}
 				});
 				break;
-			case PLAYED_CARD:
-				dataBuffer.poll();
+			case PLAYED_CARD:// Opponent played card
 				final int playedcard = dataBuffer.poll();
 				handler.post(new Runnable() {
 
@@ -162,8 +181,7 @@ public class NetworkOpponent implements GameMachineListener{
 					}
 				});
 				break;
-			case USED_EFFECT:
-				dataBuffer.poll();
+			case USED_EFFECT:// Opponent used effect
 				final EffectType type = EffectType.values()[dataBuffer.poll()];
 				final Player target = (dataBuffer.poll() == 1 ? opponent
 						: player);
@@ -176,15 +194,13 @@ public class NetworkOpponent implements GameMachineListener{
 					}
 				});
 				break;
-			// Not implemented
-			case PLAYER_STATS:
+			case PLAYER_STATS:// Not implemented
 				if (dataBuffer.size() < 3) {
 					return;
 				}
 				dataBuffer.poll();
 				break;
 			case TURN_DONE:
-				dataBuffer.poll();
 				handler.post(new Runnable() {
 
 					@Override
@@ -193,11 +209,10 @@ public class NetworkOpponent implements GameMachineListener{
 					}
 				});
 				break;
-			default:
-				// Add stuff to handle unknown packet header, something like
-				// give msg abort game etc.
+			default:// This shouldnt happen, we abort game.
 				Log.d("test", "I dont know this packet! Something went wrong!!");
-				break;
+				notifyNetworkError(null);
+				return;
 			}
 		}
 	}
@@ -214,9 +229,9 @@ public class NetworkOpponent implements GameMachineListener{
 			DataOutputStream writer = new DataOutputStream(stream);
 			writer.writeByte(Packets.PLAYED_CARD.getPacketId());
 			writer.writeByte(card);
-			new WriteBytesTask().Setup(out).execute(stream.toByteArray());
+			new WriteBytesTask().Setup(out,this).execute(stream.toByteArray());
 		} catch (IOException e) {
-			e.printStackTrace();
+			notifyNetworkError(e.getMessage());
 		}
 	}
 
@@ -232,9 +247,9 @@ public class NetworkOpponent implements GameMachineListener{
 			DataOutputStream writer = new DataOutputStream(stream);
 			writer.writeByte(Packets.DISCARD_CARD.getPacketId());
 			writer.writeByte(card);
-			new WriteBytesTask().Setup(out).execute(stream.toByteArray());
+			new WriteBytesTask().Setup(out,this).execute(stream.toByteArray());
 		} catch (IOException e) {
-			e.printStackTrace();
+			notifyNetworkError(e.getMessage());
 		}
 	}
 
@@ -254,9 +269,9 @@ public class NetworkOpponent implements GameMachineListener{
 			writer.writeByte(type.ordinal());
 			writer.writeByte((target == this.opponent ? 0 : 1));
 			writer.writeByte(amount);
-			new WriteBytesTask().Setup(out).execute(stream.toByteArray());
+			new WriteBytesTask().Setup(out,this).execute(stream.toByteArray());
 		} catch (IOException e) {
-			e.printStackTrace();
+			notifyNetworkError(e.getMessage());
 		}
 	}
 
@@ -264,8 +279,33 @@ public class NetworkOpponent implements GameMachineListener{
 	 * Writes a packet notifying the network opponent that it's their turn.
 	 */
 	private void sendOpponentTurn() {
-		new WriteBytesTask().Setup(out).execute(
+		new WriteBytesTask().Setup(out,this).execute(
 				new byte[] { (byte) Packets.TURN_DONE.getPacketId() });
+	}
+
+	OnNetworkErrorListener onNetworkErrorListener;
+
+	/**
+	 * Sets the current OnNetworkErrorListener, there can only be one listener
+	 * at a time. Set to null to unsubscribe.
+	 * 
+	 * @param l
+	 */
+	public void setOnNetworkErrorListener(OnNetworkErrorListener l) {
+		this.onNetworkErrorListener = l;
+	}
+
+	/**
+	 * Closes the network socket and notifies opponent
+	 * 
+	 * @param error
+	 *            The error/exception msg.
+	 */
+	void notifyNetworkError(String error) {
+		closeSilently();
+		if (this.onNetworkErrorListener != null) {
+			this.onNetworkErrorListener.onNetworkError(error);
+		}
 	}
 
 	@Override
@@ -317,5 +357,10 @@ public class NetworkOpponent implements GameMachineListener{
 	public void onPlayerUsedeffect(final EffectType type, final Player target,
 			final int amount) {
 		sendUsedEffect(type, target, amount);
+	}
+
+	@Override
+	public void onNetworkError(String error) {
+		notifyNetworkError(error);		
 	}
 }

@@ -46,7 +46,7 @@ public class OpenSocketTask extends AsyncTask<OpenSocketListener, Void, Socket> 
 				server = new ServerSocket(port, 1,
 						InetAddress.getByName(address));
 				// We use a timeout to prevent blocking infinitively.
-				server.setSoTimeout(1000);
+				server.setSoTimeout(100);
 				// We check if user has cancelled between each timeout.
 				while (!isCancelled() && null == (socket = startServer(server))) {
 				}

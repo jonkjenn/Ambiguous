@@ -21,7 +21,6 @@ public class SettingsActivity extends PreferenceActivity implements
 	public static final String KEY_PREF_BGColor = "pref_bgcolor";
 	public static final String KEY_PREF_CHEAT = "pref_cheat";
 	protected SettingsFragment settingsFragment;
-	private OnSharedPreferenceChangeListener listener;
 	protected Method mLoadHeaders = null;
 	protected Method mHasHeaders = null;
 	protected boolean boolTHing = false;
@@ -43,6 +42,8 @@ public class SettingsActivity extends PreferenceActivity implements
 		return false;
 	}
 
+	//We use deprecated method only for older implementation.
+	@SuppressWarnings("deprecation")
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 

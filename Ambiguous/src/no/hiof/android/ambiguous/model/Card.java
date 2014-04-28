@@ -55,6 +55,8 @@ public class Card implements Parcelable{
 		
 	};
 	
+	//We just have to make sure the ArrayList we read are the correct type.
+	@SuppressWarnings("unchecked")
 	public Card(Parcel source){
 		id = source.readInt();
 		name = source.readString();

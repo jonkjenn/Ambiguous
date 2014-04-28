@@ -205,9 +205,6 @@ public class GPGControllerFragment extends Fragment implements
 
 	@Override
 	public void onStateChanged(State state) {
-		/*
-		 * if (state == State.GAME_OVER) { showGPGFragment(); } else {
-		 */
 		hideGPGFragment();
 	}
 
@@ -236,6 +233,7 @@ public class GPGControllerFragment extends Fragment implements
 				.getDefaultSharedPreferences(getActivity()
 						.getApplicationContext());
 
+		//Check if service is enabled in preferences
 		if (sp.contains(SettingsFragment.KEY_PREF_GPGService)
 				&& sp.getBoolean(SettingsFragment.KEY_PREF_GPGService, false)) {
 			Intent i = new Intent(getActivity(), GPGService.class);

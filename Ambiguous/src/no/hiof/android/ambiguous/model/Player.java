@@ -22,7 +22,6 @@ public class Player implements Parcelable {
 	public int armor = 0;
 	public int resources = 10;
 	public static final int NUMBER_OF_CARDS = 8;
-	private boolean alive = true;
 
 	public Player(String name, int health, int armor, int resources,
 			Card[] hand, List<Card> deck) {
@@ -145,9 +144,6 @@ public class Player implements Parcelable {
 
 		this.health -= amount;
 		notifyStatsUpdateListeners();
-		if (this.health <= 0) {
-			this.alive = false;
-		}
 	}
 
 	/**
@@ -307,7 +303,9 @@ public class Player implements Parcelable {
 	 * Recreate player from Parcel.
 	 * 
 	 * @param in
-	 */
+	 **/	
+	//We just have to make sure the ArrayList we read are the correct type.
+	@SuppressWarnings("unchecked")
 	public Player(Parcel in) {
 		name = in.readString();
 		health = in.readInt();

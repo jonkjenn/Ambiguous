@@ -87,8 +87,6 @@ public class GooglePlayGameFragment extends Fragment implements
 
 	TextView resultTextView;
 
-	boolean explicitSignOut = false;
-	boolean inSignInFlow = false;
 	boolean expectingResult = false;
 
 	ConnectionResult connectionResult;

@@ -54,7 +54,7 @@ public class EditCardActivity extends Activity implements OnClickListener{
         	this.card = new Card();
         }else
         {
-        	this.card = cs.getCard(cardId);
+        	this.card = CardDataSource.getCard(cardId);
         }
         
         loadCard(this.card);

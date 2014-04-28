@@ -16,6 +16,7 @@ public class Utility {
 	 */
 	public static List<String[]> getInterfaces() throws SocketException {
 		List<String[]> interfaces = new ArrayList<String[]>();
+		//This triggers strict mode, we will allow it anyway
 			Enumeration<NetworkInterface> nets = NetworkInterface
 					.getNetworkInterfaces();
 			for (NetworkInterface i : Collections.list(nets)) {

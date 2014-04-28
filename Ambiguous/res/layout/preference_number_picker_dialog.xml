@@ -5,12 +5,15 @@
     android:orientation="vertical" >
 
     <TextView
+        android:textIsSelectable="false"
         android:id="@+id/text_dialog_message"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="6dip"
-        android:paddingLeft="12dip"
-        android:paddingRight="12dip" >
+        android:paddingLeft="12dp"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingRight="12dp" >
     </TextView>
 
     <NumberPicker

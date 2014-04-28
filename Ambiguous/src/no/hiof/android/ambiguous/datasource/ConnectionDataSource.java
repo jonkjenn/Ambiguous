@@ -56,6 +56,8 @@ public class ConnectionDataSource {
 			address.add(c.getString(c.getColumnIndex("ip")));
 		}
 		
+		c.close();
+		
 		return address;
 	}
 

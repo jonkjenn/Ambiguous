@@ -125,9 +125,15 @@ public class GameActivity extends ActionBarActivity implements
 					// detectable
 					// problems
 					.penaltyLog().build());
-			StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
-					.detectLeakedSqlLiteObjects().detectLeakedClosableObjects()
-					.penaltyLog().build());
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+				StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
+						.detectLeakedSqlLiteObjects()
+						.detectLeakedClosableObjects().penaltyLog().build());
+			} else {
+				StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
+						.detectLeakedSqlLiteObjects().penaltyLog().build());
+
+			}
 		}
 
 		super.onCreate(savedInstanceState);
@@ -717,8 +723,9 @@ public class GameActivity extends ActionBarActivity implements
 		// Store the amount of victories in sharedpreferences for ease of access
 		PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
 				.edit().putInt("WIN", victory).commit();
-		
-		// For each 10th victory, congratulate the user by sending a notification
+
+		// For each 10th victory, congratulate the user by sending a
+		// notification
 		if (victory > 0 && prevVictory == victory - 1 && victory % 10 == 0) {
 			NotificationCompat.Builder nBuilder = new NotificationCompat.Builder(
 					this)

@@ -43,14 +43,6 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
-            <!--
-     Network invite by email.            <intent-filter >
-                <action android:name="android.intent.action.VIEW"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-                <category android:name="android.intent.category.BROWSABLE"/>
-                <data android:scheme="http" android:host="ambiguous.stud.hiof.no"/>
-            </intent-filter>
-            -->
         </activity>
         <activity
             android:name="no.hiof.android.ambiguous.activities.CardGalleryActivity"

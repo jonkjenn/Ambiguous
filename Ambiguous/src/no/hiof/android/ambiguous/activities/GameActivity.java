@@ -723,6 +723,8 @@ public class GameActivity extends ActionBarActivity implements
 		// Store the amount of victories in sharedpreferences for ease of access
 		PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
 				.edit().putInt("WIN", victory).commit();
+		
+		// For each 10th victory, congratulate the user by sending a notification
 		if (victory > 0 && prevVictory == victory - 1 && victory % 10 == 0) {
 			NotificationCompat.Builder nBuilder = new NotificationCompat.Builder(
 					this)

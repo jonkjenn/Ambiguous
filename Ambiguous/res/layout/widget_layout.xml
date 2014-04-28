@@ -8,13 +8,14 @@
     <TextView
         android:textIsSelectable="false"
         android:id="@+id/widget_layout_textview"
-        style="@android:style/TextAppearance.Medium"
+        style="@android:style/TextAppearance.Large"
         android:layout_width="0dp"
         android:layout_weight="2"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:gravity="center_horizontal|center_vertical"
-        android:layout_margin="1dip"
+        android:layout_margin="1dp"
+        android:background="@drawable/ambiguous_black_background"
          >
     </TextView>
     <Button 
@@ -22,9 +23,13 @@
         android:layout_width="0dp"
         android:layout_weight="1"
         android:layout_height="fill_parent"
-        android:layout_gravity="end"
-        android:text="Start Ambiguous"
-        android:textSize="7dip"
+        android:layout_gravity="center"
+        android:text="@string/btn_widget_start_ambiguous_text"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:layout_marginTop="1dp"
+        android:layout_marginRight="1dp"
+        android:layout_marginBottom="1dp"
         android:background="@drawable/btn_main" />
     
 

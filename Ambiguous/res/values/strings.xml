@@ -84,5 +84,6 @@
       <string name="error">Error</string>
       <string name="could_not_load_GPG_data">There was a problem loading game data from GPG.</string>
       <string name="network_error_abort_game">There was a problem communicating with your opponent, aborting game.</string>
+      <string name="btn_widget_start_ambiguous_text">Start Ambiguous</string>
 
 </resources>

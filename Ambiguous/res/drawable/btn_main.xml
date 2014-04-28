@@ -7,11 +7,11 @@
         android:state_focused="true"
         android:drawable="@drawable/main_button_focused" />
     <item
-        android:drawable="@drawable/main_button"
-        android:state_enabled="true" />
+        android:state_enabled="true"
+        android:drawable="@drawable/main_button" />
     <item 
-        android:drawable="@drawable/main_button_disabled"
-        android:state_enabled="false" />
+        android:state_enabled="false"
+        android:drawable="@drawable/main_button_disabled" />
     <item 
         android:drawable="@drawable/main_button" />
 </selector>

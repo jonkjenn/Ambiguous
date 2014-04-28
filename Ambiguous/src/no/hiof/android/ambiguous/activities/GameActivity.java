@@ -116,7 +116,8 @@ public class GameActivity extends ActionBarActivity implements
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 
-		if (BuildConfig.DEBUG) {
+		if (BuildConfig.DEBUG
+				&& Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
 			StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
 					.detectAll()
 					// .detectAll()

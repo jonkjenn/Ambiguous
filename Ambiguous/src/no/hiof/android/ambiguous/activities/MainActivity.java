@@ -16,6 +16,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.preference.PreferenceManager;
@@ -44,6 +45,13 @@ public class MainActivity extends Activity {
 		resumeButton = (Button) findViewById(R.id.resume_button);
 		if (resumeButton != null) {
 			this.db = Db.getDb(getApplicationContext()).getReadableDatabase();
+		}
+
+		//We disable the google play part from API levels below 16 because we have not tested for it.
+		//Google play on emulator is not supported well in lower versions so we have not been able to test it.
+		//It might very well work on lower API levels.
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
+			findViewById(R.id.play_google_button).setVisibility(View.GONE);
 		}
 	}
 

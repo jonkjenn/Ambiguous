@@ -31,6 +31,7 @@
     <CheckBoxPreference
         android:key="pref_GPGService"
         android:defaultValue="false"
+        android:enabled="@bool/show_GPGS_setting"
         android:summaryOff="@string/GPG_service_off"
         android:summaryOn="@string/GPG_service_on"
         android:title="Google Play Game service helper" >

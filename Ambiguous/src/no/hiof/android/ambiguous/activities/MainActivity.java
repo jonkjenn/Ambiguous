@@ -47,10 +47,10 @@ public class MainActivity extends Activity {
 			this.db = Db.getDb(getApplicationContext()).getReadableDatabase();
 		}
 
-		//We disable the google play part from API levels below 16 because we have not tested for it.
+		//We disable the google play part from API levels below 14 because we have not tested for it.
 		//Google play on emulator is not supported well in lower versions so we have not been able to test it.
 		//It might very well work on lower API levels.
-		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
 			findViewById(R.id.play_google_button).setVisibility(View.GONE);
 		}
 	}

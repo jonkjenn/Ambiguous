@@ -37,8 +37,11 @@
     <string name="pref_bgcolor">background color</string>
     <string name="pref_bgcolor_default">Amber</string>
     <string name="menu_button_resume">Resume</string>
-    <string name="tutorial_usecard">Drag cards up to use</string>
-    <string name="tutorial_discard">Drag cards down to discard</string>
+    <string name="tutorial_usecard">The objective of the game is to kill your opponent, by using cards that lowers his health, before he can kill you.
+        You can protect yourself with armor which functions as extra health (blue). Or heal yourself with (green).
+         
+        </string>
+    <string name="tutorial_discard">Drag cards up to use, down to discard</string>
     <string name="tutorial_stats">Shows your Health, Armor and Resources. 
         Armor works like extra health. You need resources to use cards.</string>
     <string name="tutorial_cards">The number at the top of the card is the amount of resource neded to use this card.\n\n

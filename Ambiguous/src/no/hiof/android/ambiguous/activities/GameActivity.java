@@ -757,7 +757,7 @@ public class GameActivity extends ActionBarActivity implements
 		ComponentName thisWidget = new ComponentName(this,
 				MyWidgetProvider.class);
 		remoteViews.setTextViewText(R.id.widget_layout_textview,
-				"Total victories: " + String.valueOf(victory));
+				getString(R.string.total_victories) + String.valueOf(victory));
 		appWidgetManager.updateAppWidget(thisWidget, remoteViews);
 
 	}

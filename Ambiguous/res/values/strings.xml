@@ -88,5 +88,8 @@
     <string name="minigame_help_title">Minigame help</string>
     <string name="start">Start</string>
     <string name="gpg_load_error">There was an error loading Google Play Game aborting....</string>
+    <string name="ambiguous_header_image_black">Ambiguous header image, black</string>
+    <string name="ambiguous_header_image_sword">Ambiguous header image, sword</string>
+    <string name="total_victories">"Total victories: "</string>
 
 </resources>

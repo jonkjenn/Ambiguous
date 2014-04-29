@@ -14,7 +14,8 @@
          android:layout_height="50dp"
          android:layout_centerHorizontal="true"
          android:cropToPadding="true"
-         android:src="@drawable/ambiguous_header_cropped2" />
+         android:src="@drawable/ambiguous_header_cropped2"
+         android:contentDescription="@string/ambiguous_header_image_black" />
 
     <LinearLayout
         android:id="@+id/linearLayout1"

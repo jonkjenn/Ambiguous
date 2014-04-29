@@ -77,8 +77,8 @@ public class MainActivity extends Activity {
 	}
 
 	/**
-	 * Called when the user clicks the Resume button, resumes a previous not
-	 * finished game
+	 * Called when the user clicks the Resume button, resumes a previous,
+	 * unfinished, game
 	 **/
 	public void goToResumeGame(View view) {
 
@@ -129,10 +129,11 @@ public class MainActivity extends Activity {
 		CardDataSource cds = new CardDataSource(db);
 		cds.setOnLoadCompleteListener(new OnLoadCompleteListener() {
 
+			/**
+			 * Put everything together and pass it along as extras in the intent
+			 */
 			@Override
 			public void onLoadComplete() {
-				// Put everything together and pass it along as extras in the
-				// intent
 				final Card sessionOpponentCard = CardDataSource
 						.getCard(opponentCardId);
 				final boolean sessionOpponentDiscard = (opponentDiscard != 0 ? true
@@ -141,6 +142,7 @@ public class MainActivity extends Activity {
 				new AsyncTask<Void, Void, Player[]>() {
 
 					@Override
+					// get the player and the opponent from the db
 					protected Player[] doInBackground(Void... params) {
 						Player player = getPlayerFromDb(playerId);
 						Player opponent = getPlayerFromDb(opponentId);
@@ -174,6 +176,18 @@ public class MainActivity extends Activity {
 		cds.loadData();
 	}
 
+	/**
+	 * Creates the intent that will be used to start the activity
+	 * 
+	 * @param sessionId
+	 * @param player
+	 * @param opponent
+	 * @param sessionTurn
+	 * @param sessionOpponentCard
+	 * @param sessionOpponentDiscard
+	 * @param sessionCheatUsed
+	 * @return
+	 */
 	Intent createMainActivityIntent(int sessionId, Player player,
 			Player opponent, int sessionTurn, Card sessionOpponentCard,
 			boolean sessionOpponentDiscard, boolean sessionCheatUsed) {
@@ -190,16 +204,27 @@ public class MainActivity extends Activity {
 
 	}
 
+	/**
+	 * If there is a stored name in sharedpreferences, that name will be used instead.
+	 * Basing this behaviour on the assumption that the player will want to use this name,
+	 * rather than using the one stored from an earlier, unfinished, game
+	 * @param player
+	 */
 	void loadPreferenceName(Player player) {
-		// If there is a stored name in sharedpreferences, use that
-		// instead.
+		
 		player.name = PreferenceManager.getDefaultSharedPreferences(
 				MainActivity.this).getString(SettingsFragment.KEY_PREF_USER,
 				player.name);
 	}
 
+	/**
+	 * Use sharedpreferences if it's set, else rely on the value provided by the db
+	 * 
+	 * @param defaultValue
+	 * @return
+	 */
 	boolean loadCheatUsed(boolean defaultValue) {
-		// Use sharedpreference if it's set, else rely on the db
+		
 		return PreferenceManager.getDefaultSharedPreferences(MainActivity.this)
 				.getBoolean("cheatUsed", defaultValue);
 	}
@@ -340,7 +365,8 @@ public class MainActivity extends Activity {
 	}
 
 	/**
-	 * 
+	 * Make sure the resumeButton is correctly enabled/disabled
+	 * and the visibility of closeGPGService-button
 	 */
 	@Override
 	protected void onResume() {

@@ -91,5 +91,7 @@
     <string name="ambiguous_header_image_black">Ambiguous header image, black</string>
     <string name="ambiguous_header_image_sword">Ambiguous header image, sword</string>
     <string name="total_victories">"Total victories: "</string>
+    <string name="save_error">There was an error saving game data.</string>
+    <string name="wait_connecting_to_google">Please wait, connecting to Google</string>
 
 </resources>

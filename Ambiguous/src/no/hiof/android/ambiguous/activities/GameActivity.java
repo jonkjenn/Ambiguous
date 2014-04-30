@@ -207,6 +207,7 @@ public class GameActivity extends ActionBarActivity implements
 		this.useGPGS = getIntent().getBooleanExtra("useGPGS", false);
 		this.isNetwork = getIntent().getBooleanExtra("isNetwork", false);
 
+		//Version check for drag functionality
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
 			setupDragFragment();
 			if ((!useGPGS) && (!isNetwork)) {
@@ -320,7 +321,6 @@ public class GameActivity extends ActionBarActivity implements
 		dragFragment.setOnDragStatusChanged(this);
 	}
 
-	// TODO: Could be better type testing.
 	/**
 	 * Starts the network fragment
 	 * 

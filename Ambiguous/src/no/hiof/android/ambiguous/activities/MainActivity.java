@@ -47,9 +47,11 @@ public class MainActivity extends Activity {
 			this.db = Db.getDb(getApplicationContext()).getReadableDatabase();
 		}
 
-		//We disable the google play part from API levels below 14 because we have not tested for it.
-		//Google play on emulator is not supported well in lower versions so we have not been able to test it.
-		//It might very well work on lower API levels.
+		// We disable the google play part from API levels below 14 because we
+		// have not tested for it.
+		// Google play on emulator is not supported well in lower versions so we
+		// have not been able to test it.
+		// It might very well work on lower API levels.
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
 			findViewById(R.id.play_google_button).setVisibility(View.GONE);
 		}
@@ -98,6 +100,11 @@ public class MainActivity extends Activity {
 
 	}
 
+	// TODO:Split this function up in several parts.
+	/**
+	 * Loads data from database, puts i into Intent and starts the GameActivtiy
+	 * 
+	 */
 	void loadData() {
 
 		Cursor c = db
@@ -123,9 +130,7 @@ public class MainActivity extends Activity {
 
 		c.close();
 
-		// CardDataSource has to be initialized at least once before calling the
-		// static method CardDataSource.getCard(id), or else the app throws a
-		// nullpointerException
+		// Initialize CardDataSource
 		CardDataSource cds = new CardDataSource(db);
 		cds.setOnLoadCompleteListener(new OnLoadCompleteListener() {
 
@@ -205,26 +210,29 @@ public class MainActivity extends Activity {
 	}
 
 	/**
-	 * If there is a stored name in sharedpreferences, that name will be used instead.
-	 * Basing this behaviour on the assumption that the player will want to use this name,
-	 * rather than using the one stored from an earlier, unfinished, game
+	 * If there is a stored name in sharedpreferences, that name will be used
+	 * instead. Basing this behaviour on the assumption that the player will
+	 * want to use this name, rather than using the one stored from an earlier,
+	 * unfinished, game
+	 * 
 	 * @param player
 	 */
 	void loadPreferenceName(Player player) {
-		
+
 		player.name = PreferenceManager.getDefaultSharedPreferences(
 				MainActivity.this).getString(SettingsFragment.KEY_PREF_USER,
 				player.name);
 	}
 
 	/**
-	 * Use sharedpreferences if it's set, else rely on the value provided by the db
+	 * Use sharedpreferences if it's set, else rely on the value provided by the
+	 * db
 	 * 
 	 * @param defaultValue
 	 * @return
 	 */
 	boolean loadCheatUsed(boolean defaultValue) {
-		
+
 		return PreferenceManager.getDefaultSharedPreferences(MainActivity.this)
 				.getBoolean("cheatUsed", defaultValue);
 	}
@@ -365,13 +373,15 @@ public class MainActivity extends Activity {
 	}
 
 	/**
-	 * Make sure the resumeButton is correctly enabled/disabled
-	 * and the visibility of closeGPGService-button
+	 * Make sure the resumeButton is correctly enabled/disabled and the
+	 * visibility of closeGPGService-button
 	 */
 	@Override
 	protected void onResume() {
 		super.onResume();
 
+		// Checks if there's a saved game in database. Enables the button so
+		// user can resume if he wants to.
 		new AsyncTask<Void, Void, Boolean>() {
 
 			@Override
@@ -403,6 +413,11 @@ public class MainActivity extends Activity {
 		}
 	}
 
+	/**
+	 * Stop GPG button
+	 * 
+	 * @param view
+	 */
 	public void stopGPGService(View view) {
 		Intent close = new Intent(this, GPGService.class);
 		close.setAction(GPGService.CLOSE);

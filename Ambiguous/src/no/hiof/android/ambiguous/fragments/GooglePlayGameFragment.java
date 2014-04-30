@@ -280,8 +280,8 @@ public class GooglePlayGameFragment extends Fragment implements
 					.getApiClient());
 			startActivityForResult(i, RC_INVITATION_BOX);
 		} else if (gameHelper.isConnecting()) {
-			Toast.makeText(getActivity(), "Please wait, connecting to google.",
-					Toast.LENGTH_LONG);
+			Toast.makeText(getActivity(), R.string.wait_connecting_to_google,
+					Toast.LENGTH_LONG).show();;
 		}
 	}
 
@@ -295,8 +295,8 @@ public class GooglePlayGameFragment extends Fragment implements
 					.getSelectOpponentsIntent(gameHelper.getApiClient(), 1, 1);
 			startActivityForResult(intent, RC_SELECT_PLAYERS);
 		} else if (gameHelper.isConnecting()) {
-			Toast.makeText(getActivity(), "Please wait, connecting to google.",
-					Toast.LENGTH_LONG);
+			Toast.makeText(getActivity(), R.string.wait_connecting_to_google,
+					Toast.LENGTH_LONG).show();
 		}
 	}
 

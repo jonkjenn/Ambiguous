@@ -66,9 +66,6 @@ public class SettingsActivity extends PreferenceActivity implements
 
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
 			
-			//This isnt used??			
-			/*String ss = getPreferences(MODE_PRIVATE).getString(KEY_PREF_USER,
-					"");*/
 			settingsFragment = new SettingsFragment();
 			PreferenceManager.setDefaultValues(this, R.xml.pref_headers, false);
 

@@ -22,11 +22,6 @@ public class SettingsFragment extends PreferenceFragment implements
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		// Load the preferences from an XML resource
-//		Context anAct = getActivity().getApplicationContext();
-//        int thePrefRes = anAct.getResources().getIdentifier(getArguments().getString("pref-resource"),
-//                "xml",anAct.getPackageName());
-		//addPreferencesFromResource(thePrefRes);
         addPreferencesFromResource(R.xml.preferences);
 		
 		SharedPreferences sp = getPreferenceManager().getSharedPreferences();

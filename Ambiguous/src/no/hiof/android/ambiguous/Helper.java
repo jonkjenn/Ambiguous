@@ -82,9 +82,12 @@ public class Helper {
 						dialog.cancel();
 					}
 				});
+
+		//For compatibility reasons we set listener on the AlertDialog instead with the builder.
+		AlertDialog d = b.create();
 		if (onDismissListener != null) {
-			b.setOnDismissListener(onDismissListener);
+			d.setOnDismissListener(onDismissListener);
 		}
-		return b.create();
+		return d;
 	}
 }

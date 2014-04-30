@@ -207,7 +207,7 @@ public class GameActivity extends ActionBarActivity implements
 		this.useGPGS = getIntent().getBooleanExtra("useGPGS", false);
 		this.isNetwork = getIntent().getBooleanExtra("isNetwork", false);
 
-		//Version check for drag functionality
+		// Version check for drag functionality
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
 			setupDragFragment();
 			if ((!useGPGS) && (!isNetwork)) {
@@ -929,6 +929,10 @@ public class GameActivity extends ActionBarActivity implements
 			disableUseCards();
 			playerStats.notMyTurn();
 			opponentStats.myTurn();
+		}
+
+		if (state != State.GAME_OVER) {
+			LayoutHelper.hideResult(resultTextView);
 		}
 	}
 

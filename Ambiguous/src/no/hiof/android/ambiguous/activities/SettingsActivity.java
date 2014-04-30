@@ -6,16 +6,12 @@ import java.util.List;
 
 import no.hiof.android.ambiguous.R;
 import no.hiof.android.ambiguous.fragments.SettingsFragment;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 
-public class SettingsActivity extends PreferenceActivity implements
-		OnSharedPreferenceChangeListener {
+public class SettingsActivity extends PreferenceActivity {
 
 	public static final String KEY_PREF_USER = "pref_user";
 	public static final String KEY_PREF_BGColor = "pref_bgcolor";
@@ -23,7 +19,6 @@ public class SettingsActivity extends PreferenceActivity implements
 	protected SettingsFragment settingsFragment;
 	protected Method mLoadHeaders = null;
 	protected Method mHasHeaders = null;
-	protected boolean boolTHing = false;
 
 	/**
 	 * Checks to see if using new v11+ way of handling PrefsFragments.
@@ -42,7 +37,7 @@ public class SettingsActivity extends PreferenceActivity implements
 		return false;
 	}
 
-	//We use deprecated method only for older implementation.
+	// We use deprecated method only for older implementation.
 	@SuppressWarnings("deprecation")
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -55,17 +50,19 @@ public class SettingsActivity extends PreferenceActivity implements
 		} catch (NoSuchMethodException e) {
 		}
 		super.onCreate(savedInstanceState);
-		// This test does not recognize that I am actually using headers (I
-		// think)
+		// This test does not recognize that I am actually using headers
+		// (Or it might just be, seeing as I only have one category,
+		// I'm technically not using headers)
 		if (!isNewV11Prefs()) {
 			if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
 				addPreferencesFromResource(R.xml.preferences);
 			}
-
 		}
 
+		// The effect is the same as intended: if using old version,
+		// run code above, if using newer version, run code below
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-			
+
 			settingsFragment = new SettingsFragment();
 			PreferenceManager.setDefaultValues(this, R.xml.pref_headers, false);
 
@@ -90,40 +87,15 @@ public class SettingsActivity extends PreferenceActivity implements
 	@Override
 	protected void onResume() {
 		super.onResume();
-		new AsyncTask<Void, Void, Void>() {
-
-			@Override
-			protected Void doInBackground(Void... params) {
-				getPreferences(MODE_MULTI_PROCESS)
-						.registerOnSharedPreferenceChangeListener(
-								SettingsActivity.this);
-				return null;
-			}
-
-		}.execute();
-
 	}
 
 	@Override
 	protected void onPause() {
 		super.onPause();
-
-		new AsyncTask<Void, Void, Void>() {
-
-			@Override
-			protected Void doInBackground(Void... params) {
-				getPreferences(MODE_MULTI_PROCESS)
-						.unregisterOnSharedPreferenceChangeListener(
-								SettingsActivity.this);
-				return null;
-			}
-		};
 	}
 
-	// Never called in SettingsActivity, only in SettingsFragment.
-	@Override
-	public void onSharedPreferenceChanged(SharedPreferences arg0, String arg1) {
-		System.out.println();
-	}
+	// Note: Removed imported onSharedPreferenceChanged method.
+	// We do not use it for older build versions, therefore
+	// it is never called in SettingsActivity, only in SettingsFragment.
 
 }

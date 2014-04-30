@@ -22,17 +22,17 @@ public class SettingsFragment extends PreferenceFragment implements
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-        addPreferencesFromResource(R.xml.preferences);
-		
+		addPreferencesFromResource(R.xml.preferences);
 		SharedPreferences sp = getPreferenceManager().getSharedPreferences();
+
 		Preference usPref = findPreference(KEY_PREF_USER);
 		usPref.setSummary(sp.getString(KEY_PREF_USER, ""));
 		Preference bgPref = findPreference(KEY_PREF_BGColor);
-		bgPref.setSummary(((ListPreference)bgPref).getEntry());
-		NumberPickerDialogPreference chtPref = (NumberPickerDialogPreference)findPreference(KEY_PREF_CHEAT);
-		int nind = sp.getInt(KEY_PREF_CHEAT, 0);
-		chtPref.setSummary(String.valueOf(nind));
-		
+		bgPref.setSummary(((ListPreference) bgPref).getEntry());
+		NumberPickerDialogPreference chtPref = (NumberPickerDialogPreference) findPreference(KEY_PREF_CHEAT);
+		int additionalDmg = sp.getInt(KEY_PREF_CHEAT, 0);
+		chtPref.setSummary(String.valueOf(additionalDmg));
+
 	}
 
 	@Override
@@ -51,6 +51,9 @@ public class SettingsFragment extends PreferenceFragment implements
 				.unregisterOnSharedPreferenceChangeListener(this);
 	}
 
+	/**
+	 * When a setting is changed, find the Preference and update it's summary
+	 */
 	@Override
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
 			String key) {
@@ -58,18 +61,13 @@ public class SettingsFragment extends PreferenceFragment implements
 		Preference pref = findPreference(key);
 		if (pref instanceof EditTextPreference) {
 			EditTextPreference editTextPref = (EditTextPreference) pref;
-			if (pref.getKey().equalsIgnoreCase(KEY_PREF_USER)) {
-				//pref.setSummary(sharedPreferences.getString(key, "w"));
-				pref.setSummary(editTextPref.getText());
-			}
-			else
-				pref.setSummary(editTextPref.getText());
+			pref.setSummary(editTextPref.getText());
 		}
-		if (pref instanceof ListPreference){
+		if (pref instanceof ListPreference) {
 			ListPreference listPref = (ListPreference) pref;
 			pref.setSummary(listPref.getEntry());
 		}
-		if(pref instanceof NumberPickerDialogPreference){
+		if (pref instanceof NumberPickerDialogPreference) {
 			NumberPickerDialogPreference numberPref = (NumberPickerDialogPreference) pref;
 			pref.setSummary(String.valueOf(numberPref.getValue()));
 		}

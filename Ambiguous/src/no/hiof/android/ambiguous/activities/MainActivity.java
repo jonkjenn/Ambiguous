@@ -91,11 +91,6 @@ public class MainActivity extends Activity {
 				loadData();
 				return true;
 			}
-
-			@Override
-			protected void onPostExecute(Boolean result) {
-				super.onPostExecute(result);
-			}
 		}.execute();
 
 	}
@@ -382,30 +377,17 @@ public class MainActivity extends Activity {
 
 		// Checks if there's a saved game in database. Enables the button so
 		// user can resume if he wants to.
-		new AsyncTask<Void, Void, Boolean>() {
+		//Triggers strict mode error but we allow it since its a quick check
+		if (MainActivity.this.db != null) {
+			Cursor c = db.rawQuery("SELECT id FROM " + "Session"
+					+ " ORDER BY id DESC Limit 1", null);
+			boolean exist = c.moveToFirst();
+			c.close();
 
-			@Override
-			protected Boolean doInBackground(Void... params) {
-				if (MainActivity.this.db != null) {
-					Cursor c = db.rawQuery("SELECT id FROM " + "Session"
-							+ " ORDER BY id DESC Limit 1", null);
-					boolean exist = c.moveToFirst();
-					c.close();
-
-					return exist;
-				}
-				return false;
+			if (resumeButton != null) {
+				resumeButton.setEnabled(exist);
 			}
-
-			@Override
-			protected void onPostExecute(Boolean result) {
-				super.onPostExecute(result);
-				if (resumeButton != null) {
-					resumeButton.setEnabled(result);
-				}
-			}
-
-		}.execute();
+		}
 
 		if (GPGService.isRunning) {
 			findViewById(R.id.close_gpg_service_button).setVisibility(

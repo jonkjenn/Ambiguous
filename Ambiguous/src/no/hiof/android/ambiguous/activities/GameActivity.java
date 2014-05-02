@@ -187,6 +187,7 @@ public class GameActivity extends ActionBarActivity implements
 			dbLoaded();
 			doResume();
 		} else {
+			setupUIListeners();
 			doResume();
 		}
 
@@ -255,6 +256,14 @@ public class GameActivity extends ActionBarActivity implements
 			// The stats window showing player's stats.
 			playerStats = new PlayerStatsFragment();
 
+			// So we can update stats as soon as the fragment is done loading.
+			playerStats.setOnLoadedListener(new OnLoadedListener() {
+				@Override
+				public void onLoaded() {
+					onStatsUpdateListener(gameMachine.player);
+				}
+			});
+
 			Bundle args = new Bundle();
 			args.putBoolean("reverse", true);
 			playerStats.setArguments(args);
@@ -275,6 +284,15 @@ public class GameActivity extends ActionBarActivity implements
 				}
 			});
 
+			// So we can update stats as soon as the fragment is done loading.
+			opponentStats.setOnLoadedListener(new OnLoadedListener() {
+				@Override
+				public void onLoaded() {
+					onStatsUpdateListener(gameMachine.opponent);
+					onStateChanged(gameMachine.state);
+				}
+			});
+
 			getSupportFragmentManager()
 					.beginTransaction()
 					.add(R.id.opponentstats_fragment, opponentStats,
@@ -282,24 +300,12 @@ public class GameActivity extends ActionBarActivity implements
 		} else {// We use the fragments that already exists
 			opponentStats = (PlayerStatsFragment) getSupportFragmentManager()
 					.findFragmentByTag("opponentStatsFragment");
+
+			onStatsUpdateListener(gameMachine.player);
+			onStatsUpdateListener(gameMachine.opponent);
+			onStateChanged(gameMachine.state);
 		}
 
-		// So we can update stats as soon as the fragment is done loading.
-		playerStats.setOnLoadedListener(new OnLoadedListener() {
-			@Override
-			public void onLoaded() {
-				onStatsUpdateListener(gameMachine.player);
-			}
-		});
-
-		// So we can update stats as soon as the fragment is done loading.
-		opponentStats.setOnLoadedListener(new OnLoadedListener() {
-			@Override
-			public void onLoaded() {
-				onStatsUpdateListener(gameMachine.opponent);
-				onStateChanged(gameMachine.state);
-			}
-		});
 	}
 
 	void setupDragFragment() {
@@ -652,7 +658,9 @@ public class GameActivity extends ActionBarActivity implements
 	 */
 	void enableUseCards() {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-			dragFragment.enableDrag();
+			if (dragFragment != null) {
+				dragFragment.enableDrag();
+			}
 		}
 		cardHandFragment.enableUseCards();
 	}
